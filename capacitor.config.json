@@ -1,0 +1,9 @@
+{
+  "appId": "com.antigravity.sudokumestre",
+  "appName": "Sudoku Pere Rey",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}
