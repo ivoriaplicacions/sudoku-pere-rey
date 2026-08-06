@@ -19,6 +19,7 @@ import {
   isLevelAccessible,
   purchasePack as purchasePackService,
   restorePurchases as restorePurchasesService,
+  syncPurchasesFromStore,
 } from '../services/monetization';
 import {
   hapticTap,
@@ -201,7 +202,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (result.ok) {
       setOwnedPacks(getOwnedPacks());
       hapticSuccess();
-    } else {
+    } else if (result.error !== 'cancelled') {
       hapticError();
     }
   }, []);
@@ -210,6 +211,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const restored = await restorePurchasesService();
     setOwnedPacks(restored);
     hapticSuccess();
+  }, []);
+
+  useEffect(() => {
+    void (async () => {
+      const synced = await syncPurchasesFromStore();
+      setOwnedPacks(synced);
+    })();
   }, []);
 
   useEffect(() => {

@@ -4,13 +4,28 @@ Sudoku gamificat per **Ivori Aplicacions**. Aplicació **multiplataforma**: mate
 
 ## Característiques
 
-- **Pack gratuït**: 10 nivells × 20 sudokus (200 puzzles verificats, solució única)
-- **Packs addicionals**: 200 sudokus per **0,99 €** cadascun (en preparació)
+- **4 packs × 200 sudokus = 800 puzzles** verificats (solució única)
+- **Pack 1 gratuït**; Packs II–IV a **0,99 €** via **Google Play Billing**
 - Estrelles, XP, ratxa diària i assoliments
 - 14 temes visuals
 - **Multilenguatge**: català, castellà i anglès
 - **Vibració** (hàptics) en dispositius mòbils
 - Intro animada i progrés guardat localment
+
+## Monetització (Google Play)
+
+Productes **managed / one-time** a crear a Google Play Console (preu 0,99 €):
+
+| Pack | Product ID | Nivells |
+|------|------------|---------|
+| Pack 1 | _(gratis, sense producte)_ | 1–10 |
+| Pack 2 | `maestros_pack_2` | 11–20 |
+| Pack 3 | `maestros_pack_3` | 21–30 |
+| Pack 4 | `maestros_pack_4` | 31–40 |
+
+Plugin: `@capgo/native-purchases` (Google Play Billing 7.x). En web / sense billing es simula la compra per a desenvolupament.
+
+Les compres reals només funcionen amb una build signada publicada a Play (p. ex. internal testing) i els productes creats a la consola.
 
 ## Requisits (Windows)
 
@@ -25,64 +40,26 @@ Sudoku gamificat per **Ivori Aplicacions**. Aplicació **multiplataforma**: mate
 
 ```bash
 npm install
-npm run dev          # http://localhost:5173
-npm run build        # compila a dist/
-npm run preview      # previsualitza la build
+npm run dev
+npm run build
 npm run lint
 ```
 
-## Sudokus (generació offline)
+## Sudokus
 
 ```bash
-npm run puzzles:generate   # regenera src/data/puzzles.ts
-npm run puzzles:verify     # audita els 200 puzzles
+npm run puzzles:generate   # regenera 800 puzzles
+npm run puzzles:verify
 ```
 
-## Android (Windows)
+## Android
 
 ```bash
-npm run android:debug      # build web + sync + APK debug
-npm run android:open       # obre el projecte a Android Studio
+npm run android:debug
+npm run android:open
 ```
 
-APK de debug: `android/app/build/outputs/apk/debug/app-debug.apk`
-
-## iOS (requereix Mac)
-
-iOS **no es pot compilar des de Windows**. Quan tinguis un Mac:
-
-```bash
-npm run ios:add
-npm run cap:sync:ios
-npm run ios:open
-```
-
-També hi ha un workflow manual `.github/workflows/ios.yml` per compilar en un runner macOS de GitHub Actions.
-
-Consulta `npm run ios:info` per veure les instruccions des de qualsevol SO.
-
-## CI (GitHub Actions)
-
-- **Android**: cada push/PR a `main` compila l'APK debug i el publica com a artefacte.
-- **iOS**: workflow manual (`workflow_dispatch`) en macOS.
-
-## Estructura del projecte
-
-```
-src/           Codi React + TypeScript
-public/        Assets estàtics, manifest PWA
-scripts/       Generació i verificació de puzzles, build Android
-android/       Projecte natiu Capacitor (Android)
-assets/        Icona i splash per Capacitor
-dist/          Build web (generat, no versionat)
-```
-
-## Stack
-
-- React 19 + TypeScript + Vite 8
-- Tailwind CSS 4
-- Capacitor 8 (Android + iOS)
-- Gradle 8 + Android SDK 36
+APK: `android/app/build/outputs/apk/debug/app-debug.apk`
 
 ## Repositori
 

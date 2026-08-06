@@ -1,9 +1,8 @@
 /**
  * Offline Sudoku puzzle generator.
  *
- * Produces src/data/puzzles.ts with 10 levels x 20 puzzles. Every puzzle is
- * guaranteed to have exactly one solution and a balanced spread of givens, so
- * the in-game error checker can never flag a legal move as a mistake.
+ * Produces src/data/puzzles.ts with 4 packs × 10 levels × 20 puzzles = 800.
+ * Every puzzle is uniquely solvable with a balanced spread of givens.
  *
  * Run with: node scripts/generatePuzzles.mjs
  */
@@ -14,10 +13,12 @@ import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT_FILE = resolve(HERE, '../src/data/puzzles.ts');
 
-const LEVEL_COUNT = 10;
+const PACK_COUNT = 4;
+const LEVELS_PER_PACK = 10;
+const LEVEL_COUNT = PACK_COUNT * LEVELS_PER_PACK; // 40
 const PUZZLES_PER_LEVEL = 20;
 
-/** Target number of visible digits per level (lower = harder). */
+/** Difficulty band 1–10 (cycled inside every pack). Lower givens = harder. */
 const TARGET_GIVENS = {
   1: 50,
   2: 46,
@@ -31,17 +32,11 @@ const TARGET_GIVENS = {
   10: 30,
 };
 
-/**
- * Minimum digits every row, column and 3x3 box must keep. Three is the floor:
- * a line with one or two digits looks broken and gives the player nothing to
- * work from, even when the puzzle is technically solvable.
- */
 const MIN_PER_UNIT = { 1: 4, 2: 4, 3: 3, 4: 3, 5: 3, 6: 3, 7: 3, 8: 3, 9: 3, 10: 3 };
-
-/** Levels that must stay solvable with singles alone (no guessing needed). */
-const SINGLES_ONLY_MAX_LEVEL = 3;
-
+const SINGLES_ONLY_MAX_DIFFICULTY = 3;
 const ATTEMPTS_PER_PUZZLE = 14;
+
+const difficultyOf = (level) => ((level - 1) % LEVELS_PER_PACK) + 1;
 
 const boxOf = (r, c) => ((r / 3) | 0) * 3 + ((c / 3) | 0);
 const ROW_OF = new Int8Array(81);
@@ -84,7 +79,6 @@ function shuffled(items, rng) {
   return arr;
 }
 
-/** Builds a complete, randomly chosen valid grid as a flat Int8Array(81). */
 function randomSolution(rng) {
   const g = new Int8Array(81);
   const rows = new Int32Array(9);
@@ -124,7 +118,6 @@ function randomSolution(rng) {
   return g;
 }
 
-/** Counts solutions, stopping as soon as `limit` are found. */
 function countSolutions(grid, limit) {
   const g = Int8Array.from(grid);
   const rows = new Int32Array(9);
@@ -152,7 +145,6 @@ function countSolutions(grid, limit) {
       return;
     }
 
-    // Most-constrained cell first: prunes the tree aggressively.
     let best = -1;
     let bestMask = 0;
     let bestCount = 10;
@@ -192,10 +184,6 @@ function countSolutions(grid, limit) {
   return found;
 }
 
-/**
- * True when the puzzle can be finished using naked singles and hidden singles
- * only. Solvable-by-singles implies a unique solution.
- */
 function solvableWithSingles(grid) {
   const g = Int8Array.from(grid);
   const rows = new Int32Array(9);
@@ -239,7 +227,6 @@ function solvableWithSingles(grid) {
     }
     if (progress) continue;
 
-    // Hidden singles: a digit with only one possible home inside a unit.
     const units = [];
     for (let r = 0; r < 9; r++) {
       const cells = [];
@@ -293,10 +280,6 @@ function solvableWithSingles(grid) {
   return true;
 }
 
-/**
- * Removes digits from a full solution while keeping the puzzle uniquely
- * solvable and every row/column/box populated.
- */
 function dig(solution, rng, { target, minPerUnit, singlesOnly }) {
   const g = Int8Array.from(solution);
   const rowCount = new Int8Array(9).fill(9);
@@ -335,13 +318,15 @@ function dig(solution, rng, { target, minPerUnit, singlesOnly }) {
 const encode = (grid) => Array.from(grid).join('');
 
 function buildPuzzle(level, puzzleNumber) {
-  const target = TARGET_GIVENS[level];
-  const minPerUnit = MIN_PER_UNIT[level];
-  const singlesOnly = level <= SINGLES_ONLY_MAX_LEVEL;
+  const difficulty = difficultyOf(level);
+  const target = TARGET_GIVENS[difficulty];
+  const minPerUnit = MIN_PER_UNIT[difficulty];
+  const singlesOnly = difficulty <= SINGLES_ONLY_MAX_DIFFICULTY;
 
   let best = null;
 
   for (let attempt = 0; attempt < ATTEMPTS_PER_PUZZLE; attempt++) {
+    // Distinct seed space per absolute level so packs never repeat.
     const rng = makeRng(level * 1_000_003 + puzzleNumber * 7919 + attempt * 104729 + 17);
     const solution = randomSolution(rng);
     const result = dig(solution, rng, { target, minPerUnit, singlesOnly });
@@ -371,6 +356,7 @@ const all = [];
 const statsByLevel = [];
 
 for (let level = 1; level <= LEVEL_COUNT; level++) {
+  const difficulty = difficultyOf(level);
   const givens = [];
   for (let n = 1; n <= PUZZLES_PER_LEVEL; n++) {
     const puzzle = buildPuzzle(level, n);
@@ -379,11 +365,16 @@ for (let level = 1; level <= LEVEL_COUNT; level++) {
   }
   statsByLevel.push({
     level,
-    target: TARGET_GIVENS[level],
+    pack: Math.ceil(level / LEVELS_PER_PACK),
+    difficulty,
+    target: TARGET_GIVENS[difficulty],
     min: Math.min(...givens),
     max: Math.max(...givens),
     avg: (givens.reduce((a, b) => a + b, 0) / givens.length).toFixed(1),
   });
+  if (level % 5 === 0) {
+    console.log(`… level ${level}/${LEVEL_COUNT} (${all.length} puzzles)`);
+  }
 }
 
 const lines = all
@@ -393,6 +384,7 @@ const lines = all
 const file = `// AUTO-GENERATED by scripts/generatePuzzles.mjs — do not edit by hand.
 // Each entry is "level|puzzleNumber|givenCount|puzzle|solution", where the two
 // grids are 81 digits read row by row and 0 marks an empty cell.
+// ${PACK_COUNT} packs × ${LEVELS_PER_PACK} levels × ${PUZZLES_PER_LEVEL} = ${all.length} puzzles.
 // Every puzzle has exactly one solution and keeps at least
 // ${Math.min(...Object.values(MIN_PER_UNIT))} digits in every row, column and box.
 

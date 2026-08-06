@@ -1,7 +1,7 @@
 import React, { useId } from 'react';
 
-/** Laurel-wreath master badge */
-const MasterBadge: React.FC<{ className?: string }> = ({ className }) => {
+/** Master star used as brand mark between title words */
+const MasterStar: React.FC<{ className?: string }> = ({ className }) => {
   const gid = useId().replace(/:/g, '');
   return (
     <svg
@@ -11,18 +11,18 @@ const MasterBadge: React.FC<{ className?: string }> = ({ className }) => {
       className={className}
       aria-hidden="true"
     >
-      <circle cx="28" cy="28" r="24" fill={`url(#${gid})`} stroke="#b45309" strokeWidth="2" />
       <path
-        d="M28 12 L32 22 L42 22 L34 28 L37 38 L28 32 L19 38 L22 28 L14 22 L24 22 Z"
-        fill="#fde68a"
+        d="M28 6 L33 20 L48 20 L36 29 L40 44 L28 35 L16 44 L20 29 L8 20 L23 20 Z"
+        fill={`url(#${gid})`}
         stroke="#92400e"
-        strokeWidth="1.2"
+        strokeWidth="1.4"
         strokeLinejoin="round"
       />
       <defs>
-        <linearGradient id={gid} x1="8" y1="8" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#1e293b" />
-          <stop offset="1" stopColor="#0f172a" />
+        <linearGradient id={gid} x1="8" y1="6" x2="48" y2="44" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#fde68a" />
+          <stop offset="0.55" stopColor="#f59e0b" />
+          <stop offset="1" stopColor="#b45309" />
         </linearGradient>
       </defs>
     </svg>
@@ -31,28 +31,45 @@ const MasterBadge: React.FC<{ className?: string }> = ({ className }) => {
 
 interface BrandLogoProps {
   compact?: boolean;
+  /** Single-line title for the app header */
+  header?: boolean;
 }
 
-export const BrandLogo: React.FC<BrandLogoProps> = ({ compact = false }) => {
+export const BrandLogo: React.FC<BrandLogoProps> = ({ compact = false, header = false }) => {
+  if (header) {
+    return (
+      <h1
+        className="w-full flex items-center justify-center gap-2 sm:gap-2.5 leading-none text-center"
+        aria-label="Maestros del Sudoku"
+      >
+        <span className="text-[0.95rem] sm:text-lg font-black tracking-[0.18em] text-amber-300 uppercase drop-shadow-sm">
+          Maestros
+        </span>
+        <MasterStar className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 drop-shadow" />
+        <span className="text-[0.95rem] sm:text-lg font-black tracking-[0.14em] text-white uppercase drop-shadow-sm">
+          del Sudoku
+        </span>
+      </h1>
+    );
+  }
+
   if (compact) {
     return (
-      <div className="min-w-0 leading-none flex items-center gap-2" aria-label="Maestros del Sudoku">
-        <MasterBadge className="w-8 h-8 shrink-0" />
-        <div>
-          <div className="text-[9px] font-bold tracking-[0.22em] text-amber-300/90 uppercase">
-            Maestros
-          </div>
-          <div className="text-sm font-black tracking-tight text-white leading-none">
-            del Sudoku
-          </div>
-        </div>
+      <div className="min-w-0 leading-none flex items-center gap-1.5" aria-label="Maestros del Sudoku">
+        <span className="text-[10px] font-black tracking-[0.16em] text-amber-300 uppercase">
+          Maestros
+        </span>
+        <MasterStar className="w-4 h-4 shrink-0" />
+        <span className="text-[10px] font-black tracking-[0.12em] text-white uppercase">
+          del Sudoku
+        </span>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col items-center text-center" aria-label="Maestros del Sudoku">
-      <MasterBadge className="w-14 h-14 sm:w-16 sm:h-16 mb-2" />
+      <MasterStar className="w-14 h-14 sm:w-16 sm:h-16 mb-2" />
       <span className="text-xs font-bold tracking-[0.35em] text-amber-300/90 uppercase">
         Maestros
       </span>

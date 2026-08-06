@@ -16,7 +16,7 @@ export const PuzzleGrid: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-4 space-y-4 pb-20">
+    <div className="w-full max-w-md mx-auto p-4 space-y-4 pb-2">
       {/* Navigation Header */}
       <div className="flex items-center justify-between">
         <button

@@ -82,7 +82,7 @@ export function calculateStars(timeSeconds: number, mistakes: number, hintsUsed:
 }
 
 export const PUZZLES_PER_LEVEL = 20;
-export const LEVEL_COUNT = 10;
+export const LEVEL_COUNT = 40;
 
 // Expand an 81-character row-major string into a 9x9 grid.
 function decodeGrid(digits: string): number[][] {

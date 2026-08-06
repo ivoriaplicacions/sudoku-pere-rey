@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { GameProvider, useGame } from './context/GameContext';
 import { themes } from './data/themes';
 import { HeaderBar } from './components/navigation/HeaderBar';
+import { BottomBar } from './components/navigation/BottomBar';
 import { LevelGrid } from './components/navigation/LevelGrid';
 import { PuzzleGrid } from './components/navigation/PuzzleGrid';
 import { SudokuBoard } from './components/game/SudokuBoard';
@@ -85,13 +86,13 @@ const MainApp: React.FC = () => {
       <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-0 pointer-events-none" />
 
       <div className="relative z-10 flex flex-col min-h-screen w-full">
-        <HeaderBar
-          onOpenSettings={() => setIsSettingsOpen(true)}
-          onOpenAchievements={() => setIsAchievementsOpen(true)}
-          onOpenStore={() => setIsStoreOpen(true)}
-        />
+        <HeaderBar />
 
-        <main className="flex-1 flex flex-col justify-center items-center p-2 sm:p-4">
+        <main
+          className={`flex-1 flex flex-col justify-center items-center p-2 sm:p-4 ${
+            view !== 'game' ? 'app-main-pad' : 'pb-4'
+          }`}
+        >
           {view === 'level-select' && <LevelGrid />}
 
           {view === 'puzzle-select' && <PuzzleGrid />}
@@ -141,6 +142,14 @@ const MainApp: React.FC = () => {
             </div>
           )}
         </main>
+
+        {view !== 'game' && (
+          <BottomBar
+            onOpenSettings={() => setIsSettingsOpen(true)}
+            onOpenAchievements={() => setIsAchievementsOpen(true)}
+            onOpenStore={() => setIsStoreOpen(true)}
+          />
+        )}
       </div>
 
       <VictoryModal />

@@ -3,6 +3,7 @@ import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { localized } from '../../i18n/localized';
 import { CONTENT_PACKS, formatPrice } from '../../data/packs';
+import { loadStoreProducts } from '../../services/monetization';
 import { X, ShoppingBag, CheckCircle, Lock, Clock } from 'lucide-react';
 
 interface StoreModalProps {
@@ -13,6 +14,21 @@ interface StoreModalProps {
 export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
   const { language, ownedPacks, purchasePack, restorePurchases } = useGame();
   const [busy, setBusy] = React.useState<string | null>(null);
+  const [storePrices, setStorePrices] = React.useState<Record<string, string>>({});
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    void (async () => {
+      const products = await loadStoreProducts();
+      const prices: Record<string, string> = {};
+      for (const pack of CONTENT_PACKS) {
+        if (pack.productId && products[pack.productId]?.priceString) {
+          prices[pack.id] = products[pack.productId].priceString!;
+        }
+      }
+      setStorePrices(prices);
+    })();
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -32,7 +48,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
         <button
           onClick={onClose}
           className="p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition"
-          aria-label="Tancar"
+          aria-label="Close"
         >
           <X className="w-5 h-5 text-white/80" />
         </button>
@@ -45,7 +61,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
 
         {CONTENT_PACKS.map((pack) => {
           const owned = ownedPacks.includes(pack.id) || pack.priceEur === 0;
-          const price = formatPrice(pack.priceEur, language);
+          const price = storePrices[pack.id] ?? formatPrice(pack.priceEur, language);
 
           return (
             <div
@@ -74,6 +90,9 @@ export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
                   <p className="text-xs text-white/60 mt-1">
                     {localized(pack.description, language)}
                   </p>
+                  {pack.productId && (
+                    <p className="text-[10px] text-white/35 mt-1 font-mono">{pack.productId}</p>
+                  )}
                 </div>
                 <div className="text-right shrink-0">
                   <div className="text-lg font-black text-amber-300">{price}</div>
