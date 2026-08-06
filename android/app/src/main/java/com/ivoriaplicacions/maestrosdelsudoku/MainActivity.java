@@ -1,4 +1,4 @@
-package com.antigravity.sudokumestre;
+package com.ivoriaplicacions.maestrosdelsudoku;
 
 import com.getcapacitor.BridgeActivity;
 

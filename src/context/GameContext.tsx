@@ -112,13 +112,41 @@ const defaultPlayerStats: PlayerStats = {
   unlockedAchievements: [],
 };
 
+function safeGetItem(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
 function loadLanguage(): Language {
-  const saved = localStorage.getItem(STORAGE_LANGUAGE_KEY);
+  const saved = safeGetItem(STORAGE_LANGUAGE_KEY);
   if (saved === 'ca' || saved === 'es' || saved === 'en') return saved;
   const browser = navigator.language.toLowerCase();
   if (browser.startsWith('ca')) return 'ca';
   if (browser.startsWith('es')) return 'es';
   return 'en';
+}
+
+function loadProgressMap(): Record<string, PuzzleProgress> {
+  const saved = safeGetItem(STORAGE_PROGRESS_KEY);
+  if (!saved) return {};
+  try {
+    return JSON.parse(saved);
+  } catch {
+    return {};
+  }
+}
+
+function loadPlayerStats(): PlayerStats {
+  const saved = safeGetItem(STORAGE_STATS_KEY);
+  if (!saved) return defaultPlayerStats;
+  try {
+    return JSON.parse(saved);
+  } catch {
+    return defaultPlayerStats;
+  }
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -133,15 +161,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [ownedPacks, setOwnedPacks] = useState<string[]>(() => getOwnedPacks());
 
   const [allPuzzles] = useState<Puzzle[]>(() => generateAllPuzzles());
-  const [progressMap, setProgressMap] = useState<Record<string, PuzzleProgress>>(() => {
-    const saved = localStorage.getItem(STORAGE_PROGRESS_KEY);
-    return saved ? JSON.parse(saved) : {};
-  });
+  const [progressMap, setProgressMap] = useState<Record<string, PuzzleProgress>>(loadProgressMap);
 
-  const [playerStats, setPlayerStats] = useState<PlayerStats>(() => {
-    const saved = localStorage.getItem(STORAGE_STATS_KEY);
-    return saved ? JSON.parse(saved) : defaultPlayerStats;
-  });
+  const [playerStats, setPlayerStats] = useState<PlayerStats>(loadPlayerStats);
 
   const [board, setBoard] = useState<CellState[][]>([]);
   const [selectedCell, setSelectedCell] = useState<CellPosition | null>(null);
@@ -155,8 +177,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [hapticsEnabled, setHapticsEnabledState] = useState<boolean>(() => {
-    const saved = localStorage.getItem(STORAGE_HAPTICS_KEY);
-    return saved !== 'false';
+    return safeGetItem(STORAGE_HAPTICS_KEY) !== 'false';
   });
   const [autoCheckErrors, setAutoCheckErrors] = useState<boolean>(true);
 
