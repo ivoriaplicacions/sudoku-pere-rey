@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrandLogo } from './BrandLogo';
+import { useGame } from '../context/GameContext';
+import { getTranslation } from '../i18n/translations';
 
 interface IntroSplashProps {
   onFinished: () => void;
@@ -10,8 +12,8 @@ const PAD = 10;
 const CELL = (BOARD - PAD * 2) / 9;
 const INNER = BOARD - PAD * 2;
 
-/** Cinematic intro paced for older players (~7.8s). Tap to skip. */
 export const IntroSplash: React.FC<IntroSplashProps> = ({ onFinished }) => {
+  const { language } = useGame();
   const [phase, setPhase] = useState<'play' | 'exit'>('play');
 
   useEffect(() => {
@@ -28,7 +30,6 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onFinished }) => {
     window.setTimeout(onFinished, 500);
   };
 
-  // Numbers sit in the four corners + centre of the decorative board.
   const sampleNumbers: Array<[number, number, string]> = [
     [0, 0, '1'],
     [8, 0, '7'],
@@ -44,7 +45,7 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onFinished }) => {
       className={`intro-splash fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden border-0 cursor-pointer ${
         phase === 'exit' ? 'intro-splash--exit' : ''
       }`}
-      aria-label="Entrar a Sudoku Pere Rey"
+      aria-label={getTranslation(language, 'appName')}
     >
       <div className="intro-splash__bg absolute inset-0" />
       <div className="intro-splash__glow absolute inset-0 pointer-events-none" />
@@ -56,11 +57,9 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onFinished }) => {
         ))}
       </div>
 
-      {/* Stack: grid above, brand below — no overlap */}
       <div className="relative z-10 flex flex-col items-center px-6 -mt-6">
         <div className="intro-splash__grid pointer-events-none" aria-hidden>
           <svg viewBox={`0 0 ${BOARD} ${BOARD}`} className="w-56 h-56 sm:w-72 sm:h-72 overflow-visible">
-            {/* Solid frame always visible — animation never leaves the bottom open */}
             <rect
               x={PAD}
               y={PAD}
@@ -141,13 +140,13 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onFinished }) => {
         <div className="intro-splash__brand mt-5">
           <BrandLogo />
           <p className="intro-splash__tagline mt-5 text-base sm:text-lg font-semibold tracking-[0.2em] uppercase text-amber-100/85">
-            El teu regne de lògica
+            {getTranslation(language, 'introTagline')}
           </p>
         </div>
       </div>
 
       <span className="intro-splash__hint absolute bottom-12 text-sm tracking-widest uppercase text-white/50 font-medium">
-        Toca per continuar
+        {getTranslation(language, 'tapToContinue')}
       </span>
     </button>
   );

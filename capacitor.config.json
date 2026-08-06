@@ -1,6 +1,6 @@
 {
-  "appId": "com.antigravity.sudokumestre",
-  "appName": "Sudoku Pere Rey",
+  "appId": "com.ivoriaplicacions.maestrosdelsudoku",
+  "appName": "Maestros del Sudoku",
   "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {

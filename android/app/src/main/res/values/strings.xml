@@ -1,7 +1,5 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Sudoku Pere Rey</string>
-    <string name="title_activity_main">Sudoku Pere Rey</string>
-    <string name="package_name">com.antigravity.sudokumestre</string>
-    <string name="custom_url_scheme">com.antigravity.sudokumestre</string>
+    <string name="app_name">Maestros del Sudoku</string>
+    <string name="title_activity_main">Maestros del Sudoku</string>
 </resources>

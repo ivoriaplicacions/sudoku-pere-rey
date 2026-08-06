@@ -1,22 +1,29 @@
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
-import { Settings, Flame, Trophy, Star } from 'lucide-react';
+import { Settings, Flame, Trophy, Star, ShoppingBag } from 'lucide-react';
 import { BrandLogo } from '../BrandLogo';
 
 interface HeaderBarProps {
   onOpenSettings: () => void;
   onOpenAchievements: () => void;
+  onOpenStore: () => void;
 }
 
-export const HeaderBar: React.FC<HeaderBarProps> = ({ onOpenSettings, onOpenAchievements }) => {
+export const HeaderBar: React.FC<HeaderBarProps> = ({
+  onOpenSettings,
+  onOpenAchievements,
+  onOpenStore,
+}) => {
   const { language, playerStats } = useGame();
 
   const dayLabel =
     playerStats.currentStreak === 1
       ? language === 'ca'
         ? 'dia'
-        : 'día'
+        : language === 'es'
+          ? 'día'
+          : 'day'
       : getTranslation(language, 'days');
 
   return (
@@ -26,7 +33,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onOpenSettings, onOpenAchi
       </div>
 
       <div className="flex items-center gap-1.5 shrink-0">
-        {/* Streak — compact pill, same language as the stars chip */}
         <div
           className="flex items-center gap-1.5 h-9 pl-1.5 pr-2.5 rounded-xl bg-orange-500/20 border border-orange-400/40"
           title={`${getTranslation(language, 'streak')}: ${playerStats.currentStreak} ${dayLabel}`}
@@ -48,6 +54,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onOpenSettings, onOpenAchi
             {playerStats.totalStars}
           </span>
         </div>
+
+        <button
+          onClick={onOpenStore}
+          className="h-9 w-9 flex items-center justify-center rounded-xl bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 transition border border-amber-400/30"
+          aria-label={getTranslation(language, 'store')}
+        >
+          <ShoppingBag className="w-4 h-4 text-amber-300" />
+        </button>
 
         <button
           onClick={onOpenAchievements}

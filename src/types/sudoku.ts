@@ -40,11 +40,11 @@ export interface Puzzle {
 }
 
 export interface LevelInfo {
-  level: number; // 1 to 10
-  name: { ca: string; es: string };
+  level: number;
+  name: { ca: string; es: string; en?: string };
   givenRange: string;
   icon: string;
-  description: { ca: string; es: string };
+  description: { ca: string; es: string; en?: string };
 }
 
 export interface CellPosition {

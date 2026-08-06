@@ -11,22 +11,8 @@
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <text
-    x="256"
-    y="230"
-    text-anchor="middle"
-    font-family="Georgia, 'Times New Roman', serif"
-    font-weight="700"
-    font-size="118"
-    fill="url(#gold)"
-    letter-spacing="8"
-  >PERE</text>
-  <g transform="translate(156 268)">
-    <path d="M20 88 L20 48 L50 72 L100 20 L150 72 L180 48 L180 88 Z" fill="url(#gold)" stroke="#92400e" stroke-width="5" stroke-linejoin="round"/>
-    <rect x="14" y="88" width="172" height="28" rx="10" fill="url(#gold)" stroke="#92400e" stroke-width="5"/>
-    <circle cx="100" cy="18" r="10" fill="#fbbf24" stroke="#92400e" stroke-width="3"/>
-    <circle cx="20" cy="46" r="8" fill="#fbbf24" stroke="#92400e" stroke-width="3"/>
-    <circle cx="180" cy="46" r="8" fill="#fbbf24" stroke="#92400e" stroke-width="3"/>
-    <circle cx="100" cy="68" r="9" fill="#dc2626"/>
-  </g>
+  <circle cx="256" cy="200" r="88" fill="#0f172a" stroke="url(#gold)" stroke-width="8"/>
+  <path d="M256 148 L268 188 L310 188 L276 212 L288 252 L256 228 L224 252 L236 212 L202 188 L244 188 Z" fill="url(#gold)" stroke="#92400e" stroke-width="4" stroke-linejoin="round"/>
+  <text x="256" y="340" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="52" fill="url(#gold)" letter-spacing="4">MAESTROS</text>
+  <text x="256" y="400" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="44" fill="#f8fafc" letter-spacing="2">del Sudoku</text>
 </svg>

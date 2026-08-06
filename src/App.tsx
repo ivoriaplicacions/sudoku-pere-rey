@@ -9,6 +9,7 @@ import { NumberKeypad } from './components/game/NumberKeypad';
 import { VictoryModal } from './components/modals/VictoryModal';
 import { AchievementsModal } from './components/modals/AchievementsModal';
 import { SettingsModal } from './components/modals/SettingsModal';
+import { StoreModal } from './components/modals/StoreModal';
 import { IntroSplash } from './components/IntroSplash';
 import { getTranslation } from './i18n/translations';
 import { ArrowLeft, Clock, AlertTriangle } from 'lucide-react';
@@ -28,6 +29,7 @@ const MainApp: React.FC = () => {
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
+  const [isStoreOpen, setIsStoreOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [introKey, setIntroKey] = useState(0);
   const wasHiddenRef = useRef(false);
@@ -86,6 +88,7 @@ const MainApp: React.FC = () => {
         <HeaderBar
           onOpenSettings={() => setIsSettingsOpen(true)}
           onOpenAchievements={() => setIsAchievementsOpen(true)}
+          onOpenStore={() => setIsStoreOpen(true)}
         />
 
         <main className="flex-1 flex flex-col justify-center items-center p-2 sm:p-4">
@@ -120,7 +123,9 @@ const MainApp: React.FC = () => {
               {isPaused ? (
                 <div className="w-full aspect-square bg-black/80 backdrop-blur-xl rounded-3xl border border-white/20 flex flex-col items-center justify-center space-y-4 text-center p-6">
                   <span className="text-4xl">⏸️</span>
-                  <h3 className="text-2xl font-black text-white">Joc en Pausa</h3>
+                  <h3 className="text-2xl font-black text-white">
+                    {getTranslation(language, 'gamePaused')}
+                  </h3>
                   <button
                     onClick={() => setIsPaused(false)}
                     className="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/30 hover:brightness-110 active:scale-95 transition"
@@ -141,6 +146,7 @@ const MainApp: React.FC = () => {
       <VictoryModal />
       <AchievementsModal isOpen={isAchievementsOpen} onClose={() => setIsAchievementsOpen(false)} />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <StoreModal isOpen={isStoreOpen} onClose={() => setIsStoreOpen(false)} />
     </div>
   );
 };

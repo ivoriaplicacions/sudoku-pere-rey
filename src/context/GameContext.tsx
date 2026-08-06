@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type {
   Language,
   ThemeId,
@@ -14,6 +14,19 @@ import {
   calculateStars,
 } from '../utils/sudokuLogic';
 import { audioSynth } from '../utils/audio';
+import {
+  getOwnedPacks,
+  isLevelAccessible,
+  purchasePack as purchasePackService,
+  restorePurchases as restorePurchasesService,
+} from '../services/monetization';
+import {
+  hapticTap,
+  hapticSelect,
+  hapticError,
+  hapticSuccess,
+  setHapticsEnabled,
+} from '../utils/haptics';
 import confetti from 'canvas-confetti';
 
 interface GameContextType {
@@ -23,7 +36,7 @@ interface GameContextType {
   setTheme: (theme: ThemeId) => void;
   view: 'level-select' | 'puzzle-select' | 'game';
   setView: (view: 'level-select' | 'puzzle-select' | 'game') => void;
-  
+
   selectedLevel: number;
   setSelectedLevel: (lvl: number) => void;
   selectedPuzzle: Puzzle | null;
@@ -32,8 +45,11 @@ interface GameContextType {
   puzzles: Puzzle[];
   progressMap: Record<string, PuzzleProgress>;
   playerStats: PlayerStats;
+  ownedPacks: string[];
+  purchasePack: (packId: string) => Promise<void>;
+  restorePurchases: () => Promise<void>;
+  canAccessLevel: (level: number) => boolean;
 
-  // Active game state
   board: CellState[][];
   selectedCell: CellPosition | null;
   setSelectedCell: (pos: CellPosition | null) => void;
@@ -45,14 +61,14 @@ interface GameContextType {
   mistakes: number;
   hintsUsed: number;
   isCompleted: boolean;
-  
-  // Audio & Settings
+
   soundEnabled: boolean;
   setSoundEnabled: (val: boolean) => void;
+  hapticsEnabled: boolean;
+  setHapticsEnabled: (val: boolean) => void;
   autoCheckErrors: boolean;
   setAutoCheckErrors: (val: boolean) => void;
 
-  // Actions
   startPuzzle: (puzzle: Puzzle) => void;
   inputNumber: (num: number) => void;
   eraseCell: () => void;
@@ -61,13 +77,14 @@ interface GameContextType {
   restartPuzzle: () => void;
   exitToMenu: () => void;
 
-  // Victory modal state
   victoryData: { stars: number; xpEarned: number; time: number } | null;
   closeVictoryModal: () => void;
 }
 
 const STORAGE_PROGRESS_KEY = 'sudoku_master_progress_v1';
 const STORAGE_STATS_KEY = 'sudoku_master_stats_v1';
+const STORAGE_LANGUAGE_KEY = 'maestros_language_v1';
+const STORAGE_HAPTICS_KEY = 'maestros_haptics_v1';
 
 const defaultPlayerStats: PlayerStats = {
   xp: 0,
@@ -95,15 +112,25 @@ const defaultPlayerStats: PlayerStats = {
   unlockedAchievements: [],
 };
 
+function loadLanguage(): Language {
+  const saved = localStorage.getItem(STORAGE_LANGUAGE_KEY);
+  if (saved === 'ca' || saved === 'es' || saved === 'en') return saved;
+  const browser = navigator.language.toLowerCase();
+  if (browser.startsWith('ca')) return 'ca';
+  if (browser.startsWith('es')) return 'es';
+  return 'en';
+}
+
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('ca');
+  const [language, setLanguageState] = useState<Language>(loadLanguage);
   const [theme, setTheme] = useState<ThemeId>('zen');
   const [view, setView] = useState<'level-select' | 'puzzle-select' | 'game'>('level-select');
 
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
   const [selectedPuzzle, setSelectedPuzzle] = useState<Puzzle | null>(null);
+  const [ownedPacks, setOwnedPacks] = useState<string[]>(() => getOwnedPacks());
 
   const [allPuzzles] = useState<Puzzle[]>(() => generateAllPuzzles());
   const [progressMap, setProgressMap] = useState<Record<string, PuzzleProgress>>(() => {
@@ -116,7 +143,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return saved ? JSON.parse(saved) : defaultPlayerStats;
   });
 
-  // Active game state
   const [board, setBoard] = useState<CellState[][]>([]);
   const [selectedCell, setSelectedCell] = useState<CellPosition | null>(null);
   const [isNotesMode, setIsNotesMode] = useState<boolean>(false);
@@ -125,21 +151,54 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [mistakes, setMistakes] = useState<number>(0);
   const [hintsUsed, setHintsUsed] = useState<number>(0);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
-  const [history, setHistory] = useState<MoveHistory[]>([]);
-  
-  // Sound & Settings
+  const [history] = useState<MoveHistory[]>([]);
+
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [hapticsEnabled, setHapticsEnabledState] = useState<boolean>(() => {
+    const saved = localStorage.getItem(STORAGE_HAPTICS_KEY);
+    return saved !== 'false';
+  });
   const [autoCheckErrors, setAutoCheckErrors] = useState<boolean>(true);
 
-  // Victory modal
   const [victoryData, setVictoryData] = useState<{ stars: number; xpEarned: number; time: number } | null>(null);
 
-  // Sync sound setting
+  const setLanguage = useCallback((lang: Language) => {
+    setLanguageState(lang);
+    localStorage.setItem(STORAGE_LANGUAGE_KEY, lang);
+  }, []);
+
+  const setHapticsEnabledSetting = useCallback((val: boolean) => {
+    setHapticsEnabledState(val);
+    setHapticsEnabled(val);
+    localStorage.setItem(STORAGE_HAPTICS_KEY, String(val));
+  }, []);
+
+  const canAccessLevel = (level: number) => isLevelAccessible(level);
+
+  const purchasePack = useCallback(async (packId: string) => {
+    const result = await purchasePackService(packId);
+    if (result.ok) {
+      setOwnedPacks(getOwnedPacks());
+      hapticSuccess();
+    } else {
+      hapticError();
+    }
+  }, []);
+
+  const restorePurchases = useCallback(async () => {
+    const restored = await restorePurchasesService();
+    setOwnedPacks(restored);
+    hapticSuccess();
+  }, []);
+
   useEffect(() => {
     audioSynth.setEnabled(soundEnabled);
   }, [soundEnabled]);
 
-  // Save progress & stats to localStorage
+  useEffect(() => {
+    setHapticsEnabled(hapticsEnabled);
+  }, [hapticsEnabled]);
+
   useEffect(() => {
     localStorage.setItem(STORAGE_PROGRESS_KEY, JSON.stringify(progressMap));
   }, [progressMap]);
@@ -148,12 +207,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem(STORAGE_STATS_KEY, JSON.stringify(playerStats));
   }, [playerStats]);
 
-  // Timer loop
   useEffect(() => {
-    let interval: any = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
     if (view === 'game' && !isPaused && !isCompleted && board.length > 0) {
       interval = setInterval(() => {
-        setTimerSeconds(prev => prev + 1);
+        setTimerSeconds((prev) => prev + 1);
       }, 1000);
     }
     return () => {
@@ -161,12 +219,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [view, isPaused, isCompleted, board]);
 
-  // Start a new puzzle
   const startPuzzle = (puzzle: Puzzle) => {
+    if (!isLevelAccessible(puzzle.level)) return;
+
     setSelectedPuzzle(puzzle);
     setSelectedLevel(puzzle.level);
-    
-    // Initialize 9x9 board state
+
     const newBoard: CellState[][] = puzzle.initialGrid.map((row, r) =>
       row.map((val, c) => ({
         row: r,
@@ -176,7 +234,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         notes: new Set<number>(),
         isError: false,
         isHint: false,
-      }))
+      })),
     );
 
     setBoard(newBoard);
@@ -187,15 +245,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setMistakes(0);
     setHintsUsed(0);
     setIsCompleted(false);
-    setHistory([]);
     setVictoryData(null);
     setView('game');
+    hapticSelect();
   };
 
-  // Check board victory condition
   const checkVictory = (currentBoard: CellState[][]) => {
     if (!selectedPuzzle) return;
-    
+
     for (let r = 0; r < 9; r++) {
       for (let c = 0; c < 9; c++) {
         if (currentBoard[r][c].value !== selectedPuzzle.solutionGrid[r][c]) {
@@ -204,24 +261,23 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
-    // Victory!
     setIsCompleted(true);
     const stars = calculateStars(timerSeconds, mistakes, hintsUsed);
     const baseXP = selectedPuzzle.level * 50 + 100;
     const xpEarned = baseXP + stars * 25;
 
-    // Trigger celebration effects
     audioSynth.playVictory();
+    hapticSuccess();
     confetti({
       particleCount: 120,
       spread: 70,
       origin: { y: 0.6 },
     });
 
-    // Update progress map
     const puzzleId = selectedPuzzle.id;
     const prevProg = progressMap[puzzleId];
-    const bestTime = prevProg && prevProg.completed ? Math.min(prevProg.bestTime, timerSeconds) : timerSeconds;
+    const bestTime =
+      prevProg && prevProg.completed ? Math.min(prevProg.bestTime, timerSeconds) : timerSeconds;
     const bestStars = prevProg ? Math.max(prevProg.stars, stars) : stars;
 
     const newProgressMap = {
@@ -239,11 +295,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     setProgressMap(newProgressMap);
 
-    // Calculate total stars
     const totalStars = Object.values(newProgressMap).reduce((sum, p) => sum + p.stars, 0);
 
-    // Update player stats & level
-    setPlayerStats(prev => {
+    setPlayerStats((prev) => {
       const newXP = prev.xp + xpEarned;
       const newPlayerLevel = Math.floor(newXP / 500) + 1;
       return {
@@ -259,19 +313,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return true;
   };
 
-  // Input a number (1-9) into selected cell
   const inputNumber = (num: number) => {
     if (!selectedCell || isCompleted || isPaused || board.length === 0) return;
     const { row, col } = selectedCell;
     const cell = board[row][col];
 
-    if (cell.initialValue !== 0) return; // Cannot edit initial given cells
+    if (cell.initialValue !== 0) return;
 
-    const newBoard = board.map(r => r.map(c => ({ ...c, notes: new Set(c.notes) })));
+    hapticTap();
+    const newBoard = board.map((r) => r.map((c) => ({ ...c, notes: new Set(c.notes) })));
     const target = newBoard[row][col];
 
     if (isNotesMode) {
-      // Toggle note candidate
       audioSynth.playNote();
       const newNotes = new Set(target.notes);
       if (newNotes.has(num)) {
@@ -286,9 +339,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    // Direct value placement
     if (target.value === num) {
-      // Clear if tapping same number
       audioSynth.playErase();
       target.value = 0;
       target.isError = false;
@@ -296,7 +347,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    // Check validity against solution grid
     const isCorrect = selectedPuzzle ? selectedPuzzle.solutionGrid[row][col] === num : true;
 
     target.value = num;
@@ -304,41 +354,38 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (autoCheckErrors && !isCorrect) {
       audioSynth.playError();
+      hapticError();
       target.isError = true;
-      setMistakes(prev => prev + 1);
+      setMistakes((prev) => prev + 1);
     } else {
       audioSynth.playPlaceNumber(num);
       target.isError = false;
     }
 
     setBoard(newBoard);
-
-    // Check if fully solved
     checkVictory(newBoard);
   };
 
-  // Erase active cell
   const eraseCell = () => {
     if (!selectedCell || isCompleted || isPaused) return;
     const { row, col } = selectedCell;
     const cell = board[row][col];
     if (cell.initialValue !== 0) return;
 
+    hapticTap();
     audioSynth.playErase();
-    const newBoard = board.map(r => r.map(c => ({ ...c, notes: new Set(c.notes) })));
+    const newBoard = board.map((r) => r.map((c) => ({ ...c, notes: new Set(c.notes) })));
     newBoard[row][col].value = 0;
     newBoard[row][col].notes.clear();
     newBoard[row][col].isError = false;
     setBoard(newBoard);
   };
 
-  // Provide a hint for the active or first empty cell
   const giveHint = () => {
     if (isCompleted || isPaused || !selectedPuzzle) return;
-    
+
     let targetPos = selectedCell;
     if (!targetPos || board[targetPos.row][targetPos.col].value !== 0) {
-      // Find first empty cell
       for (let r = 0; r < 9; r++) {
         for (let c = 0; c < 9; c++) {
           if (board[r][c].value === 0) {
@@ -352,28 +399,28 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (!targetPos) return;
 
+    hapticSelect();
     audioSynth.playHint();
     const { row, col } = targetPos;
     const correctVal = selectedPuzzle.solutionGrid[row][col];
 
-    const newBoard = board.map(r => r.map(c => ({ ...c, notes: new Set(c.notes) })));
+    const newBoard = board.map((r) => r.map((c) => ({ ...c, notes: new Set(c.notes) })));
     newBoard[row][col].value = correctVal;
     newBoard[row][col].notes.clear();
     newBoard[row][col].isError = false;
     newBoard[row][col].isHint = true;
 
-    setHintsUsed(prev => prev + 1);
+    setHintsUsed((prev) => prev + 1);
     setSelectedCell(targetPos);
     setBoard(newBoard);
 
     checkVictory(newBoard);
   };
 
-  // Undo last action
   const undoMove = () => {
     if (history.length === 0 || isCompleted || isPaused) return;
+    hapticTap();
     audioSynth.playErase();
-    // Implementation helper if history tracked
   };
 
   const restartPuzzle = () => {
@@ -407,6 +454,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         puzzles: allPuzzles,
         progressMap,
         playerStats,
+        ownedPacks,
+        purchasePack,
+        restorePurchases,
+        canAccessLevel,
         board,
         selectedCell,
         setSelectedCell,
@@ -420,6 +471,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isCompleted,
         soundEnabled,
         setSoundEnabled,
+        hapticsEnabled,
+        setHapticsEnabled: setHapticsEnabledSetting,
         autoCheckErrors,
         setAutoCheckErrors,
         startPuzzle,

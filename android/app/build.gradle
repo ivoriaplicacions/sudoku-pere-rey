@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.antigravity.sudokumestre"
+    namespace = "com.ivoriaplicacions.maestrosdelsudoku"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.antigravity.sudokumestre"
+        applicationId "com.ivoriaplicacions.maestrosdelsudoku"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
