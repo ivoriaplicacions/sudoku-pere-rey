@@ -11,13 +11,22 @@ interface StoreModalProps {
   onClose: () => void;
 }
 
+function purchaseErrorKey(code?: string): string {
+  if (code === 'billing_unavailable') return 'billingUnavailable';
+  if (code === 'restore_failed') return 'restoreFailed';
+  if (code === 'cancelled') return 'purchaseCancelled';
+  return 'purchaseFailed';
+}
+
 export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
   const { language, ownedPacks, purchasePack, restorePurchases } = useGame();
   const [busy, setBusy] = React.useState<string | null>(null);
   const [storePrices, setStorePrices] = React.useState<Record<string, string>>({});
+  const [message, setMessage] = React.useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
 
   React.useEffect(() => {
     if (!isOpen) return;
+    setMessage(null);
     void (async () => {
       const products = await loadStoreProducts();
       const prices: Record<string, string> = {};
@@ -34,8 +43,24 @@ export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
 
   const handleBuy = async (packId: string) => {
     setBusy(packId);
-    await purchasePack(packId);
+    setMessage(null);
+    const result = await purchasePack(packId);
     setBusy(null);
+    if (result.ok) return;
+    if (result.error === 'cancelled') return;
+    setMessage({ kind: 'error', text: getTranslation(language, purchaseErrorKey(result.error)) });
+  };
+
+  const handleRestore = async () => {
+    setBusy('restore');
+    setMessage(null);
+    const result = await restorePurchases();
+    setBusy(null);
+    if (result.ok) {
+      setMessage({ kind: 'ok', text: getTranslation(language, 'restoreOk') });
+      return;
+    }
+    setMessage({ kind: 'error', text: getTranslation(language, purchaseErrorKey(result.error)) });
   };
 
   return (
@@ -58,6 +83,18 @@ export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
         <p className="text-sm text-white/70 text-center px-2">
           {getTranslation(language, 'storeSubtitle')}
         </p>
+
+        {message && (
+          <p
+            className={`text-center text-xs font-bold px-3 py-2 rounded-xl ${
+              message.kind === 'ok'
+                ? 'bg-emerald-500/15 text-emerald-300'
+                : 'bg-rose-500/15 text-rose-300'
+            }`}
+          >
+            {message.text}
+          </p>
+        )}
 
         {CONTENT_PACKS.map((pack) => {
           const owned = ownedPacks.includes(pack.id) || pack.priceEur === 0;
@@ -90,9 +127,6 @@ export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
                   <p className="text-xs text-white/60 mt-1">
                     {localized(pack.description, language)}
                   </p>
-                  {pack.productId && (
-                    <p className="text-[10px] text-white/35 mt-1 font-mono">{pack.productId}</p>
-                  )}
                 </div>
                 <div className="text-right shrink-0">
                   <div className="text-lg font-black text-amber-300">{price}</div>
@@ -118,7 +152,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
                   >
                     <Lock className="w-4 h-4" />
                     {busy === pack.id
-                      ? '...'
+                      ? getTranslation(language, 'pleaseWait')
                       : `${getTranslation(language, 'buy')} · ${price}`}
                   </button>
                 )}
@@ -128,10 +162,13 @@ export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
         })}
 
         <button
-          onClick={() => restorePurchases()}
-          className="w-full py-3 rounded-xl border border-white/15 text-sm font-bold text-white/80 hover:bg-white/5 transition"
+          disabled={busy === 'restore'}
+          onClick={() => void handleRestore()}
+          className="w-full py-3 rounded-xl border border-white/15 text-sm font-bold text-white/80 hover:bg-white/5 transition disabled:opacity-60"
         >
-          {getTranslation(language, 'restorePurchases')}
+          {busy === 'restore'
+            ? getTranslation(language, 'pleaseWait')
+            : getTranslation(language, 'restorePurchases')}
         </button>
       </div>
     </div>

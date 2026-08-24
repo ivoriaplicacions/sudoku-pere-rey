@@ -5,16 +5,16 @@ Sudoku gamificat per **Ivori Aplicacions**. Aplicació **multiplataforma**: mate
 ## Característiques
 
 - **4 packs × 200 sudokus = 800 puzzles** verificats (solució única)
-- **Pack 1 gratuït**; Packs II–IV a **0,99 €** via **Google Play Billing**
+- **Pack 1 gratuït**; Packs II–IV a **0,99 €** via **Google Play Billing / App Store**
 - Estrelles, XP, ratxa diària i assoliments
 - 14 temes visuals
 - **Multilenguatge**: català, castellà i anglès
 - **Vibració** (hàptics) en dispositius mòbils
 - Intro animada i progrés guardat localment
 
-## Monetització (Google Play)
+## Monetización (Google Play + App Store)
 
-Productes **managed / one-time** a crear a Google Play Console (preu 0,99 €):
+Mateixos productes **one-time / non-consumable** a Google Play Console i App Store Connect (preu 0,99 €):
 
 | Pack | Product ID | Nivells |
 |------|------------|---------|
@@ -23,9 +23,11 @@ Productes **managed / one-time** a crear a Google Play Console (preu 0,99 €):
 | Pack 3 | `maestros_pack_3` | 21–30 |
 | Pack 4 | `maestros_pack_4` | 31–40 |
 
-Plugin: `@capgo/native-purchases` (Google Play Billing 7.x). En web / sense billing es simula la compra per a desenvolupament.
+Plugin: `@capgo/native-purchases` (Google Play Billing + StoreKit). En web / sense billing es simula la compra per a desenvolupament.
 
-Les compres reals només funcionen amb una build signada publicada a Play (p. ex. internal testing) i els productes creats a la consola.
+Les compres reals només funcionen amb builds signades (Play internal testing / TestFlight o sandbox) i els productes creats a les respectives consoles.
+
+**Bundle / application ID (Android + iOS):** `com.ivoriaplicacions.maestrosdelsudoku`
 
 ## Requisits (Windows)
 
@@ -60,6 +62,16 @@ npm run android:open
 ```
 
 APK: `android/app/build/outputs/apk/debug/app-debug.apk`
+
+
+## iOS (macOS + Xcode)
+
+```bash
+npm run cap:sync:ios
+npm run ios:open
+```
+
+Team de signatura: `6VQVGXVTKQ`. Bundle ID idèntic a Android.
 
 ## Repositori
 

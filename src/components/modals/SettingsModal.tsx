@@ -2,13 +2,16 @@ import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { localized } from '../../i18n/localized';
-import { themes } from '../../data/themes';
-import type { Language, ThemeId } from '../../types/sudoku';
-import { X, Palette, CheckCircle, Globe, Vibrate } from 'lucide-react';
+import { THEME_IDS, getTheme } from '../../data/themes';
+import type { Language } from '../../types/sudoku';
+import { APP_VERSION } from '../../version';
+import { X, Palette, CheckCircle, Globe, Vibrate, Volume2, Scale } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onReplayIntro?: () => void;
+  onOpenLegal?: () => void;
 }
 
 const LANGUAGES: { id: Language; labelKey: string }[] = [
@@ -17,7 +20,12 @@ const LANGUAGES: { id: Language; labelKey: string }[] = [
   { id: 'en', labelKey: 'english' },
 ];
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({
+  isOpen,
+  onClose,
+  onReplayIntro,
+  onOpenLegal,
+}) => {
   const {
     language,
     setLanguage,
@@ -27,6 +35,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     setAutoCheckErrors,
     hapticsEnabled,
     setHapticsEnabled,
+    soundEnabled,
+    setSoundEnabled,
   } = useGame();
 
   if (!isOpen) return null;
@@ -75,8 +85,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             {getTranslation(language, 'theme')}
           </label>
           <div className="grid grid-cols-2 gap-3">
-            {(Object.keys(themes) as ThemeId[]).map((themeKey) => {
-              const th = themes[themeKey];
+            {THEME_IDS.map((themeKey) => {
+              const th = getTheme(themeKey);
               const isSelected = theme === themeKey;
 
               return (
@@ -84,23 +94,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   key={themeKey}
                   onClick={() => setTheme(themeKey)}
                   className={`rounded-2xl border overflow-hidden text-left transition-all active:scale-[0.98] ${
-                    isSelected
-                      ? 'border-cyan-400 ring-2 ring-cyan-400 shadow-lg shadow-cyan-500/20'
-                      : 'border-white/10 hover:border-white/25'
+                    isSelected ? th.accentRing : 'border-white/10 hover:border-white/25'
                   }`}
                 >
-                  <div className="relative aspect-[4/3]">
-                    <img
-                      src={th.bgImage}
-                      alt={localized(th.name, language)}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="relative aspect-[4/3]" style={{ background: th.appBg }}>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-2.5 flex items-end justify-between gap-1">
                       <span className="text-xs font-bold text-white leading-snug drop-shadow">
                         {localized(th.name, language)}
                       </span>
-                      {isSelected && <CheckCircle className="w-4 h-4 text-cyan-300 shrink-0" />}
+                      {isSelected && <CheckCircle className="w-4 h-4 text-white shrink-0" />}
                     </div>
                   </div>
                 </button>
@@ -128,6 +131,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
           <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10">
             <span className="text-sm font-bold pr-3 flex items-center gap-2">
+              <Volume2 className="w-4 h-4 text-cyan-300" />
+              {getTranslation(language, 'soundEffects')}
+            </span>
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${
+                soundEnabled ? 'bg-cyan-500' : 'bg-white/20'
+              }`}
+            >
+              <div
+                className={`w-5 h-5 rounded-full bg-white transition-all absolute top-1 ${
+                  soundEnabled ? 'left-6' : 'left-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10">
+            <span className="text-sm font-bold pr-3 flex items-center gap-2">
               <Vibrate className="w-4 h-4 text-cyan-300" />
               {getTranslation(language, 'haptics')}
             </span>
@@ -146,12 +168,36 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           </div>
         </section>
 
+        {onReplayIntro && (
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              onReplayIntro();
+            }}
+            className="w-full py-3 rounded-xl border border-white/15 text-sm font-bold text-white/80 hover:bg-white/5 transition"
+          >
+            {getTranslation(language, 'replayIntro')}
+          </button>
+        )}
+
+        {onOpenLegal && (
+          <button
+            type="button"
+            onClick={onOpenLegal}
+            className="w-full py-3 rounded-xl border border-white/15 text-sm font-bold text-white/80 hover:bg-white/5 transition flex items-center justify-center gap-2"
+          >
+            <Scale className="w-4 h-4 text-cyan-300" />
+            {getTranslation(language, 'legal')}
+          </button>
+        )}
+
         <footer className="pt-4 pb-2 border-t border-white/10 text-center space-y-1.5">
           <p className="text-base font-extrabold tracking-wide text-amber-300/95">
             {getTranslation(language, 'footerPublisher')}
           </p>
           <p className="text-xs font-medium text-white/50 leading-relaxed px-2">
-            {getTranslation(language, 'appName')}
+            {getTranslation(language, 'appName')} · {getTranslation(language, 'version')} {APP_VERSION}
           </p>
         </footer>
       </div>

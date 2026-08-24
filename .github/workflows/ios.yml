@@ -1,7 +1,10 @@
 name: iOS CI
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   build:
@@ -18,15 +21,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Lint
+        run: npm run lint
+
+      - name: Verify puzzles
+        run: npm run puzzles:verify
+
       - name: Build web app
         run: npm run build
 
-      - name: Add iOS platform
-        run: |
-          if [ ! -d ios ]; then npx cap add ios; fi
-          npx cap sync ios
+      - name: Sync Capacitor iOS
+        run: npx cap sync ios
 
       - name: Build iOS (simulator)
         working-directory: ios/App
         run: |
-          xcodebuild -workspace App.xcworkspace -scheme App -sdk iphonesimulator -configuration Debug build CODE_SIGNING_ALLOWED=NO
+          xcodebuild -project App.xcodeproj -scheme App -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO build

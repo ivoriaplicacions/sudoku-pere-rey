@@ -1,10 +1,19 @@
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
+import { findNextPuzzle } from '../../utils/sudokuLogic';
 import { Star, Trophy, Clock, ArrowRight } from 'lucide-react';
 
 export const VictoryModal: React.FC = () => {
-  const { language, victoryData, closeVictoryModal, selectedPuzzle, puzzles, startPuzzle } = useGame();
+  const {
+    language,
+    victoryData,
+    closeVictoryModal,
+    selectedPuzzle,
+    puzzles,
+    startPuzzle,
+    canAccessLevel,
+  } = useGame();
 
   if (!victoryData) return null;
 
@@ -14,27 +23,24 @@ export const VictoryModal: React.FC = () => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
+  const nextPuzzle = selectedPuzzle
+    ? findNextPuzzle(puzzles, selectedPuzzle, canAccessLevel)
+    : undefined;
+
   const handleNextPuzzle = () => {
-    closeVictoryModal();
-    if (selectedPuzzle) {
-      const nextP = puzzles.find(
-        p => p.level === selectedPuzzle.level && p.puzzleNumber === selectedPuzzle.puzzleNumber + 1
-      );
-      if (nextP) {
-        startPuzzle(nextP);
-      }
+    if (!nextPuzzle) {
+      closeVictoryModal();
+      return;
     }
+    startPuzzle(nextPuzzle);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fade-in">
       <div className="w-full max-w-sm bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 border border-amber-500/40 rounded-3xl p-6 text-center text-white space-y-5 shadow-2xl shadow-amber-500/20 relative overflow-hidden">
-        
-        {/* Glowing background star burst */}
         <div className="absolute -top-12 -left-12 w-32 h-32 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Trophy Header */}
         <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center shadow-lg shadow-amber-500/30 animate-bounce">
           <Trophy className="w-10 h-10 text-slate-950" />
         </div>
@@ -48,7 +54,6 @@ export const VictoryModal: React.FC = () => {
           </p>
         </div>
 
-        {/* Stars Earned Animation */}
         <div className="flex justify-center items-center space-x-2 py-2">
           {[1, 2, 3].map((starIdx) => (
             <Star
@@ -62,7 +67,6 @@ export const VictoryModal: React.FC = () => {
           ))}
         </div>
 
-        {/* Stats Summary */}
         <div className="grid grid-cols-2 gap-3 bg-white/5 p-3.5 rounded-2xl border border-white/10 text-xs">
           <div className="flex flex-col items-center">
             <span className="text-white/60 text-[11px] flex items-center gap-1">
@@ -84,15 +88,16 @@ export const VictoryModal: React.FC = () => {
           </div>
         </div>
 
-        {/* Buttons */}
         <div className="space-y-2.5 pt-2">
-          <button
-            onClick={handleNextPuzzle}
-            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-sm flex items-center justify-center space-x-2 shadow-lg shadow-amber-500/30 hover:brightness-110 active:scale-95 transition"
-          >
-            <span>{getTranslation(language, 'nextPuzzle')}</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          {nextPuzzle && (
+            <button
+              onClick={handleNextPuzzle}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-sm flex items-center justify-center space-x-2 shadow-lg shadow-amber-500/30 hover:brightness-110 active:scale-95 transition"
+            >
+              <span>{getTranslation(language, 'nextPuzzle')}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
 
           <button
             onClick={closeVictoryModal}

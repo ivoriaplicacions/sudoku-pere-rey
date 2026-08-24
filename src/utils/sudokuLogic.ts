@@ -83,6 +83,24 @@ export function calculateStars(timeSeconds: number, mistakes: number, hintsUsed:
 
 export const PUZZLES_PER_LEVEL = 20;
 export const LEVEL_COUNT = 40;
+export const MAX_HINTS_PER_PUZZLE = 3;
+
+export function findNextPuzzle(
+  puzzles: Puzzle[],
+  current: Puzzle,
+  canAccess: (level: number) => boolean,
+): Puzzle | undefined {
+  const nextInLevel = puzzles.find(
+    (puzzle) => puzzle.level === current.level && puzzle.puzzleNumber === current.puzzleNumber + 1,
+  );
+  if (nextInLevel) return nextInLevel;
+
+  const nextLevelFirst = puzzles.find(
+    (puzzle) => puzzle.level === current.level + 1 && puzzle.puzzleNumber === 1,
+  );
+  if (nextLevelFirst && canAccess(nextLevelFirst.level)) return nextLevelFirst;
+  return undefined;
+}
 
 // Expand an 81-character row-major string into a 9x9 grid.
 function decodeGrid(digits: string): number[][] {

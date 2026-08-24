@@ -1,6 +1,8 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { App as CapApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { GameProvider, useGame } from './context/GameContext';
-import { themes } from './data/themes';
+import { getTheme } from './data/themes';
 import { HeaderBar } from './components/navigation/HeaderBar';
 import { BottomBar } from './components/navigation/BottomBar';
 import { LevelGrid } from './components/navigation/LevelGrid';
@@ -11,8 +13,12 @@ import { VictoryModal } from './components/modals/VictoryModal';
 import { AchievementsModal } from './components/modals/AchievementsModal';
 import { SettingsModal } from './components/modals/SettingsModal';
 import { StoreModal } from './components/modals/StoreModal';
+import { LegalModal } from './components/modals/LegalModal';
 import { IntroSplash } from './components/IntroSplash';
 import { getTranslation } from './i18n/translations';
+import { hasSeenIntro, markIntroSeen } from './services/persistence';
+import { exitNativeApp, hideNativeSplash } from './native/bootstrap';
+import { usePhysicalKeyboard } from './hooks/usePhysicalKeyboard';
 import { ArrowLeft, Clock, AlertTriangle } from 'lucide-react';
 
 const MainApp: React.FC = () => {
@@ -26,48 +32,109 @@ const MainApp: React.FC = () => {
     mistakes,
     isPaused,
     setIsPaused,
+    setIsNotesMode,
+    inputNumber,
+    eraseCell,
+    undoMove,
+    victoryData,
+    closeVictoryModal,
   } = useGame();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
   const [isStoreOpen, setIsStoreOpen] = useState(false);
-  const [showIntro, setShowIntro] = useState(true);
+  const [isLegalOpen, setIsLegalOpen] = useState(false);
+  const [showIntro, setShowIntro] = useState(() => !hasSeenIntro());
   const [introKey, setIntroKey] = useState(0);
-  const wasHiddenRef = useRef(false);
 
-  const finishIntro = useCallback(() => setShowIntro(false), []);
+  const finishIntro = useCallback(() => {
+    markIntroSeen();
+    setShowIntro(false);
+  }, []);
 
   const replayIntro = useCallback(() => {
     setIntroKey((k) => k + 1);
     setShowIntro(true);
   }, []);
 
-  // Replay intro every time the app returns to the foreground
   useEffect(() => {
-    const onVisibility = () => {
-      if (document.visibilityState === 'hidden') {
-        wasHiddenRef.current = true;
+    if (!Capacitor.isNativePlatform()) return;
+
+    const listener = CapApp.addListener('backButton', () => {
+      if (showIntro) {
+        finishIntro();
         return;
       }
-      if (document.visibilityState === 'visible' && wasHiddenRef.current) {
-        wasHiddenRef.current = false;
-        replayIntro();
+      if (isLegalOpen) {
+        setIsLegalOpen(false);
+        return;
       }
-    };
-    document.addEventListener('visibilitychange', onVisibility);
-
-    const onPageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) replayIntro();
-    };
-    window.addEventListener('pageshow', onPageShow);
+      if (isStoreOpen) {
+        setIsStoreOpen(false);
+        return;
+      }
+      if (isSettingsOpen) {
+        setIsSettingsOpen(false);
+        return;
+      }
+      if (isAchievementsOpen) {
+        setIsAchievementsOpen(false);
+        return;
+      }
+      if (victoryData) {
+        closeVictoryModal();
+        return;
+      }
+      if (view === 'game') {
+        setView('puzzle-select');
+        return;
+      }
+      if (view === 'puzzle-select') {
+        setView('level-select');
+        return;
+      }
+      void exitNativeApp();
+    });
 
     return () => {
-      document.removeEventListener('visibilitychange', onVisibility);
-      window.removeEventListener('pageshow', onPageShow);
+      void listener.then((handle) => handle.remove());
     };
-  }, [replayIntro]);
+  }, [
+    showIntro,
+    finishIntro,
+    isStoreOpen,
+    isLegalOpen,
+    isSettingsOpen,
+    isAchievementsOpen,
+    victoryData,
+    closeVictoryModal,
+    view,
+    setView,
+  ]);
 
-  const currentTheme = themes[theme];
+  const modalBlocking =
+    showIntro ||
+    isSettingsOpen ||
+    isAchievementsOpen ||
+    isStoreOpen ||
+    isLegalOpen ||
+    Boolean(victoryData);
+
+  usePhysicalKeyboard({
+    enabled: view === 'game' && !modalBlocking,
+    isPaused,
+    onDigit: inputNumber,
+    onErase: eraseCell,
+    onTogglePause: () => setIsPaused(!isPaused),
+    onToggleNotes: () => setIsNotesMode((prev) => !prev),
+    onUndo: undoMove,
+  });
+
+  useEffect(() => {
+    void hideNativeSplash();
+  }, []);
+
+  const currentTheme = getTheme(theme);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -80,10 +147,9 @@ const MainApp: React.FC = () => {
       {showIntro && <IntroSplash key={introKey} onFinished={finishIntro} />}
 
       <div
-        className="fixed inset-0 bg-cover bg-center transition-all duration-700 z-0 scale-105"
-        style={{ backgroundImage: `url(${currentTheme.bgImage})` }}
+        className="fixed inset-0 z-0 transition-all duration-700"
+        style={{ background: currentTheme.appBg }}
       />
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-0 pointer-events-none" />
 
       <div className="relative z-10 flex flex-col min-h-screen w-full">
         <HeaderBar />
@@ -93,7 +159,7 @@ const MainApp: React.FC = () => {
             view !== 'game' ? 'app-main-pad' : 'pb-4'
           }`}
         >
-          {view === 'level-select' && <LevelGrid />}
+          {view === 'level-select' && <LevelGrid onOpenStore={() => setIsStoreOpen(true)} />}
 
           {view === 'puzzle-select' && <PuzzleGrid />}
 
@@ -154,7 +220,16 @@ const MainApp: React.FC = () => {
 
       <VictoryModal />
       <AchievementsModal isOpen={isAchievementsOpen} onClose={() => setIsAchievementsOpen(false)} />
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onReplayIntro={replayIntro}
+        onOpenLegal={() => {
+          setIsSettingsOpen(false);
+          setIsLegalOpen(true);
+        }}
+      />
+      <LegalModal isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />
       <StoreModal isOpen={isStoreOpen} onClose={() => setIsStoreOpen(false)} />
     </div>
   );

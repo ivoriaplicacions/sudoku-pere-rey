@@ -1,11 +1,12 @@
 import React from 'react';
-import type { CellState } from '../../types/sudoku';
+import type { CellState, ThemeConfig } from '../../types/sudoku';
 
 interface SudokuCellProps {
   cell: CellState;
   isSelected: boolean;
   isHighlighted: boolean;
   isSameNumber: boolean;
+  theme: ThemeConfig;
   onSelect: (row: number, col: number) => void;
 }
 
@@ -14,22 +15,23 @@ export const SudokuCell: React.FC<SudokuCellProps> = ({
   isSelected,
   isHighlighted,
   isSameNumber,
+  theme,
   onSelect,
 }) => {
   const isGiven = cell.initialValue !== 0;
 
-  let bgClasses = 'bg-slate-900/55';
+  let bgClasses = theme.cellIdle;
 
   if (cell.isError) {
-    bgClasses = 'bg-rose-600/50 animate-shake ring-2 ring-inset ring-rose-500';
+    bgClasses = theme.cellError;
   } else if (cell.isHint) {
-    bgClasses = 'bg-amber-500/40';
+    bgClasses = theme.cellHint;
   } else if (isSelected) {
-    bgClasses = 'bg-cyan-500/40 ring-2 ring-inset ring-cyan-400 z-10';
+    bgClasses = theme.cellSelected;
   } else if (isSameNumber) {
-    bgClasses = 'bg-cyan-900/55 ring-1 ring-inset ring-cyan-500/50';
+    bgClasses = theme.cellSame;
   } else if (isHighlighted) {
-    bgClasses = 'bg-indigo-950/65';
+    bgClasses = theme.cellHighlight;
   }
 
   const numberColor = cell.isError
@@ -37,12 +39,12 @@ export const SudokuCell: React.FC<SudokuCellProps> = ({
     : cell.isHint
       ? 'text-amber-200'
       : isGiven
-        ? 'text-amber-300'
+        ? theme.givenText
         : isSelected
-          ? 'text-cyan-50'
+          ? theme.selectedText
           : isSameNumber
-            ? 'text-cyan-200'
-            : 'text-white';
+            ? theme.sameText
+            : theme.userText;
 
   return (
     <button
@@ -64,7 +66,7 @@ export const SudokuCell: React.FC<SudokuCellProps> = ({
         </span>
       ) : cell.notes.size > 0 ? (
         <div
-          className="grid h-full w-full grid-cols-3 grid-rows-3 text-cyan-300 font-medium"
+          className={`grid h-full w-full grid-cols-3 grid-rows-3 font-medium ${theme.notesText}`}
           style={{ fontSize: 'clamp(0.45rem, 2.2vw, 0.65rem)', lineHeight: 1 }}
         >
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (

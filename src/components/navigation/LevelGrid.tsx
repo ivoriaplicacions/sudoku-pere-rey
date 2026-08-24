@@ -6,11 +6,12 @@ import { Lock, Star, Sparkles, ShoppingBag } from 'lucide-react';
 import { PUZZLES_PER_LEVEL } from '../../utils/sudokuLogic';
 import { CONTENT_PACKS, formatPrice, getPackForLevel } from '../../data/packs';
 import { buildLevelList } from '../../data/levels';
+import { ContinueBanner } from './ContinueBanner';
 
 const LEVEL_LIST = buildLevelList();
 const MAX_STARS_PER_LEVEL = PUZZLES_PER_LEVEL * 3;
 
-export const LevelGrid: React.FC = () => {
+export const LevelGrid: React.FC<{ onOpenStore?: () => void }> = ({ onOpenStore }) => {
   const { language, setSelectedLevel, setView, progressMap, playerStats, canAccessLevel } =
     useGame();
 
@@ -23,6 +24,8 @@ export const LevelGrid: React.FC = () => {
         </h2>
         <p className="text-xs text-white/70">{getTranslation(language, 'subtitle')}</p>
       </div>
+
+      <ContinueBanner />
 
       {CONTENT_PACKS.map((pack) => {
         const packLevels = LEVEL_LIST.filter((l) => l.packId === pack.id);
@@ -62,15 +65,22 @@ export const LevelGrid: React.FC = () => {
                 return (
                   <button
                     key={lvlInfo.level}
-                    disabled={!isUnlocked}
+                    disabled={!isUnlocked && !needsPurchase}
                     onClick={() => {
+                      if (needsPurchase) {
+                        onOpenStore?.();
+                        return;
+                      }
+                      if (!isUnlocked) return;
                       setSelectedLevel(lvlInfo.level);
                       setView('puzzle-select');
                     }}
                     className={`w-full text-left p-4 rounded-2xl transition-all duration-300 relative overflow-hidden backdrop-blur-xl border ${
                       isUnlocked
                         ? 'bg-slate-900/60 hover:bg-slate-800/80 border-white/20 active:scale-[0.98] shadow-lg shadow-black/40 group'
-                        : 'bg-black/40 border-white/5 opacity-60 cursor-not-allowed'
+                        : needsPurchase
+                          ? 'bg-amber-950/35 border-amber-400/35 active:scale-[0.98]'
+                          : 'bg-black/40 border-white/5 opacity-60 cursor-not-allowed'
                     }`}
                   >
                     <div className="flex items-center justify-between z-10 relative">

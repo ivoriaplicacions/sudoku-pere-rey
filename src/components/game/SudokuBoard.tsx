@@ -1,13 +1,10 @@
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { SudokuCell } from './SudokuCell';
-import { themes } from '../../data/themes';
+import { getTheme } from '../../data/themes';
+import type { ThemeConfig } from '../../types/sudoku';
 
-/**
- * Continuous internal grid lines. Outer frame is a matching CSS border so
- * nothing is clipped at the SVG viewBox edge.
- */
-const BoardGridLines: React.FC = () => (
+const BoardGridLines: React.FC<{ theme: ThemeConfig }> = ({ theme }) => (
   <svg
     className="pointer-events-none absolute inset-0 z-20 h-full w-full"
     viewBox="0 0 9 9"
@@ -17,7 +14,7 @@ const BoardGridLines: React.FC = () => (
     {Array.from({ length: 8 }, (_, idx) => {
       const i = idx + 1;
       const major = i % 3 === 0;
-      const stroke = major ? 'rgba(34, 211, 238, 0.95)' : 'rgba(255, 255, 255, 0.35)';
+      const stroke = major ? theme.gridMajor : theme.gridMinor;
       const width = major ? 0.11 : 0.045;
       return (
         <g key={i}>
@@ -31,7 +28,7 @@ const BoardGridLines: React.FC = () => (
 
 export const SudokuBoard: React.FC = () => {
   const { board, selectedCell, setSelectedCell, theme } = useGame();
-  const themeConfig = themes[theme];
+  const themeConfig = getTheme(theme);
 
   if (!board || board.length === 0) return null;
 
@@ -39,17 +36,17 @@ export const SudokuBoard: React.FC = () => {
 
   return (
     <div
-      className={`mx-auto flex aspect-square w-full max-w-md items-center justify-center rounded-3xl border border-white/20 bg-black/60 p-2.5 shadow-2xl shadow-black/80 backdrop-blur-2xl ${themeConfig.boardBorder}`}
+      className={`mx-auto flex aspect-square w-full max-w-md items-center justify-center rounded-3xl border border-white/20 bg-black/60 p-2.5 shadow-2xl shadow-black/80 backdrop-blur-2xl ${themeConfig.boardOuter}`}
     >
       <div
-        className="relative h-full w-full rounded-md border-[3px] border-cyan-400/90 bg-slate-950/80"
+        className={`relative h-full w-full rounded-md border-[3px] ${themeConfig.boardInner}`}
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(9, 1fr)',
           gridTemplateRows: 'repeat(9, 1fr)',
         }}
       >
-        <BoardGridLines />
+        <BoardGridLines theme={themeConfig} />
         {board.map((row, r) =>
           row.map((cell, c) => {
             const isSelected = selectedCell?.row === r && selectedCell?.col === c;
@@ -70,10 +67,11 @@ export const SudokuBoard: React.FC = () => {
                 isSelected={isSelected}
                 isHighlighted={isHighlighted}
                 isSameNumber={isSameNumber}
+                theme={themeConfig}
                 onSelect={(rowPos, colPos) => setSelectedCell({ row: rowPos, col: colPos })}
               />
             );
-          })
+          }),
         )}
       </div>
     </div>

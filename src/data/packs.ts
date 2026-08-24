@@ -79,7 +79,7 @@ export const CONTENT_PACKS: ContentPack[] = [
   },
 ];
 
-/** Product IDs that must exist as one-time IAPs in Google Play Console. */
+/** Product IDs that must exist as one-time IAPs in Google Play and App Store Connect. */
 export const BILLABLE_PRODUCT_IDS = CONTENT_PACKS.map((p) => p.productId).filter(
   (id): id is string => Boolean(id),
 );

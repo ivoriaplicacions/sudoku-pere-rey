@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { App } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import type {
   Language,
   ThemeId,
@@ -6,12 +8,14 @@ import type {
   PlayerStats,
   CellState,
   CellPosition,
-  MoveHistory,
+  HistoryEntry,
   Puzzle,
+  InProgressSession,
 } from '../types/sudoku';
 import {
   generateAllPuzzles,
   calculateStars,
+  MAX_HINTS_PER_PUZZLE,
 } from '../utils/sudokuLogic';
 import { audioSynth } from '../utils/audio';
 import {
@@ -20,7 +24,30 @@ import {
   purchasePack as purchasePackService,
   restorePurchases as restorePurchasesService,
   syncPurchasesFromStore,
+  type PurchaseResult,
+  type RestoreResult,
 } from '../services/monetization';
+import {
+  loadLanguage,
+  saveLanguage,
+  loadHapticsEnabled,
+  saveHapticsEnabled,
+  loadProgressMap,
+  saveProgressMap,
+  loadPlayerStats,
+  savePlayerStats,
+  loadSession,
+  saveSession,
+  clearSession,
+  buildSession,
+  deserializeBoard,
+  loadTheme,
+  saveTheme,
+  loadSoundEnabled,
+  saveSoundEnabled,
+  loadAutoCheckErrors,
+  saveAutoCheckErrors,
+} from '../services/persistence';
 import {
   hapticTap,
   hapticSelect,
@@ -28,6 +55,15 @@ import {
   hapticSuccess,
   setHapticsEnabled,
 } from '../utils/haptics';
+import {
+  cloneBoard,
+  snapshotCell,
+  snapshotHouse,
+  clearNotesForDigit,
+  restoreHistoryEntry,
+} from '../utils/boardHelpers';
+import { applyDailyStreak } from '../utils/streak';
+import { evaluateNewAchievements } from '../data/achievements';
 import confetti from 'canvas-confetti';
 
 interface GameContextType {
@@ -47,8 +83,8 @@ interface GameContextType {
   progressMap: Record<string, PuzzleProgress>;
   playerStats: PlayerStats;
   ownedPacks: string[];
-  purchasePack: (packId: string) => Promise<void>;
-  restorePurchases: () => Promise<void>;
+  purchasePack: (packId: string) => Promise<PurchaseResult>;
+  restorePurchases: () => Promise<RestoreResult>;
   canAccessLevel: (level: number) => boolean;
 
   board: CellState[][];
@@ -70,11 +106,14 @@ interface GameContextType {
   autoCheckErrors: boolean;
   setAutoCheckErrors: (val: boolean) => void;
 
-  startPuzzle: (puzzle: Puzzle) => void;
+  startPuzzle: (puzzle: Puzzle, options?: { fresh?: boolean }) => void;
+  resumeSession: () => void;
+  savedSession: InProgressSession | null;
   inputNumber: (num: number) => void;
   eraseCell: () => void;
   giveHint: () => void;
   undoMove: () => void;
+  canUndo: boolean;
   restartPuzzle: () => void;
   exitToMenu: () => void;
 
@@ -82,79 +121,22 @@ interface GameContextType {
   closeVictoryModal: () => void;
 }
 
-const STORAGE_PROGRESS_KEY = 'sudoku_master_progress_v1';
-const STORAGE_STATS_KEY = 'sudoku_master_stats_v1';
-const STORAGE_LANGUAGE_KEY = 'maestros_language_v1';
-const STORAGE_HAPTICS_KEY = 'maestros_haptics_v1';
-
 const defaultPlayerStats: PlayerStats = {
   xp: 0,
   playerLevel: 1,
   totalStars: 0,
   puzzlesCompleted: 0,
-  currentStreak: 1,
-  lastPlayedDate: new Date().toISOString().split('T')[0],
-  unlockedThemes: [
-    'zen',
-    'cyber',
-    'cosmic',
-    'sunset',
-    'mediterrani',
-    'reial',
-    'bosc',
-    'aurora',
-    'pergami',
-    'vinyes',
-    'montroig',
-    'montroigCamp',
-    'cambrils',
-    'cambrilsPort',
-  ],
+  currentStreak: 0,
+  lastPlayedDate: '',
+  unlockedThemes: ['zen', 'cyber', 'cosmic', 'sunset', 'mediterrani', 'montroig'],
   unlockedAchievements: [],
 };
-
-function safeGetItem(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function loadLanguage(): Language {
-  const saved = safeGetItem(STORAGE_LANGUAGE_KEY);
-  if (saved === 'ca' || saved === 'es' || saved === 'en') return saved;
-  const browser = navigator.language.toLowerCase();
-  if (browser.startsWith('ca')) return 'ca';
-  if (browser.startsWith('es')) return 'es';
-  return 'en';
-}
-
-function loadProgressMap(): Record<string, PuzzleProgress> {
-  const saved = safeGetItem(STORAGE_PROGRESS_KEY);
-  if (!saved) return {};
-  try {
-    return JSON.parse(saved);
-  } catch {
-    return {};
-  }
-}
-
-function loadPlayerStats(): PlayerStats {
-  const saved = safeGetItem(STORAGE_STATS_KEY);
-  if (!saved) return defaultPlayerStats;
-  try {
-    return JSON.parse(saved);
-  } catch {
-    return defaultPlayerStats;
-  }
-}
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>(loadLanguage);
-  const [theme, setTheme] = useState<ThemeId>('zen');
+  const [theme, setThemeState] = useState<ThemeId>(loadTheme);
   const [view, setView] = useState<'level-select' | 'puzzle-select' | 'game'>('level-select');
 
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
@@ -164,7 +146,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [allPuzzles] = useState<Puzzle[]>(() => generateAllPuzzles());
   const [progressMap, setProgressMap] = useState<Record<string, PuzzleProgress>>(loadProgressMap);
 
-  const [playerStats, setPlayerStats] = useState<PlayerStats>(loadPlayerStats);
+  const [playerStats, setPlayerStats] = useState<PlayerStats>(() => loadPlayerStats(defaultPlayerStats));
+  const [savedSession, setSavedSession] = useState<InProgressSession | null>(loadSession);
 
   const [board, setBoard] = useState<CellState[][]>([]);
   const [selectedCell, setSelectedCell] = useState<CellPosition | null>(null);
@@ -174,30 +157,48 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [mistakes, setMistakes] = useState<number>(0);
   const [hintsUsed, setHintsUsed] = useState<number>(0);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
-  const [history] = useState<MoveHistory[]>([]);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
 
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
-  const [hapticsEnabled, setHapticsEnabledState] = useState<boolean>(() => {
-    return safeGetItem(STORAGE_HAPTICS_KEY) !== 'false';
-  });
-  const [autoCheckErrors, setAutoCheckErrors] = useState<boolean>(true);
+  const [soundEnabled, setSoundEnabledState] = useState<boolean>(loadSoundEnabled);
+  const [hapticsEnabled, setHapticsEnabledState] = useState<boolean>(loadHapticsEnabled);
+  const [autoCheckErrors, setAutoCheckErrorsState] = useState<boolean>(loadAutoCheckErrors);
 
   const [victoryData, setVictoryData] = useState<{ stars: number; xpEarned: number; time: number } | null>(null);
 
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem(STORAGE_LANGUAGE_KEY, lang);
+    saveLanguage(lang);
+  }, []);
+
+  const setTheme = useCallback((next: ThemeId) => {
+    setThemeState(next);
+    saveTheme(next);
+  }, []);
+
+  const setSoundEnabled = useCallback((val: boolean) => {
+    setSoundEnabledState(val);
+    saveSoundEnabled(val);
+  }, []);
+
+  const setAutoCheckErrors = useCallback((val: boolean) => {
+    setAutoCheckErrorsState(val);
+    saveAutoCheckErrors(val);
   }, []);
 
   const setHapticsEnabledSetting = useCallback((val: boolean) => {
     setHapticsEnabledState(val);
     setHapticsEnabled(val);
-    localStorage.setItem(STORAGE_HAPTICS_KEY, String(val));
+    saveHapticsEnabled(val);
+  }, []);
+
+  const dropSession = useCallback(() => {
+    setSavedSession(null);
+    clearSession();
   }, []);
 
   const canAccessLevel = (level: number) => isLevelAccessible(level);
 
-  const purchasePack = useCallback(async (packId: string) => {
+  const purchasePack = useCallback(async (packId: string): Promise<PurchaseResult> => {
     const result = await purchasePackService(packId);
     if (result.ok) {
       setOwnedPacks(getOwnedPacks());
@@ -205,12 +206,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else if (result.error !== 'cancelled') {
       hapticError();
     }
+    return result;
   }, []);
 
-  const restorePurchases = useCallback(async () => {
-    const restored = await restorePurchasesService();
-    setOwnedPacks(restored);
-    hapticSuccess();
+  const restorePurchases = useCallback(async (): Promise<RestoreResult> => {
+    const result = await restorePurchasesService();
+    setOwnedPacks(result.packs);
+    if (result.ok) hapticSuccess();
+    else hapticError();
+    return result;
   }, []);
 
   useEffect(() => {
@@ -229,11 +233,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [hapticsEnabled]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_PROGRESS_KEY, JSON.stringify(progressMap));
+    saveProgressMap(progressMap);
   }, [progressMap]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_STATS_KEY, JSON.stringify(playerStats));
+    savePlayerStats(playerStats);
   }, [playerStats]);
 
   useEffect(() => {
@@ -248,11 +252,125 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [view, isPaused, isCompleted, board]);
 
-  const startPuzzle = (puzzle: Puzzle) => {
-    if (!isLevelAccessible(puzzle.level)) return;
+  useEffect(() => {
+    if (view !== 'game' || isCompleted || !selectedPuzzle || board.length !== 9) return;
+    const session = buildSession({
+      puzzleId: selectedPuzzle.id,
+      level: selectedPuzzle.level,
+      puzzleNumber: selectedPuzzle.puzzleNumber,
+      board,
+      selectedCell,
+      isNotesMode,
+      timerSeconds,
+      mistakes,
+      hintsUsed,
+      history,
+    });
+    setSavedSession(session);
+    saveSession(session);
+  }, [
+    board,
+    selectedCell,
+    isNotesMode,
+    timerSeconds,
+    mistakes,
+    hintsUsed,
+    history,
+    selectedPuzzle,
+    isCompleted,
+    view,
+  ]);
 
+  useEffect(() => {
+    const pauseIfPlaying = () => {
+      if (view === 'game' && !isCompleted) setIsPaused(true);
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') pauseIfPlaying();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    let removeNative: (() => void) | undefined;
+    if (Capacitor.isNativePlatform()) {
+      const listener = App.addListener('appStateChange', ({ isActive }) => {
+        if (!isActive) pauseIfPlaying();
+      });
+      removeNative = () => {
+        void listener.then((handle) => handle.remove());
+      };
+    }
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      removeNative?.();
+    };
+  }, [view, isCompleted]);
+
+  const applyPuzzleStart = (puzzle: Puzzle, freshBoard: CellState[][]) => {
     setSelectedPuzzle(puzzle);
     setSelectedLevel(puzzle.level);
+    setBoard(freshBoard);
+    setSelectedCell(null);
+    setIsNotesMode(false);
+    setTimerSeconds(0);
+    setIsPaused(false);
+    setMistakes(0);
+    setHintsUsed(0);
+    setHistory([]);
+    setIsCompleted(false);
+    setVictoryData(null);
+    setView('game');
+    setPlayerStats((prev) => applyDailyStreak(prev));
+    const session = buildSession({
+      puzzleId: puzzle.id,
+      level: puzzle.level,
+      puzzleNumber: puzzle.puzzleNumber,
+      board: freshBoard,
+      selectedCell: null,
+      isNotesMode: false,
+      timerSeconds: 0,
+      mistakes: 0,
+      hintsUsed: 0,
+      history: [],
+    });
+    setSavedSession(session);
+    saveSession(session);
+    hapticSelect();
+  };
+
+  const resumeSession = useCallback(() => {
+    const session = savedSession ?? loadSession();
+    if (!session) return;
+
+    const puzzle = allPuzzles.find((item) => item.id === session.puzzleId);
+    if (!puzzle || !isLevelAccessible(puzzle.level)) return;
+
+    setSavedSession(session);
+    setSelectedPuzzle(puzzle);
+    setSelectedLevel(puzzle.level);
+    setBoard(deserializeBoard(session.board));
+    setSelectedCell(session.selectedCell);
+    setIsNotesMode(session.isNotesMode);
+    setTimerSeconds(session.timerSeconds);
+    setMistakes(session.mistakes);
+    setHintsUsed(session.hintsUsed);
+    setHistory(session.history ?? []);
+    setIsCompleted(false);
+    setVictoryData(null);
+    setIsPaused(false);
+    setView('game');
+    setPlayerStats((prev) => applyDailyStreak(prev));
+    hapticSelect();
+  }, [savedSession, allPuzzles]);
+
+  const startPuzzle = (puzzle: Puzzle, options?: { fresh?: boolean }) => {
+    if (!isLevelAccessible(puzzle.level)) return;
+
+    if (!options?.fresh && savedSession?.puzzleId === puzzle.id) {
+      resumeSession();
+      return;
+    }
 
     const newBoard: CellState[][] = puzzle.initialGrid.map((row, r) =>
       row.map((val, c) => ({
@@ -266,17 +384,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })),
     );
 
-    setBoard(newBoard);
-    setSelectedCell(null);
-    setIsNotesMode(false);
-    setTimerSeconds(0);
-    setIsPaused(false);
-    setMistakes(0);
-    setHintsUsed(0);
-    setIsCompleted(false);
-    setVictoryData(null);
-    setView('game');
-    hapticSelect();
+    applyPuzzleStart(puzzle, newBoard);
   };
 
   const checkVictory = (currentBoard: CellState[][]) => {
@@ -292,8 +400,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setIsCompleted(true);
     const stars = calculateStars(timerSeconds, mistakes, hintsUsed);
-    const baseXP = selectedPuzzle.level * 50 + 100;
-    const xpEarned = baseXP + stars * 25;
+    const alreadyCompleted = Boolean(progressMap[selectedPuzzle.id]?.completed);
+    const puzzleXp = alreadyCompleted ? 0 : selectedPuzzle.level * 50 + 100 + stars * 25;
 
     audioSynth.playVictory();
     hapticSuccess();
@@ -325,20 +433,39 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProgressMap(newProgressMap);
 
     const totalStars = Object.values(newProgressMap).reduce((sum, p) => sum + p.stars, 0);
-
-    setPlayerStats((prev) => {
-      const newXP = prev.xp + xpEarned;
-      const newPlayerLevel = Math.floor(newXP / 500) + 1;
-      return {
-        ...prev,
-        xp: newXP,
-        playerLevel: newPlayerLevel,
-        totalStars,
-        puzzlesCompleted: prev.puzzlesCompleted + 1,
-      };
+    const withStreak = applyDailyStreak(playerStats);
+    const puzzlesCompleted = alreadyCompleted
+      ? withStreak.puzzlesCompleted
+      : withStreak.puzzlesCompleted + 1;
+    const statsAfterPuzzle: PlayerStats = {
+      ...withStreak,
+      xp: withStreak.xp + puzzleXp,
+      playerLevel: Math.floor((withStreak.xp + puzzleXp) / 500) + 1,
+      totalStars,
+      puzzlesCompleted,
+    };
+    const { ids: newAchievementIds, xp: achievementXp } = evaluateNewAchievements({
+      unlocked: statsAfterPuzzle.unlockedAchievements,
+      progressMap: newProgressMap,
+      stats: statsAfterPuzzle,
+      justCompleted: {
+        level: selectedPuzzle.level,
+        mistakes,
+        hintsUsed,
+        time: timerSeconds,
+      },
+    });
+    const finalXp = statsAfterPuzzle.xp + achievementXp;
+    setPlayerStats({
+      ...statsAfterPuzzle,
+      xp: finalXp,
+      playerLevel: Math.floor(finalXp / 500) + 1,
+      unlockedAchievements: [...statsAfterPuzzle.unlockedAchievements, ...newAchievementIds],
     });
 
-    setVictoryData({ stars, xpEarned, time: timerSeconds });
+    setVictoryData({ stars, xpEarned: puzzleXp + achievementXp, time: timerSeconds });
+    setHistory([]);
+    dropSession();
     return true;
   };
 
@@ -347,39 +474,45 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { row, col } = selectedCell;
     const cell = board[row][col];
 
-    if (cell.initialValue !== 0) return;
+    if (cell.initialValue !== 0 || cell.isHint) return;
 
     hapticTap();
-    const newBoard = board.map((r) => r.map((c) => ({ ...c, notes: new Set(c.notes) })));
-    const target = newBoard[row][col];
 
     if (isNotesMode) {
       audioSynth.playNote();
+      const snaps = [snapshotCell(cell)];
+      const newBoard = cloneBoard(board);
+      const target = newBoard[row][col];
       const newNotes = new Set(target.notes);
-      if (newNotes.has(num)) {
-        newNotes.delete(num);
-      } else {
-        newNotes.add(num);
-      }
+      if (newNotes.has(num)) newNotes.delete(num);
+      else newNotes.add(num);
       target.notes = newNotes;
       target.value = 0;
       target.isError = false;
+      setHistory((prev) => [...prev, { cells: snaps, selectedCell, hintsDelta: 0 }]);
       setBoard(newBoard);
       return;
     }
 
-    if (target.value === num) {
+    if (cell.value === num) {
       audioSynth.playErase();
-      target.value = 0;
-      target.isError = false;
+      const snaps = [snapshotCell(cell)];
+      const newBoard = cloneBoard(board);
+      newBoard[row][col].value = 0;
+      newBoard[row][col].isError = false;
+      setHistory((prev) => [...prev, { cells: snaps, selectedCell, hintsDelta: 0 }]);
       setBoard(newBoard);
       return;
     }
 
     const isCorrect = selectedPuzzle ? selectedPuzzle.solutionGrid[row][col] === num : true;
-
+    const snaps = snapshotHouse(board, row, col);
+    const newBoard = cloneBoard(board);
+    const target = newBoard[row][col];
     target.value = num;
     target.notes.clear();
+    target.isHint = false;
+    clearNotesForDigit(newBoard, row, col, num);
 
     if (autoCheckErrors && !isCorrect) {
       audioSynth.playError();
@@ -391,6 +524,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       target.isError = false;
     }
 
+    setHistory((prev) => [...prev, { cells: snaps, selectedCell, hintsDelta: 0 }]);
     setBoard(newBoard);
     checkVictory(newBoard);
   };
@@ -399,30 +533,38 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!selectedCell || isCompleted || isPaused) return;
     const { row, col } = selectedCell;
     const cell = board[row][col];
-    if (cell.initialValue !== 0) return;
+    if (cell.initialValue !== 0 || cell.isHint) return;
+    if (cell.value === 0 && cell.notes.size === 0) return;
 
     hapticTap();
     audioSynth.playErase();
-    const newBoard = board.map((r) => r.map((c) => ({ ...c, notes: new Set(c.notes) })));
+    const snaps = [snapshotCell(cell)];
+    const newBoard = cloneBoard(board);
     newBoard[row][col].value = 0;
     newBoard[row][col].notes.clear();
     newBoard[row][col].isError = false;
+    setHistory((prev) => [...prev, { cells: snaps, selectedCell, hintsDelta: 0 }]);
     setBoard(newBoard);
   };
 
   const giveHint = () => {
     if (isCompleted || isPaused || !selectedPuzzle) return;
+    if (hintsUsed >= MAX_HINTS_PER_PUZZLE) return;
 
-    let targetPos = selectedCell;
-    if (!targetPos || board[targetPos.row][targetPos.col].value !== 0) {
-      for (let r = 0; r < 9; r++) {
+    const selectedEmpty =
+      selectedCell &&
+      board[selectedCell.row][selectedCell.col].value === 0 &&
+      board[selectedCell.row][selectedCell.col].initialValue === 0;
+
+    let targetPos = selectedEmpty ? selectedCell : null;
+    if (!targetPos) {
+      outer: for (let r = 0; r < 9; r++) {
         for (let c = 0; c < 9; c++) {
-          if (board[r][c].value === 0) {
+          if (board[r][c].value === 0 && board[r][c].initialValue === 0) {
             targetPos = { row: r, col: c };
-            break;
+            break outer;
           }
         }
-        if (targetPos) break;
       }
     }
 
@@ -432,29 +574,37 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     audioSynth.playHint();
     const { row, col } = targetPos;
     const correctVal = selectedPuzzle.solutionGrid[row][col];
-
-    const newBoard = board.map((r) => r.map((c) => ({ ...c, notes: new Set(c.notes) })));
+    const snaps = snapshotHouse(board, row, col);
+    const newBoard = cloneBoard(board);
     newBoard[row][col].value = correctVal;
     newBoard[row][col].notes.clear();
     newBoard[row][col].isError = false;
     newBoard[row][col].isHint = true;
+    clearNotesForDigit(newBoard, row, col, correctVal);
 
+    setHistory((prev) => [...prev, { cells: snaps, selectedCell: targetPos, hintsDelta: 1 }]);
     setHintsUsed((prev) => prev + 1);
     setSelectedCell(targetPos);
     setBoard(newBoard);
-
     checkVictory(newBoard);
   };
 
   const undoMove = () => {
     if (history.length === 0 || isCompleted || isPaused) return;
+    const entry = history[history.length - 1];
     hapticTap();
     audioSynth.playErase();
+    setBoard(restoreHistoryEntry(board, entry));
+    setHistory((prev) => prev.slice(0, -1));
+    setSelectedCell(entry.selectedCell);
+    if (entry.hintsDelta) {
+      setHintsUsed((prev) => Math.max(0, prev - entry.hintsDelta));
+    }
   };
 
   const restartPuzzle = () => {
     if (selectedPuzzle) {
-      startPuzzle(selectedPuzzle);
+      startPuzzle(selectedPuzzle, { fresh: true });
     }
   };
 
@@ -462,10 +612,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setView('puzzle-select');
   };
 
-  const closeVictoryModal = () => {
+  const closeVictoryModal = useCallback(() => {
     setVictoryData(null);
     setView('puzzle-select');
-  };
+  }, []);
 
   return (
     <GameContext.Provider
@@ -505,10 +655,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         autoCheckErrors,
         setAutoCheckErrors,
         startPuzzle,
+        resumeSession,
+        savedSession,
         inputNumber,
         eraseCell,
         giveHint,
         undoMove,
+        canUndo: history.length > 0,
         restartPuzzle,
         exitToMenu,
         victoryData,

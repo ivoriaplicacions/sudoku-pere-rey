@@ -1,33 +1,28 @@
 export type Language = 'ca' | 'es' | 'en';
 
-export type ThemeId =
-  | 'zen'
-  | 'cyber'
-  | 'cosmic'
-  | 'sunset'
-  | 'mediterrani'
-  | 'reial'
-  | 'bosc'
-  | 'aurora'
-  | 'pergami'
-  | 'vinyes'
-  | 'montroig'
-  | 'montroigCamp'
-  | 'cambrils'
-  | 'cambrilsPort';
-
+export type ThemeId = 'zen' | 'cyber' | 'cosmic' | 'sunset' | 'mediterrani' | 'montroig';
 
 export interface ThemeConfig {
   id: ThemeId;
-  name: { ca: string; es: string };
-  bgImage: string;
-  cardBg: string;
-  accentColor: string;
-  boardBorder: string;
+  name: { ca: string; es: string; en: string };
+  /** CSS background for the app shell (gradients, no image files). */
+  appBg: string;
+  boardOuter: string;
+  boardInner: string;
+  gridMajor: string;
+  gridMinor: string;
+  cellIdle: string;
   cellSelected: string;
   cellHighlight: string;
+  cellSame: string;
   cellError: string;
-  textColor: string;
+  cellHint: string;
+  givenText: string;
+  userText: string;
+  selectedText: string;
+  sameText: string;
+  notesText: string;
+  accentRing: string;
 }
 
 export interface Puzzle {
@@ -62,6 +57,30 @@ export interface CellState {
   isHint: boolean;
 }
 
+/** JSON-safe cell for an in-progress session. */
+export interface SerializedCell {
+  value: number;
+  initialValue: number;
+  notes: number[];
+  isError: boolean;
+  isHint: boolean;
+}
+
+/** One unfinished puzzle, restored when the app reopens. */
+export interface InProgressSession {
+  puzzleId: string;
+  level: number;
+  puzzleNumber: number;
+  board: SerializedCell[][];
+  selectedCell: CellPosition | null;
+  isNotesMode: boolean;
+  timerSeconds: number;
+  mistakes: number;
+  hintsUsed: number;
+  history: HistoryEntry[];
+  savedAt: number;
+}
+
 export interface PuzzleProgress {
   puzzleId: string;
   level: number;
@@ -87,17 +106,23 @@ export interface PlayerStats {
 
 export interface Achievement {
   id: string;
-  title: { ca: string; es: string };
-  description: { ca: string; es: string };
+  title: { ca: string; es: string; en: string };
+  description: { ca: string; es: string; en: string };
   icon: string;
   xpReward: number;
 }
 
-export interface MoveHistory {
+export interface HistoryCellSnapshot {
   row: number;
   col: number;
-  prevValue: number;
-  newValue: number;
-  prevNotes: Set<number>;
-  newNotes: Set<number>;
+  value: number;
+  notes: number[];
+  isError: boolean;
+  isHint: boolean;
+}
+
+export interface HistoryEntry {
+  cells: HistoryCellSnapshot[];
+  selectedCell: CellPosition | null;
+  hintsDelta: number;
 }

@@ -35,7 +35,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ isOpen, on
         {/* List of achievements */}
         <div className="overflow-y-auto space-y-3 pr-1 flex-1">
           {achievementsData.map((ach) => {
-            const isUnlocked = playerStats.unlockedAchievements.includes(ach.id) || playerStats.puzzlesCompleted > 0 && ach.id === 'first_win';
+            const isUnlocked = playerStats.unlockedAchievements.includes(ach.id);
 
             return (
               <div

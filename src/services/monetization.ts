@@ -7,27 +7,27 @@ import {
 } from '../data/packs';
 
 const STORAGE_KEY = 'maestros_owned_packs_v1';
+const FREE_PACK_ID = 'pack1';
+
+export type PurchaseResult = { ok: boolean; error?: string };
+export type RestoreResult = PurchaseResult & { packs: string[] };
+
+function withFreePack(packIds: string[]): string[] {
+  return [...new Set([FREE_PACK_ID, ...packIds])];
+}
 
 function readStoredOwned(): string[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const parsed: string[] = raw ? JSON.parse(raw) : [];
-    return [...new Set(['pack1', ...parsed])];
+    return withFreePack(parsed);
   } catch {
-    return ['pack1'];
+    return [FREE_PACK_ID];
   }
 }
 
 function writeOwned(packIds: string[]): void {
-  const owned = [...new Set(['pack1', ...packIds])];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(owned));
-}
-
-function markOwned(packId: string): string[] {
-  const owned = readStoredOwned();
-  if (!owned.includes(packId)) owned.push(packId);
-  writeOwned(owned);
-  return owned;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(withFreePack(packIds)));
 }
 
 /** Pack 1 is always free and owned */
@@ -59,8 +59,14 @@ async function billingAvailable(): Promise<boolean> {
   }
 }
 
+/** Web + Vite dev only. Never grant packs on a native build without a store receipt. */
+function canSimulatePurchases(): boolean {
+  return !Capacitor.isNativePlatform() && import.meta.env.DEV;
+}
+
 /**
- * Sync owned packs from Google Play / App Store purchases into local storage.
+ * Replace paid ownership from store receipts. Pack 1 is always kept.
+ * Local storage is a cache, not the source of truth when billing works.
  */
 export async function syncPurchasesFromStore(): Promise<string[]> {
   if (!(await billingAvailable())) return getOwnedPacks();
@@ -70,7 +76,7 @@ export async function syncPurchasesFromStore(): Promise<string[]> {
       productType: PURCHASE_TYPE.INAPP,
     });
 
-    const owned = new Set(getOwnedPacks());
+    const owned = new Set<string>([FREE_PACK_ID]);
     for (const purchase of purchases ?? []) {
       const productId = purchase.productIdentifier;
       if (!productId) continue;
@@ -85,11 +91,7 @@ export async function syncPurchasesFromStore(): Promise<string[]> {
   }
 }
 
-/**
- * Purchase a content pack via Google Play Billing on Android (or App Store on iOS).
- * On web / unsupported billing, simulates purchase for local development.
- */
-export async function purchasePack(packId: string): Promise<{ ok: boolean; error?: string }> {
+export async function purchasePack(packId: string): Promise<PurchaseResult> {
   const pack = CONTENT_PACKS.find((p) => p.id === packId);
   if (!pack) return { ok: false, error: 'pack_not_found' };
   if (pack.priceEur === 0) return { ok: true };
@@ -100,9 +102,11 @@ export async function purchasePack(packId: string): Promise<{ ok: boolean; error
   const useBilling = await billingAvailable();
 
   if (!useBilling) {
-    // Dev / web fallback so the store UI can be exercised without Play Console.
-    markOwned(packId);
-    return { ok: true };
+    if (canSimulatePurchases()) {
+      writeOwned([...getOwnedPacks(), packId]);
+      return { ok: true };
+    }
+    return { ok: false, error: 'billing_unavailable' };
   }
 
   try {
@@ -111,12 +115,13 @@ export async function purchasePack(packId: string): Promise<{ ok: boolean; error
       productType: PURCHASE_TYPE.INAPP,
       quantity: 1,
     });
-    markOwned(packId);
-    await syncPurchasesFromStore();
+    const synced = await syncPurchasesFromStore();
+    if (!synced.includes(packId)) {
+      writeOwned([...synced, packId]);
+    }
     return { ok: true };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    // User cancelled is not a hard failure for the UI.
     if (/cancel/i.test(message)) {
       return { ok: false, error: 'cancelled' };
     }
@@ -125,21 +130,25 @@ export async function purchasePack(packId: string): Promise<{ ok: boolean; error
   }
 }
 
-export async function restorePurchases(): Promise<string[]> {
+export async function restorePurchases(): Promise<RestoreResult> {
+  if (canSimulatePurchases()) {
+    return { ok: true, packs: getOwnedPacks() };
+  }
+
   if (!(await billingAvailable())) {
-    return getOwnedPacks();
+    return { ok: false, error: 'billing_unavailable', packs: getOwnedPacks() };
   }
 
   try {
     await NativePurchases.restorePurchases();
+    const packs = await syncPurchasesFromStore();
+    return { ok: true, packs };
   } catch (err) {
     console.warn('restorePurchases native call failed', err);
+    return { ok: false, error: 'restore_failed', packs: getOwnedPacks() };
   }
-
-  return syncPurchasesFromStore();
 }
 
-/** Prefetch product metadata (price, title) when billing is available. */
 export async function loadStoreProducts(): Promise<
   Record<string, { title?: string; priceString?: string }>
 > {

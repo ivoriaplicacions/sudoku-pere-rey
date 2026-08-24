@@ -2,9 +2,11 @@ import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { ArrowLeft, Star, Clock, CheckCircle2, Play } from 'lucide-react';
+import { ContinueBanner } from './ContinueBanner';
 
 export const PuzzleGrid: React.FC = () => {
-  const { language, selectedLevel, puzzles, progressMap, startPuzzle, setView } = useGame();
+  const { language, selectedLevel, puzzles, progressMap, startPuzzle, setView, savedSession } =
+    useGame();
 
   // Filter puzzles for selected level
   const levelPuzzles = puzzles.filter(p => p.level === selectedLevel);
@@ -37,15 +39,18 @@ export const PuzzleGrid: React.FC = () => {
           {getTranslation(language, 'selectPuzzle')}
         </h2>
         <p className="text-xs text-white/70">
-          20 Sudokus resolubles amb repte progressiu
+          {getTranslation(language, 'puzzleSelectSubtitle')}
         </p>
       </div>
+
+      {savedSession?.level === selectedLevel && <ContinueBanner />}
 
       {/* Grid of puzzles */}
       <div className="grid grid-cols-2 gap-3.5">
         {levelPuzzles.map((puzzle) => {
           const prog = progressMap[puzzle.id];
           const isCompleted = prog && prog.completed;
+          const isInProgress = savedSession?.puzzleId === puzzle.id;
           const stars = prog ? prog.stars : 0;
           const bestTime = prog && prog.bestTime ? formatTime(prog.bestTime) : getTranslation(language, 'noRecord');
 
@@ -54,7 +59,9 @@ export const PuzzleGrid: React.FC = () => {
               key={puzzle.id}
               onClick={() => startPuzzle(puzzle)}
               className={`p-4 rounded-2xl transition-all duration-300 relative overflow-hidden backdrop-blur-xl border text-left flex flex-col justify-between ${
-                isCompleted
+                isInProgress
+                  ? 'bg-teal-950/50 border-emerald-400/50 hover:bg-teal-900/60 shadow-lg shadow-emerald-950/40'
+                  : isCompleted
                   ? 'bg-emerald-950/40 border-emerald-500/40 hover:bg-emerald-900/60 shadow-lg shadow-emerald-950/50'
                   : 'bg-slate-900/60 border-white/20 hover:bg-slate-800/80 shadow-lg shadow-black/40'
               } active:scale-95`}
@@ -64,7 +71,11 @@ export const PuzzleGrid: React.FC = () => {
                 <span className="font-extrabold text-white text-base">
                   #{puzzle.puzzleNumber}
                 </span>
-                {isCompleted ? (
+                {isInProgress ? (
+                  <span className="text-[9px] font-extrabold uppercase tracking-wide text-emerald-300 bg-emerald-500/20 px-1.5 py-0.5 rounded-full">
+                    {getTranslation(language, 'inProgress')}
+                  </span>
+                ) : isCompleted ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 ) : (
                   <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
@@ -94,7 +105,7 @@ export const PuzzleGrid: React.FC = () => {
                   <span>{bestTime}</span>
                 </span>
                 <span className="text-[10px] text-white/50 bg-white/10 px-1.5 py-0.5 rounded">
-                  {puzzle.givenCount} givens
+                  {getTranslation(language, 'givenCount', { count: puzzle.givenCount })}
                 </span>
               </div>
             </button>
