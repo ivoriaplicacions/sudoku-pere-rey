@@ -96,5 +96,11 @@ export function formatPrice(priceEur: number, language: 'ca' | 'es' | 'en'): str
   if (priceEur === 0) {
     return language === 'en' ? 'Free' : 'Gratis';
   }
-  return `0,99 €`;
+  return '0,99 €';
+}
+
+/** Paid packs are 0,99 € each, never per level. */
+export function formatPackPrice(priceEur: number, language: 'ca' | 'es' | 'en'): string {
+  if (priceEur === 0) return formatPrice(0, language);
+  return `${formatPrice(priceEur, language)} / pack`;
 }

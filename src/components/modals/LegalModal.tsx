@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
-import { APP_VERSION, PUBLISHER, SUPPORT_URL, PRIVACY_PATH } from '../../version';
+import { APP_VERSION, PUBLISHER, SUPPORT_URL, PRIVACY_URL } from '../../version';
 import { X, Scale } from 'lucide-react';
 
 interface LegalModalProps {
@@ -47,7 +47,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({ isOpen, onClose }) => {
           {getTranslation(language, 'support')}
         </a>
         <a
-          href={PRIVACY_PATH}
+          href={PRIVACY_URL}
           target="_blank"
           rel="noreferrer"
           className="block text-cyan-300 font-bold underline underline-offset-2"

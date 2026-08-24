@@ -164,7 +164,7 @@ export const translations = {
   en: {
     appName: 'Maestros del Sudoku',
     subtitle: '4 packs · 800 sudokus · free starter pack',
-    storeSubtitle: 'Pack 1 free (200 sudokus). Packs II–IV: €0.99 each (Google Play and App Store).',
+    storeSubtitle: 'Pack 1 free (200 sudokus). Packs II–IV: 0,99 € each (Google Play and App Store).',
     pack: 'Pack',
     comingSoon: 'Coming soon',
     gamePaused: 'Game Paused',

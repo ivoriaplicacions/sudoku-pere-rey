@@ -29,6 +29,8 @@ Les compres reals només funcionen amb builds signades (Play internal testing / 
 
 **Bundle / application ID (Android + iOS):** `com.ivoriaplicacions.maestrosdelsudoku`
 
+**Política de privadesa (URL pública per a les consoles):** https://ivoriaplicacions.github.io/sudoku-pere-rey/privacy.html
+
 ## Requisits (Windows)
 
 | Eina | Versió recomanada |

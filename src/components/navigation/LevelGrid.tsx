@@ -4,7 +4,7 @@ import { getTranslation } from '../../i18n/translations';
 import { localized } from '../../i18n/localized';
 import { Lock, Star, Sparkles, ShoppingBag } from 'lucide-react';
 import { PUZZLES_PER_LEVEL } from '../../utils/sudokuLogic';
-import { CONTENT_PACKS, formatPrice, getPackForLevel } from '../../data/packs';
+import { CONTENT_PACKS, formatPackPrice, getPackForLevel } from '../../data/packs';
 import { buildLevelList } from '../../data/levels';
 import { ContinueBanner } from './ContinueBanner';
 
@@ -36,7 +36,7 @@ export const LevelGrid: React.FC<{ onOpenStore?: () => void }> = ({ onOpenStore 
                 {localized(pack.name, language)}
               </h3>
               <span className="text-[10px] font-bold text-white/50">
-                {formatPrice(pack.priceEur, language)}
+                {formatPackPrice(pack.priceEur, language)}
               </span>
             </div>
 
@@ -129,7 +129,7 @@ export const LevelGrid: React.FC<{ onOpenStore?: () => void }> = ({ onOpenStore 
                         ) : needsPurchase ? (
                           <div className="flex items-center space-x-1 text-xs font-semibold text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
                             <ShoppingBag className="w-3.5 h-3.5" />
-                            <span>0,99 €</span>
+                            <span>{getTranslation(language, 'buy')}</span>
                           </div>
                         ) : (
                           <div className="flex items-center space-x-1 text-xs font-semibold text-rose-300 bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-500/20">
