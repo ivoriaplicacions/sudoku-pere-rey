@@ -12,7 +12,7 @@ export const VictoryModal: React.FC = () => {
     selectedPuzzle,
     puzzles,
     startPuzzle,
-    canAccessLevel,
+    canPlayLevel,
   } = useGame();
 
   if (!victoryData) return null;
@@ -24,7 +24,7 @@ export const VictoryModal: React.FC = () => {
   };
 
   const nextPuzzle = selectedPuzzle
-    ? findNextPuzzle(puzzles, selectedPuzzle, canAccessLevel)
+    ? findNextPuzzle(puzzles, selectedPuzzle, canPlayLevel)
     : undefined;
 
   const handleNextPuzzle = () => {

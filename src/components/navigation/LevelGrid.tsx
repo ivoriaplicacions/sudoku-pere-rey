@@ -5,6 +5,7 @@ import { localized } from '../../i18n/localized';
 import { Lock, Star, Sparkles, ShoppingBag } from 'lucide-react';
 import { PUZZLES_PER_LEVEL } from '../../utils/sudokuLogic';
 import { CONTENT_PACKS, formatPackPrice, getPackForLevel } from '../../data/packs';
+import { completionsNeededForLevel, isLevelProgressUnlocked } from '../../utils/levelProgress';
 import { buildLevelList } from '../../data/levels';
 import { ContinueBanner } from './ContinueBanner';
 
@@ -43,12 +44,17 @@ export const LevelGrid: React.FC<{ onOpenStore?: () => void }> = ({ onOpenStore 
             <div className="grid grid-cols-1 gap-3">
               {packLevels.map((lvlInfo) => {
                 const packAccessible = canAccessLevel(lvlInfo.level);
-                const isProgressUnlocked =
-                  lvlInfo.level === 1 ||
-                  playerStats.puzzlesCompleted >= (lvlInfo.level - 1) * 2;
+                const isProgressUnlocked = isLevelProgressUnlocked(
+                  lvlInfo.level,
+                  playerStats.puzzlesCompleted,
+                );
                 const isUnlocked = packAccessible && isProgressUnlocked;
                 const packMeta = getPackForLevel(lvlInfo.level);
                 const needsPurchase = !packAccessible && packMeta && packMeta.priceEur > 0;
+                const progressLeft = Math.max(
+                  0,
+                  completionsNeededForLevel(lvlInfo.level) - playerStats.puzzlesCompleted,
+                );
 
                 let levelStars = 0;
                 let completedCount = 0;
@@ -134,7 +140,11 @@ export const LevelGrid: React.FC<{ onOpenStore?: () => void }> = ({ onOpenStore 
                         ) : (
                           <div className="flex items-center space-x-1 text-xs font-semibold text-rose-300 bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-500/20">
                             <Lock className="w-3.5 h-3.5" />
-                            <span>{getTranslation(language, 'locked')}</span>
+                            <span>
+                              {progressLeft > 0
+                                ? getTranslation(language, 'unlockProgress', { count: progressLeft })
+                                : getTranslation(language, 'locked')}
+                            </span>
                           </div>
                         )}
                       </div>

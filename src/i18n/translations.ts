@@ -20,6 +20,7 @@ export const translations = {
     cancel: 'Cancel·lar',
     haptics: 'Vibració',
     unlockPack: 'Desbloqueja el pack a la botiga',
+    unlockProgress: 'Falten {count} sudokus',
     footerPublisher: 'Ivori Aplicacions',
     selectLevel: 'Selecciona un Nivell',
     selectPuzzle: 'Selecciona un Sudoku',
@@ -80,6 +81,13 @@ export const translations = {
     purchaseCancelled: 'Compra cancel·lada.',
     restoreFailed: 'No s\'han pogut restaurar les compres.',
     restoreOk: 'Compres restaurades.',
+    aiActTitle: 'Reglament europeu d’IA',
+    aiActBody:
+      'Aquesta app no és un sistema d’IA (Reglament UE 2024/1689). Els sudokus es generen amb un algoritme determinista; el jugador fa totes les jugades.',
+    governance: 'Governança',
+    governanceBody:
+      'Inventari d’IA buit. El jugador controla cada jugada i el progrés resta al dispositiu. Qualsevol funció futura d’aprenentatge automàtic es classificarà abans de publicar-la.',
+    legalHub: 'Centre legal',
   },
   es: {
     appName: 'Maestros del Sudoku',
@@ -100,6 +108,7 @@ export const translations = {
     cancel: 'Cancelar',
     haptics: 'Vibración',
     unlockPack: 'Desbloquea el pack en la tienda',
+    unlockProgress: 'Faltan {count} sudokus',
     footerPublisher: 'Ivori Aplicacions',
     selectLevel: 'Selecciona un Nivel',
     selectPuzzle: 'Selecciona un Sudoku',
@@ -160,6 +169,13 @@ export const translations = {
     purchaseCancelled: 'Compra cancelada.',
     restoreFailed: 'No se han podido restaurar las compras.',
     restoreOk: 'Compras restauradas.',
+    aiActTitle: 'Reglamento europeo de IA',
+    aiActBody:
+      'Esta app no es un sistema de IA (Reglamento UE 2024/1689). Los sudokus se generan con un algoritmo determinista; el jugador hace todas las jugadas.',
+    governance: 'Gobernanza',
+    governanceBody:
+      'Inventario de IA vacío. El jugador controla cada jugada y el progreso permanece en el dispositivo. Cualquier función futura de aprendizaje automático se clasificará antes de publicarla.',
+    legalHub: 'Centro legal',
   },
   en: {
     appName: 'Maestros del Sudoku',
@@ -180,6 +196,7 @@ export const translations = {
     cancel: 'Cancel',
     haptics: 'Haptic feedback',
     unlockPack: 'Unlock the pack in the store',
+    unlockProgress: '{count} sudokus remaining',
     footerPublisher: 'Ivori Aplicacions',
     selectLevel: 'Select a Level',
     selectPuzzle: 'Select a Sudoku',
@@ -240,6 +257,13 @@ export const translations = {
     purchaseCancelled: 'Purchase cancelled.',
     restoreFailed: 'Purchases could not be restored.',
     restoreOk: 'Purchases restored.',
+    aiActTitle: 'EU AI Act',
+    aiActBody:
+      'This app is not an AI system (Regulation (EU) 2024/1689). Puzzles are generated with a deterministic algorithm; the player makes every move.',
+    governance: 'Governance',
+    governanceBody:
+      'AI inventory is empty. The player controls every move and progress stays on device. Any future machine-learning feature will be classified before it ships.',
+    legalHub: 'Legal hub',
   }
 };
 

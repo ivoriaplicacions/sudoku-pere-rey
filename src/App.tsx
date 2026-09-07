@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { GameProvider, useGame } from './context/GameContext';
@@ -13,7 +13,7 @@ import { VictoryModal } from './components/modals/VictoryModal';
 import { AchievementsModal } from './components/modals/AchievementsModal';
 import { SettingsModal } from './components/modals/SettingsModal';
 import { StoreModal } from './components/modals/StoreModal';
-import { LegalModal } from './components/modals/LegalModal';
+import { LegalModal, type LegalModalHandle } from './components/modals/LegalModal';
 import { IntroSplash } from './components/IntroSplash';
 import { getTranslation } from './i18n/translations';
 import { hasSeenIntro, markIntroSeen } from './services/persistence';
@@ -44,6 +44,7 @@ const MainApp: React.FC = () => {
   const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
   const [isStoreOpen, setIsStoreOpen] = useState(false);
   const [isLegalOpen, setIsLegalOpen] = useState(false);
+  const legalModalRef = useRef<LegalModalHandle>(null);
   const [showIntro, setShowIntro] = useState(() => !hasSeenIntro());
   const [introKey, setIntroKey] = useState(0);
 
@@ -66,6 +67,7 @@ const MainApp: React.FC = () => {
         return;
       }
       if (isLegalOpen) {
+        if (legalModalRef.current?.closeNestedDoc()) return;
         setIsLegalOpen(false);
         return;
       }
@@ -229,7 +231,7 @@ const MainApp: React.FC = () => {
           setIsLegalOpen(true);
         }}
       />
-      <LegalModal isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />
+      <LegalModal ref={legalModalRef} isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />
       <StoreModal isOpen={isStoreOpen} onClose={() => setIsStoreOpen(false)} />
     </div>
   );

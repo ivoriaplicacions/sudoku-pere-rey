@@ -17,6 +17,7 @@ import {
   calculateStars,
   MAX_HINTS_PER_PUZZLE,
 } from '../utils/sudokuLogic';
+import { canPlayLevel as isLevelPlayable } from '../utils/levelProgress';
 import { audioSynth } from '../utils/audio';
 import {
   getOwnedPacks,
@@ -86,6 +87,7 @@ interface GameContextType {
   purchasePack: (packId: string) => Promise<PurchaseResult>;
   restorePurchases: () => Promise<RestoreResult>;
   canAccessLevel: (level: number) => boolean;
+  canPlayLevel: (level: number) => boolean;
 
   board: CellState[][];
   selectedCell: CellPosition | null;
@@ -197,6 +199,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const canAccessLevel = (level: number) => isLevelAccessible(level);
+  const canPlayLevel = (level: number) =>
+    isLevelPlayable(level, playerStats.puzzlesCompleted, isLevelAccessible(level));
 
   const purchasePack = useCallback(async (packId: string): Promise<PurchaseResult> => {
     const result = await purchasePackService(packId);
@@ -365,7 +369,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [savedSession, allPuzzles]);
 
   const startPuzzle = (puzzle: Puzzle, options?: { fresh?: boolean }) => {
-    if (!isLevelAccessible(puzzle.level)) return;
+    if (!canPlayLevel(puzzle.level)) return;
 
     if (!options?.fresh && savedSession?.puzzleId === puzzle.id) {
       resumeSession();
@@ -637,6 +641,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         purchasePack,
         restorePurchases,
         canAccessLevel,
+        canPlayLevel,
         board,
         selectedCell,
         setSelectedCell,

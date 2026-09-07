@@ -7,7 +7,7 @@ Sudoku gamificat per **Ivori Aplicacions**. Aplicació **multiplataforma**: mate
 - **4 packs × 200 sudokus = 800 puzzles** verificats (solució única)
 - **Pack 1 gratuït**; Packs II–IV a **0,99 €** via **Google Play Billing / App Store**
 - Estrelles, XP, ratxa diària i assoliments
-- 14 temes visuals
+- **6 temes visuals** (zen, cyber, cosmic, sunset, mediterrani, montroig)
 - **Multilenguatge**: català, castellà i anglès
 - **Vibració** (hàptics) en dispositius mòbils
 - Intro animada i progrés guardat localment
@@ -29,7 +29,16 @@ Les compres reals només funcionen amb builds signades (Play internal testing / 
 
 **Bundle / application ID (Android + iOS):** `com.ivoriaplicacions.maestrosdelsudoku`
 
-**Política de privadesa (URL pública per a les consoles):** https://ivoriaplicacions.github.io/sudoku-pere-rey/privacy.html
+**URLs públiques (GitHub Pages, `docs/`):**
+
+| Document | URL |
+|----------|-----|
+| Centre legal | https://ivoriaplicacions.github.io/sudoku-pere-rey/ |
+| Privadesa | https://ivoriaplicacions.github.io/sudoku-pere-rey/privacy.html |
+| Reglament UE d’IA | https://ivoriaplicacions.github.io/sudoku-pere-rey/ai-act.html |
+| Governança | https://ivoriaplicacions.github.io/sudoku-pere-rey/governance.html |
+
+Aquesta app **no és un sistema d’IA** (Reglament UE 2024/1689, considerant 12): sudokus deterministes, sense models ni inferència. La mateixa documentació va dins l’app (Configuració → Avís legal). Per publicar les URLs: *Settings → Pages → Source: GitHub Actions*.
 
 ## Requisits (Windows)
 
@@ -64,6 +73,15 @@ npm run android:open
 ```
 
 APK: `android/app/build/outputs/apk/debug/app-debug.apk`
+
+Keystore de pujada a Play (local, no es commiteja):
+
+```bash
+chmod +x scripts/create-upload-keystore.sh
+./scripts/create-upload-keystore.sh
+```
+
+Genera `android/maestros-release.jks` i `android/keystore.properties` (gitignored). Desa’ls en un gestor de contrasenyes abans de la primera pujada.
 
 
 ## iOS (macOS + Xcode)
