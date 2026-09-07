@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and below (minSdk 24). Same intent as data_extraction_rules.xml. -->
+<full-backup-content>
+  <include domain="root" path="app_webview" />
+</full-backup-content>

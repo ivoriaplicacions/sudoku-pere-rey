@@ -8,9 +8,11 @@ interface PhysicalKeyboardOptions {
   onTogglePause: () => void;
   onToggleNotes: () => void;
   onUndo: () => void;
+  /** Arrow keys walk the board, so it can be played without a pointer. */
+  onMove: (rowDelta: number, colDelta: number) => void;
 }
 
-/** iPad / Bluetooth keyboard: 1–9, Delete, Escape, N, Z. */
+/** iPad / Bluetooth keyboard: 1–9, arrows, Delete, Escape, N, Z. */
 export function usePhysicalKeyboard({
   enabled,
   isPaused,
@@ -19,6 +21,7 @@ export function usePhysicalKeyboard({
   onTogglePause,
   onToggleNotes,
   onUndo,
+  onMove,
 }: PhysicalKeyboardOptions): void {
   useEffect(() => {
     if (!enabled) return;
@@ -41,6 +44,19 @@ export function usePhysicalKeyboard({
         onDigit(Number(event.key));
         return;
       }
+      const ARROWS: Record<string, [number, number]> = {
+        ArrowUp: [-1, 0],
+        ArrowDown: [1, 0],
+        ArrowLeft: [0, -1],
+        ArrowRight: [0, 1],
+      };
+      const delta = ARROWS[event.key];
+      if (delta) {
+        event.preventDefault();
+        onMove(delta[0], delta[1]);
+        return;
+      }
+
       if (event.key === 'Backspace' || event.key === 'Delete') {
         event.preventDefault();
         onErase();
@@ -59,5 +75,5 @@ export function usePhysicalKeyboard({
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [enabled, isPaused, onDigit, onErase, onTogglePause, onToggleNotes, onUndo]);
+  }, [enabled, isPaused, onDigit, onErase, onTogglePause, onToggleNotes, onUndo, onMove]);
 }

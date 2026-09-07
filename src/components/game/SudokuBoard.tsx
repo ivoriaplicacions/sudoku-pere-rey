@@ -2,6 +2,7 @@ import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { SudokuCell } from './SudokuCell';
 import { getTheme } from '../../data/themes';
+import { getTranslation } from '../../i18n/translations';
 import type { ThemeConfig } from '../../types/sudoku';
 
 const BoardGridLines: React.FC<{ theme: ThemeConfig }> = ({ theme }) => (
@@ -27,7 +28,7 @@ const BoardGridLines: React.FC<{ theme: ThemeConfig }> = ({ theme }) => (
 );
 
 export const SudokuBoard: React.FC = () => {
-  const { board, selectedCell, setSelectedCell, theme } = useGame();
+  const { board, selectedCell, setSelectedCell, theme, language } = useGame();
   const themeConfig = getTheme(theme);
 
   if (!board || board.length === 0) return null;
@@ -45,6 +46,8 @@ export const SudokuBoard: React.FC = () => {
           gridTemplateColumns: 'repeat(9, 1fr)',
           gridTemplateRows: 'repeat(9, 1fr)',
         }}
+        role="group"
+        aria-label={getTranslation(language, 'boardLabel')}
       >
         <BoardGridLines theme={themeConfig} />
         {board.map((row, r) =>
@@ -60,6 +63,13 @@ export const SudokuBoard: React.FC = () => {
 
             const isSameNumber = selectedVal !== 0 && cell.value === selectedVal;
 
+            const spokenValue =
+              cell.value !== 0
+                ? cell.initialValue !== 0
+                  ? `${cell.value}, ${getTranslation(language, 'cellGiven')}`
+                  : String(cell.value)
+                : getTranslation(language, 'cellEmpty');
+
             return (
               <SudokuCell
                 key={`${r}-${c}`}
@@ -68,6 +78,11 @@ export const SudokuBoard: React.FC = () => {
                 isHighlighted={isHighlighted}
                 isSameNumber={isSameNumber}
                 theme={themeConfig}
+                label={getTranslation(language, 'cellLabel', {
+                  row: r + 1,
+                  col: c + 1,
+                  value: spokenValue,
+                })}
                 onSelect={(rowPos, colPos) => setSelectedCell({ row: rowPos, col: colPos })}
               />
             );

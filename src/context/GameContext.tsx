@@ -95,7 +95,7 @@ interface GameContextType {
 
   board: CellState[][];
   selectedCell: CellPosition | null;
-  setSelectedCell: (pos: CellPosition | null) => void;
+  setSelectedCell: React.Dispatch<React.SetStateAction<CellPosition | null>>;
   isNotesMode: boolean;
   setIsNotesMode: (val: boolean | ((prev: boolean) => boolean)) => void;
   timerSeconds: number;
