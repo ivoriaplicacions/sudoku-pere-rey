@@ -19,6 +19,7 @@ import { getTranslation } from './i18n/translations';
 import { hasSeenIntro, markIntroSeen } from './services/persistence';
 import { exitNativeApp, hideNativeSplash } from './native/bootstrap';
 import { usePhysicalKeyboard } from './hooks/usePhysicalKeyboard';
+import { moveSelection } from './utils/boardHelpers';
 import { ArrowLeft, Clock, AlertTriangle } from 'lucide-react';
 
 const MainApp: React.FC = () => {
@@ -28,6 +29,7 @@ const MainApp: React.FC = () => {
     view,
     setView,
     selectedPuzzle,
+    setSelectedCell,
     timerSeconds,
     mistakes,
     isPaused,
@@ -130,6 +132,10 @@ const MainApp: React.FC = () => {
     onTogglePause: () => setIsPaused(!isPaused),
     onToggleNotes: () => setIsNotesMode((prev) => !prev),
     onUndo: undoMove,
+    // Functional update: a held arrow key fires faster than React re-renders, and
+    // reading selectedCell from the closure would drop every repeat but the last.
+    onMove: (rowDelta, colDelta) =>
+      setSelectedCell((current) => moveSelection(current, rowDelta, colDelta)),
   });
 
   useEffect(() => {

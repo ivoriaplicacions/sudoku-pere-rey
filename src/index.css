@@ -1,5 +1,28 @@
 @import "tailwindcss";
 
+/* Keyboard focus was invisible everywhere; the board is playable with a keyboard. */
+:focus-visible {
+  outline: 2px solid #fbbf24;
+  outline-offset: 2px;
+}
+
+/*
+ * Respect the OS "reduce motion" setting. Animations are collapsed rather than
+ * removed: several intro elements start at opacity 0 and are only made visible by
+ * their animation's forwards fill, so switching them off would hide the splash.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   20%, 60% { transform: translateX(-4px); }

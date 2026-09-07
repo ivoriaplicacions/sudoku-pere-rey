@@ -7,6 +7,8 @@ interface SudokuCellProps {
   isHighlighted: boolean;
   isSameNumber: boolean;
   theme: ThemeConfig;
+  /** Spoken description of the cell, built by the board which knows the language. */
+  label: string;
   onSelect: (row: number, col: number) => void;
 }
 
@@ -16,6 +18,7 @@ export const SudokuCell: React.FC<SudokuCellProps> = ({
   isHighlighted,
   isSameNumber,
   theme,
+  label,
   onSelect,
 }) => {
   const isGiven = cell.initialValue !== 0;
@@ -50,6 +53,8 @@ export const SudokuCell: React.FC<SudokuCellProps> = ({
     <button
       type="button"
       onClick={() => onSelect(cell.row, cell.col)}
+      aria-label={label}
+      aria-pressed={isSelected}
       className={`relative z-0 flex h-full w-full min-h-0 min-w-0 items-center justify-center border-0 p-0 m-0 select-none appearance-none transition-colors duration-150 active:brightness-110 ${bgClasses}`}
       style={{ lineHeight: 1 }}
     >

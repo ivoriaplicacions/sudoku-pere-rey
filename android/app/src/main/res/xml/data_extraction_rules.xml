@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ (API 31). Progress, settings and the cached pack ownership all live in
+  the WebView's local storage under app_webview, so that is what is worth carrying
+  over. The ownership cache is not authoritative: syncPurchasesFromStore() rebuilds
+  it from the store receipts on every launch, so a restore onto a device without the
+  entitlement corrects itself.
+-->
+<data-extraction-rules>
+  <cloud-backup>
+    <include domain="root" path="app_webview" />
+  </cloud-backup>
+  <device-transfer>
+    <include domain="root" path="app_webview" />
+  </device-transfer>
+</data-extraction-rules>

@@ -60,13 +60,13 @@ Aquesta app **no és un sistema d’IA** (Reglament UE 2024/1689, considerant 12
 node scripts/syncLegalDocs.mjs
 ```
 
-## Requisits (Windows)
+## Requisits
 
 | Eina | Versió recomanada |
 |------|-------------------|
 | Node.js | 20+ |
 | npm | 10+ |
-| JDK | 17 o 21 (Android) |
+| JDK | **21** (Android) — Capacitor 8 compila a Java 21; amb JDK 17 el build falla amb `invalid source release: 21` |
 | Android Studio | última estable (Android) |
 
 ## Desenvolupament web
