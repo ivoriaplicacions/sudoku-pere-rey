@@ -34,3 +34,7 @@ android/.idea/
 *.jks
 *.keystore
 android/keystore.properties
+
+# Python
+__pycache__/
+*.pyc
