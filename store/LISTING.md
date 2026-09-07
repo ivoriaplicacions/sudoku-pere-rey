@@ -423,7 +423,10 @@ Contact: hola@ivoriaplicacions.es
 - [ ] URL de política de privadesa
 - [ ] Icona 512, gràfic destacat 1024×500, 2–8 captures
 - [ ] AAB signat pel workflow `Android Release` (no el del CI de cada commit)
-- [ ] Prova tancada de 14 dies completada amb el mínim de testers
+
+IVORI APLICACIONS és un **compte d'organització** (id 9082694457813802039), així que
+no li aplica el període de prova tancada que Google exigeix als comptes personals
+nous: es pot enviar a producció directament.
 
 **App Store**
 - [ ] Estat de comerciant UE verificat *(sense això no hi ha distribució a la UE)*
