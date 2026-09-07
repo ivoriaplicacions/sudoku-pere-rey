@@ -8,6 +8,30 @@ body {
 }
 h1 { font-size: 1.55rem; }
 h2 { font-size: 1.12rem; margin-top: 1.75rem; }
+h3 { font-size: 1rem; margin-top: 1.25rem; }
 nav { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; margin: 1rem 0 1.75rem; }
 nav a { color: #0e7490; }
 .meta { color: #475569; font-size: 0.95rem; }
+
+/* Publisher identification — art. 10 Ley 34/2002 (LSSI-CE) + trader details (DSA). */
+.identity {
+  margin: 1.75rem 0;
+  padding: 1rem 1.15rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+.identity h2 { margin-top: 0; }
+.identity dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1.1rem;
+  margin: 0 0 0.75rem;
+}
+.identity dt { color: #475569; font-size: 0.9rem; }
+.identity dd { margin: 0; }
+.identity .meta { margin: 0; font-size: 0.85rem; }
+@media (max-width: 30rem) {
+  .identity dl { grid-template-columns: 1fr; gap: 0 }
+  .identity dd { margin-bottom: 0.6rem }
+}

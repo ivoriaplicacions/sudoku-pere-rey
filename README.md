@@ -29,6 +29,20 @@ Les compres reals només funcionen amb builds signades (Play internal testing / 
 
 **Bundle / application ID (Android + iOS):** `com.ivoriaplicacions.maestrosdelsudoku`
 
+## Titular (LSSI-CE art. 10 · DSA art. 30)
+
+| Camp | Valor |
+|------|-------|
+| Titular | Francesc Siuraneta Jové — IVORI APLICACIONS |
+| NIF | 47983327Z |
+| Adreça | Avinguda Roma 21, 6-5 · 43005 Tarragona · Espanya |
+| Correu | hola@ivoriaplicacions.es |
+| Web | https://ivoriaplicacions.es |
+| D-U-N-S | 473131748 (verificació de desenvolupador a Google Play) |
+
+Aquestes dades han de coincidir amb les del **trader status** d’App Store Connect i les
+de verificació de desenvolupador de Play Console; a la UE es publiquen a la fitxa de l’app.
+
 **URLs públiques (GitHub Pages, `docs/`):**
 
 | Document | URL |
@@ -39,6 +53,12 @@ Les compres reals només funcionen amb builds signades (Play internal testing / 
 | Governança | https://ivoriaplicacions.github.io/sudoku-pere-rey/governance.html |
 
 Aquesta app **no és un sistema d’IA** (Reglament UE 2024/1689, considerant 12): sudokus deterministes, sense models ni inferència. La mateixa documentació va dins l’app (Configuració → Avís legal). Per publicar les URLs: *Settings → Pages → Source: GitHub Actions*.
+
+`docs/` es **genera** des de `public/`; no l’editis a mà:
+
+```bash
+node scripts/syncLegalDocs.mjs
+```
 
 ## Requisits (Windows)
 

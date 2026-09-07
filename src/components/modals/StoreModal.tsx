@@ -2,7 +2,7 @@ import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { localized } from '../../i18n/localized';
-import { CONTENT_PACKS, formatPrice } from '../../data/packs';
+import { CONTENT_PACKS, packPriceLabel } from '../../data/packs';
 import { X, ShoppingBag, CheckCircle, Lock, Clock } from 'lucide-react';
 
 interface StoreModalProps {
@@ -18,7 +18,7 @@ function purchaseErrorKey(code?: string): string {
 }
 
 export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
-  const { language, ownedPacks, purchasePack, restorePurchases } = useGame();
+  const { language, ownedPacks, storeProducts, purchasePack, restorePurchases } = useGame();
   const [busy, setBusy] = React.useState<string | null>(null);
   const [message, setMessage] = React.useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
 
@@ -71,6 +71,9 @@ export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
         <p className="text-sm text-white/70 text-center px-2">
           {getTranslation(language, 'storeSubtitle')}
         </p>
+        <p className="text-xs text-emerald-300/90 text-center px-2">
+          {getTranslation(language, 'storeUnlockNote')}
+        </p>
 
         {message && (
           <p
@@ -86,7 +89,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
 
         {CONTENT_PACKS.map((pack) => {
           const owned = ownedPacks.includes(pack.id) || pack.priceEur === 0;
-          const price = formatPrice(pack.priceEur, language);
+          const price = packPriceLabel(pack, storeProducts, language);
 
           return (
             <div

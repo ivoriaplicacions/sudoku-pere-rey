@@ -4,10 +4,17 @@ import { getTranslation } from '../../i18n/translations';
 import {
   APP_VERSION,
   PUBLISHER,
+  PUBLISHER_LEGAL_NAME,
+  PUBLISHER_TRADE_NAME,
+  PUBLISHER_TAX_ID,
+  PUBLISHER_ADDRESS,
+  PUBLISHER_EMAIL,
+  PUBLISHER_WEBSITE,
   SUPPORT_URL,
   PRIVACY_PATH,
   AI_ACT_PATH,
   GOVERNANCE_PATH,
+  LICENSES_PATH,
   LEGAL_HUB_PATH,
 } from '../../version';
 import { X, Scale, ArrowLeft } from 'lucide-react';
@@ -21,6 +28,7 @@ const LEGAL_DOCS = [
   { path: PRIVACY_PATH, labelKey: 'privacyPolicy' },
   { path: AI_ACT_PATH, labelKey: 'aiActTitle' },
   { path: GOVERNANCE_PATH, labelKey: 'governance' },
+  { path: LICENSES_PATH, labelKey: 'licenses' },
   { path: LEGAL_HUB_PATH, labelKey: 'legalHub' },
 ] as const;
 
@@ -100,6 +108,41 @@ export const LegalModal = forwardRef<LegalModalHandle, LegalModalProps>(
               {getTranslation(language, 'appName')} · {getTranslation(language, 'version')}{' '}
               {APP_VERSION}
             </p>
+
+            <section className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-2">
+              <p className="text-[11px] font-extrabold uppercase tracking-wider text-white/50">
+                {getTranslation(language, 'legalIdentity')}
+              </p>
+              <p className="font-bold text-white/90">
+                {PUBLISHER_LEGAL_NAME} — {PUBLISHER_TRADE_NAME}
+              </p>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[13px]">
+                <dt className="text-white/45">{getTranslation(language, 'taxId')}</dt>
+                <dd>{PUBLISHER_TAX_ID}</dd>
+                <dt className="text-white/45">{getTranslation(language, 'address')}</dt>
+                <dd>{PUBLISHER_ADDRESS}</dd>
+                <dt className="text-white/45">{getTranslation(language, 'email')}</dt>
+                <dd>
+                  <a
+                    href={`mailto:${PUBLISHER_EMAIL}`}
+                    className="text-cyan-300 underline underline-offset-2"
+                  >
+                    {PUBLISHER_EMAIL}
+                  </a>
+                </dd>
+                <dt className="text-white/45">{getTranslation(language, 'website')}</dt>
+                <dd>
+                  <a
+                    href={PUBLISHER_WEBSITE}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-cyan-300 underline underline-offset-2"
+                  >
+                    {PUBLISHER_WEBSITE.replace('https://', '')}
+                  </a>
+                </dd>
+              </dl>
+            </section>
             <p>{getTranslation(language, 'privacyBody')}</p>
             <p>{getTranslation(language, 'privacyIap')}</p>
             <p className="text-base font-black text-cyan-300">

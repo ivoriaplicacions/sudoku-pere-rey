@@ -5,6 +5,8 @@ export const translations = {
     appName: 'Maestros del Sudoku',
     subtitle: '4 packs · 800 sudokus · el primer pack és gratuït',
     storeSubtitle: 'Pack 1 gratuït (200 sudokus). Packs II–IV: 0,99 € cadascun (Google Play i App Store).',
+    storeUnlockNote:
+      'En comprar un pack, els seus 10 nivells s’obren immediatament. Compra única, sense subscripció.',
     pack: 'Pack',
     comingSoon: 'Aviat',
     gamePaused: 'Joc en Pausa',
@@ -88,11 +90,19 @@ export const translations = {
     governanceBody:
       'Inventari d’IA buit. El jugador controla cada jugada i el progrés resta al dispositiu. Qualsevol funció futura d’aprenentatge automàtic es classificarà abans de publicar-la.',
     legalHub: 'Centre legal',
+    licenses: 'Llicències de codi obert',
+    legalIdentity: 'Identificació del titular',
+    taxId: 'NIF',
+    address: 'Adreça',
+    email: 'Correu',
+    website: 'Web',
   },
   es: {
     appName: 'Maestros del Sudoku',
     subtitle: '4 packs · 800 sudokus · el primer pack es gratis',
     storeSubtitle: 'Pack 1 gratis (200 sudokus). Packs II–IV: 0,99 € cada uno (Google Play y App Store).',
+    storeUnlockNote:
+      'Al comprar un pack, sus 10 niveles se abren de inmediato. Compra única, sin suscripción.',
     pack: 'Pack',
     comingSoon: 'Próximamente',
     gamePaused: 'Juego en Pausa',
@@ -176,11 +186,19 @@ export const translations = {
     governanceBody:
       'Inventario de IA vacío. El jugador controla cada jugada y el progreso permanece en el dispositivo. Cualquier función futura de aprendizaje automático se clasificará antes de publicarla.',
     legalHub: 'Centro legal',
+    licenses: 'Licencias de código abierto',
+    legalIdentity: 'Identificación del titular',
+    taxId: 'NIF',
+    address: 'Dirección',
+    email: 'Correo',
+    website: 'Web',
   },
   en: {
     appName: 'Maestros del Sudoku',
     subtitle: '4 packs · 800 sudokus · free starter pack',
     storeSubtitle: 'Pack 1 free (200 sudokus). Packs II–IV: 0,99 € each (Google Play and App Store).',
+    storeUnlockNote:
+      'Buying a pack opens all ten of its levels straight away. One-time purchase, no subscription.',
     pack: 'Pack',
     comingSoon: 'Coming soon',
     gamePaused: 'Game Paused',
@@ -264,6 +282,12 @@ export const translations = {
     governanceBody:
       'AI inventory is empty. The player controls every move and progress stays on device. Any future machine-learning feature will be classified before it ships.',
     legalHub: 'Legal hub',
+    licenses: 'Open source licences',
+    legalIdentity: 'Publisher identification',
+    taxId: 'Tax ID',
+    address: 'Address',
+    email: 'Email',
+    website: 'Website',
   }
 };
 

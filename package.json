@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run legal:sync && tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
     "puzzles:generate": "node scripts/generatePuzzles.mjs",
@@ -17,7 +17,8 @@
     "cap:sync:ios": "npm run build && npx cap sync ios",
     "ios:open": "npx cap open ios",
     "ios:add": "npx cap add ios",
-    "ios:info": "node scripts/ios-check.mjs"
+    "ios:info": "node scripts/ios-check.mjs",
+    "legal:sync": "node scripts/syncLegalDocs.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.0",

@@ -22,12 +22,14 @@ import { audioSynth } from '../utils/audio';
 import {
   getOwnedPacks,
   isLevelAccessible,
+  loadStoreProducts,
   purchasePack as purchasePackService,
   restorePurchases as restorePurchasesService,
   syncPurchasesFromStore,
   type PurchaseResult,
   type RestoreResult,
 } from '../services/monetization';
+import type { StoreProducts } from '../data/packs';
 import {
   loadLanguage,
   saveLanguage,
@@ -84,6 +86,8 @@ interface GameContextType {
   progressMap: Record<string, PuzzleProgress>;
   playerStats: PlayerStats;
   ownedPacks: string[];
+  /** Localised titles and prices from Google Play / the App Store, by product id. */
+  storeProducts: StoreProducts;
   purchasePack: (packId: string) => Promise<PurchaseResult>;
   restorePurchases: () => Promise<RestoreResult>;
   canAccessLevel: (level: number) => boolean;
@@ -144,6 +148,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
   const [selectedPuzzle, setSelectedPuzzle] = useState<Puzzle | null>(null);
   const [ownedPacks, setOwnedPacks] = useState<string[]>(() => getOwnedPacks());
+  const [storeProducts, setStoreProducts] = useState<StoreProducts>({});
 
   const [allPuzzles] = useState<Puzzle[]>(() => generateAllPuzzles());
   const [progressMap, setProgressMap] = useState<Record<string, PuzzleProgress>>(loadProgressMap);
@@ -225,6 +230,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     void (async () => {
       const synced = await syncPurchasesFromStore();
       setOwnedPacks(synced);
+      setStoreProducts(await loadStoreProducts());
     })();
   }, []);
 
@@ -638,6 +644,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         progressMap,
         playerStats,
         ownedPacks,
+        storeProducts,
         purchasePack,
         restorePurchases,
         canAccessLevel,

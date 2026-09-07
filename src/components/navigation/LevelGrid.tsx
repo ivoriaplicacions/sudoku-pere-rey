@@ -5,7 +5,7 @@ import { localized } from '../../i18n/localized';
 import { Lock, Star, Sparkles, ShoppingBag } from 'lucide-react';
 import { PUZZLES_PER_LEVEL } from '../../utils/sudokuLogic';
 import { CONTENT_PACKS, formatPackPrice, getPackForLevel } from '../../data/packs';
-import { completionsNeededForLevel, isLevelProgressUnlocked } from '../../utils/levelProgress';
+import { completionsNeededForLevel, requiresProgressGate } from '../../utils/levelProgress';
 import { buildLevelList } from '../../data/levels';
 import { ContinueBanner } from './ContinueBanner';
 
@@ -13,8 +13,16 @@ const LEVEL_LIST = buildLevelList();
 const MAX_STARS_PER_LEVEL = PUZZLES_PER_LEVEL * 3;
 
 export const LevelGrid: React.FC<{ onOpenStore?: () => void }> = ({ onOpenStore }) => {
-  const { language, setSelectedLevel, setView, progressMap, playerStats, canAccessLevel } =
-    useGame();
+  const {
+    language,
+    setSelectedLevel,
+    setView,
+    progressMap,
+    playerStats,
+    canAccessLevel,
+    canPlayLevel,
+    storeProducts,
+  } = useGame();
 
   return (
     <div className="w-full max-w-md mx-auto p-4 space-y-4 pb-2">
@@ -37,24 +45,23 @@ export const LevelGrid: React.FC<{ onOpenStore?: () => void }> = ({ onOpenStore 
                 {localized(pack.name, language)}
               </h3>
               <span className="text-[10px] font-bold text-white/50">
-                {formatPackPrice(pack.priceEur, language)}
+                {formatPackPrice(pack, storeProducts, language)}
               </span>
             </div>
 
             <div className="grid grid-cols-1 gap-3">
               {packLevels.map((lvlInfo) => {
                 const packAccessible = canAccessLevel(lvlInfo.level);
-                const isProgressUnlocked = isLevelProgressUnlocked(
-                  lvlInfo.level,
-                  playerStats.puzzlesCompleted,
-                );
-                const isUnlocked = packAccessible && isProgressUnlocked;
+                const isUnlocked = canPlayLevel(lvlInfo.level);
                 const packMeta = getPackForLevel(lvlInfo.level);
                 const needsPurchase = !packAccessible && packMeta && packMeta.priceEur > 0;
-                const progressLeft = Math.max(
-                  0,
-                  completionsNeededForLevel(lvlInfo.level) - playerStats.puzzlesCompleted,
-                );
+                // Only the free pack is still gated by progress, so only it counts down.
+                const progressLeft = requiresProgressGate(lvlInfo.level)
+                  ? Math.max(
+                      0,
+                      completionsNeededForLevel(lvlInfo.level) - playerStats.puzzlesCompleted,
+                    )
+                  : 0;
 
                 let levelStars = 0;
                 let completedCount = 0;

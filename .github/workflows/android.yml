@@ -38,6 +38,7 @@ jobs:
       - name: Sync Capacitor Android
         run: npx cap sync android
 
+      # The signed bundle is built by android-release.yml, which has the keystore.
       - name: Make Gradle wrapper executable
         working-directory: android
         run: chmod +x gradlew
@@ -46,20 +47,9 @@ jobs:
         working-directory: android
         run: ./gradlew assembleDebug
 
-      - name: Build release bundle
-        working-directory: android
-        run: ./gradlew bundleRelease
-
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 14
-
-      - name: Upload AAB artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release-aab
-          path: android/app/build/outputs/bundle/release/app-release.aab
           retention-days: 14
