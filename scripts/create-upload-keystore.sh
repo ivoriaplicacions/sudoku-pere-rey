@@ -20,7 +20,7 @@ ALIAS=maestros
 
 keytool -genkeypair -keystore "$KEYSTORE" -alias "$ALIAS" -keyalg RSA -keysize 2048 -validity 10000 \
   -storepass "$PASS" -keypass "$PASS" -noprompt \
-  -dname "CN=Ivori Aplicacions, OU=Maestros del Sudoku, O=Ivori Aplicacions, L=Barcelona, C=ES"
+  -dname "CN=Ivori Aplicacions, OU=Maestros del Sudoku, O=Ivori Aplicacions, L=Tarragona, C=ES"
 
 cat > "$PROPS" <<EOF
 storeFile=maestros-release.jks

@@ -92,15 +92,44 @@ export function getPackByProductId(productId: string): ContentPack | undefined {
   return CONTENT_PACKS.find((p) => p.productId === productId);
 }
 
-export function formatPrice(priceEur: number, language: 'ca' | 'es' | 'en'): string {
+type PackLanguage = 'ca' | 'es' | 'en';
+
+/** What the native store tells us about a product, keyed by product identifier. */
+export type StoreProducts = Record<string, { title?: string; priceString?: string }>;
+
+/**
+ * Fallback only. The euro list price is not what a player outside the eurozone is
+ * charged, so it may only be shown while the store price is still loading, or on web
+ * where there is no billing at all.
+ */
+export function formatPrice(priceEur: number, language: PackLanguage): string {
   if (priceEur === 0) {
     return language === 'en' ? 'Free' : 'Gratis';
   }
   return '0,99 €';
 }
 
-/** Paid packs are 0,99 € each, never per level. */
-export function formatPackPrice(priceEur: number, language: 'ca' | 'es' | 'en'): string {
-  if (priceEur === 0) return formatPrice(0, language);
-  return `${formatPrice(priceEur, language)} / pack`;
+/**
+ * The price the store will actually charge, in the player's own currency and with their
+ * own tax applied. Apple requires the StoreKit price to be the one on screen, and showing
+ * a different figure would be misleading under the TRLGDCU anywhere.
+ */
+export function packPriceLabel(
+  pack: ContentPack,
+  products: StoreProducts,
+  language: PackLanguage,
+): string {
+  if (pack.priceEur === 0) return formatPrice(0, language);
+  const live = pack.productId ? products[pack.productId]?.priceString : undefined;
+  return live ?? formatPrice(pack.priceEur, language);
+}
+
+/** Same price, labelled per pack so nobody reads it as a per-level charge. */
+export function formatPackPrice(
+  pack: ContentPack,
+  products: StoreProducts,
+  language: PackLanguage,
+): string {
+  if (pack.priceEur === 0) return formatPrice(0, language);
+  return `${packPriceLabel(pack, products, language)} / pack`;
 }

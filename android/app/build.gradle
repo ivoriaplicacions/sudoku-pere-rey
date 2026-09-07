@@ -37,7 +37,9 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig keystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug
+            // No keystore means no signature at all. Falling back to the debug key would
+            // produce an AAB that looks releasable and that Play rejects on upload.
+            signingConfig keystorePropertiesFile.exists() ? signingConfigs.release : null
         }
     }
     compileOptions {
@@ -62,6 +64,18 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+}
+
+// Fail loudly instead of shipping an unsigned artifact named like a release.
+gradle.taskGraph.whenReady { graph ->
+    def wantsRelease = graph.allTasks.any { it.name in ['assembleRelease', 'bundleRelease'] }
+    if (wantsRelease && !keystorePropertiesFile.exists()) {
+        throw new GradleException(
+            "android/keystore.properties not found, so the release build cannot be signed.\n" +
+            "  Locally: ./scripts/create-upload-keystore.sh\n" +
+            "  CI:      run the 'Android Release' workflow, which restores the keystore from secrets."
+        )
+    }
 }
 
 apply from: 'capacitor.build.gradle'
