@@ -78,6 +78,15 @@ npm run build
 npm run lint
 ```
 
+## Preflight de publicación
+
+```bash
+npm run release:check
+```
+
+Comprueba la coherencia de versiones, productos de compra integrada, páginas legales e
+iconos de tienda. También avisa de materiales comerciales todavía pendientes.
+
 ## Sudokus
 
 ```bash

@@ -397,8 +397,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     applyPuzzleStart(puzzle, newBoard);
   };
 
-  const checkVictory = (currentBoard: CellState[][]) => {
+  const checkVictory = (
+    currentBoard: CellState[][],
+    metrics: { mistakes?: number; hintsUsed?: number } = {},
+  ) => {
     if (!selectedPuzzle) return;
+
+    const scoredMistakes = metrics.mistakes ?? mistakes;
+    const scoredHintsUsed = metrics.hintsUsed ?? hintsUsed;
 
     for (let r = 0; r < 9; r++) {
       for (let c = 0; c < 9; c++) {
@@ -409,7 +415,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     setIsCompleted(true);
-    const stars = calculateStars(timerSeconds, mistakes, hintsUsed);
+    const stars = calculateStars(timerSeconds, scoredMistakes, scoredHintsUsed);
     const alreadyCompleted = Boolean(progressMap[selectedPuzzle.id]?.completed);
     const puzzleXp = alreadyCompleted ? 0 : selectedPuzzle.level * 50 + 100 + stars * 25;
 
@@ -436,8 +442,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         completed: true,
         stars: bestStars,
         bestTime,
-        mistakes,
-        hintsUsed,
+        mistakes: scoredMistakes,
+        hintsUsed: scoredHintsUsed,
       },
     };
     setProgressMap(newProgressMap);
@@ -460,8 +466,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       stats: statsAfterPuzzle,
       justCompleted: {
         level: selectedPuzzle.level,
-        mistakes,
-        hintsUsed,
+        mistakes: scoredMistakes,
+        hintsUsed: scoredHintsUsed,
         time: timerSeconds,
       },
     });
@@ -524,11 +530,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     target.isHint = false;
     clearNotesForDigit(newBoard, row, col, num);
 
-    if (autoCheckErrors && !isCorrect) {
-      audioSynth.playError();
-      hapticError();
-      target.isError = true;
+    const nextMistakes = isCorrect ? mistakes : mistakes + 1;
+    if (!isCorrect) {
+      // Keep score integrity independent from the optional visual feedback.
       setMistakes((prev) => prev + 1);
+      if (autoCheckErrors) {
+        audioSynth.playError();
+        hapticError();
+        target.isError = true;
+      } else {
+        audioSynth.playPlaceNumber(num);
+        target.isError = false;
+      }
     } else {
       audioSynth.playPlaceNumber(num);
       target.isError = false;
@@ -536,7 +549,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setHistory((prev) => [...prev, { cells: snaps, selectedCell, hintsDelta: 0 }]);
     setBoard(newBoard);
-    checkVictory(newBoard);
+    checkVictory(newBoard, { mistakes: nextMistakes });
   };
 
   const eraseCell = () => {
@@ -593,10 +606,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearNotesForDigit(newBoard, row, col, correctVal);
 
     setHistory((prev) => [...prev, { cells: snaps, selectedCell: targetPos, hintsDelta: 1 }]);
-    setHintsUsed((prev) => prev + 1);
+    const nextHintsUsed = hintsUsed + 1;
+    setHintsUsed(nextHintsUsed);
     setSelectedCell(targetPos);
     setBoard(newBoard);
-    checkVictory(newBoard);
+    checkVictory(newBoard, { hintsUsed: nextHintsUsed });
   };
 
   const undoMove = () => {
@@ -685,6 +699,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+// The provider and its hook intentionally share this module as the public context API.
+// oxlint-disable-next-line react/only-export-components
 export const useGame = () => {
   const context = useContext(GameContext);
   if (!context) {

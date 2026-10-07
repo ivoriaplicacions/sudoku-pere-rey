@@ -1,6 +1,7 @@
 import type {
   CellPosition,
   CellState,
+  HistoryCellSnapshot,
   HistoryEntry,
   InProgressSession,
   Language,
@@ -45,6 +46,82 @@ export function safeRemoveItem(key: string): void {
   } catch {
     // ignore
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isIntegerBetween(value: unknown, min: number, max: number): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max;
+}
+
+function isNonNegativeInteger(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0;
+}
+
+function isNonNegativeNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0;
+}
+
+function isCellPosition(value: unknown): value is CellPosition | null {
+  return (
+    value === null ||
+    (isRecord(value) &&
+      isIntegerBetween(value.row, 0, 8) &&
+      isIntegerBetween(value.col, 0, 8))
+  );
+}
+
+function isNotes(value: unknown): value is number[] {
+  return Array.isArray(value) && value.every((note) => isIntegerBetween(note, 1, 9));
+}
+
+function isSerializedCell(value: unknown): value is SerializedCell {
+  return (
+    isRecord(value) &&
+    isIntegerBetween(value.value, 0, 9) &&
+    isIntegerBetween(value.initialValue, 0, 9) &&
+    isNotes(value.notes) &&
+    typeof value.isError === 'boolean' &&
+    typeof value.isHint === 'boolean'
+  );
+}
+
+function isHistoryCellSnapshot(value: unknown): value is HistoryCellSnapshot {
+  return (
+    isRecord(value) &&
+    isIntegerBetween(value.row, 0, 8) &&
+    isIntegerBetween(value.col, 0, 8) &&
+    isIntegerBetween(value.value, 0, 9) &&
+    isNotes(value.notes) &&
+    typeof value.isError === 'boolean' &&
+    typeof value.isHint === 'boolean'
+  );
+}
+
+function isHistoryEntry(value: unknown): value is HistoryEntry {
+  return (
+    isRecord(value) &&
+    Array.isArray(value.cells) &&
+    value.cells.every(isHistoryCellSnapshot) &&
+    isCellPosition(value.selectedCell) &&
+    isNonNegativeInteger(value.hintsDelta)
+  );
+}
+
+function isPuzzleProgress(value: unknown): value is PuzzleProgress {
+  return (
+    isRecord(value) &&
+    typeof value.puzzleId === 'string' &&
+    isNonNegativeInteger(value.level) &&
+    isNonNegativeInteger(value.puzzleNumber) &&
+    typeof value.completed === 'boolean' &&
+    isIntegerBetween(value.stars, 0, 3) &&
+    isNonNegativeNumber(value.bestTime) &&
+    isNonNegativeInteger(value.mistakes) &&
+    isNonNegativeInteger(value.hintsUsed)
+  );
 }
 
 export function hasSeenIntro(): boolean {
@@ -105,7 +182,12 @@ export function loadProgressMap(): Record<string, PuzzleProgress> {
   const saved = safeGetItem(STORAGE_KEYS.progress);
   if (!saved) return {};
   try {
-    return JSON.parse(saved) as Record<string, PuzzleProgress>;
+    const parsed: unknown = JSON.parse(saved);
+    if (!isRecord(parsed)) return {};
+
+    return Object.fromEntries(
+      Object.entries(parsed).filter(([, progress]) => isPuzzleProgress(progress)),
+    ) as Record<string, PuzzleProgress>;
   } catch {
     return {};
   }
@@ -119,7 +201,34 @@ export function loadPlayerStats(fallback: PlayerStats): PlayerStats {
   const saved = safeGetItem(STORAGE_KEYS.stats);
   if (!saved) return fallback;
   try {
-    return { ...fallback, ...(JSON.parse(saved) as PlayerStats) };
+    const parsed: unknown = JSON.parse(saved);
+    if (!isRecord(parsed)) return fallback;
+
+    return {
+      ...fallback,
+      xp: isNonNegativeNumber(parsed.xp) ? parsed.xp : fallback.xp,
+      playerLevel: isNonNegativeInteger(parsed.playerLevel)
+        ? Math.max(1, parsed.playerLevel)
+        : fallback.playerLevel,
+      totalStars: isNonNegativeInteger(parsed.totalStars)
+        ? parsed.totalStars
+        : fallback.totalStars,
+      puzzlesCompleted: isNonNegativeInteger(parsed.puzzlesCompleted)
+        ? parsed.puzzlesCompleted
+        : fallback.puzzlesCompleted,
+      currentStreak: isNonNegativeInteger(parsed.currentStreak)
+        ? parsed.currentStreak
+        : fallback.currentStreak,
+      lastPlayedDate:
+        typeof parsed.lastPlayedDate === 'string' ? parsed.lastPlayedDate : fallback.lastPlayedDate,
+      unlockedThemes: Array.isArray(parsed.unlockedThemes)
+        ? parsed.unlockedThemes.filter(isThemeId)
+        : fallback.unlockedThemes,
+      unlockedAchievements: Array.isArray(parsed.unlockedAchievements)
+        ? parsed.unlockedAchievements.filter((id): id is string => typeof id === 'string')
+        : fallback.unlockedAchievements,
+      ...(typeof parsed.isPremium === 'boolean' ? { isPremium: parsed.isPremium } : {}),
+    };
   } catch {
     return fallback;
   }
@@ -160,8 +269,20 @@ function isValidSession(raw: unknown): raw is InProgressSession {
   const session = raw as InProgressSession;
   if (typeof session.puzzleId !== 'string' || !session.puzzleId) return false;
   if (!Array.isArray(session.board) || session.board.length !== 9) return false;
-  if (!session.board.every((row) => Array.isArray(row) && row.length === 9)) return false;
-  if (typeof session.timerSeconds !== 'number' || session.timerSeconds < 0) return false;
+  if (!session.board.every((row) => Array.isArray(row) && row.length === 9 && row.every(isSerializedCell))) {
+    return false;
+  }
+  if (!isNonNegativeNumber(session.timerSeconds)) return false;
+  if (!isNonNegativeInteger(session.level) || !isNonNegativeInteger(session.puzzleNumber)) {
+    return false;
+  }
+  if (!isCellPosition(session.selectedCell) || typeof session.isNotesMode !== 'boolean') {
+    return false;
+  }
+  if (!isNonNegativeInteger(session.mistakes) || !isNonNegativeInteger(session.hintsUsed)) {
+    return false;
+  }
+  if (!isNonNegativeNumber(session.savedAt)) return false;
   return true;
 }
 
@@ -170,9 +291,14 @@ export function loadSession(): InProgressSession | null {
   if (!saved) return null;
   try {
     const parsed: unknown = JSON.parse(saved);
-    return isValidSession(parsed)
-      ? { ...parsed, history: Array.isArray(parsed.history) ? parsed.history : [] }
-      : null;
+    if (!isValidSession(parsed)) return null;
+    return {
+      ...parsed,
+      history:
+        Array.isArray(parsed.history) && parsed.history.every(isHistoryEntry)
+          ? parsed.history
+          : [],
+    };
   } catch {
     return null;
   }

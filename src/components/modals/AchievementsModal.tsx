@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { localized } from '../../i18n/localized';
 import { achievementsData } from '../../data/achievements';
 import { X, Trophy, Lock } from 'lucide-react';
+import { useModalAccessibility } from '../../hooks/useModalAccessibility';
 
 interface AchievementsModalProps {
   isOpen: boolean;
@@ -12,20 +13,32 @@ interface AchievementsModalProps {
 
 export const AchievementsModal: React.FC<AchievementsModalProps> = ({ isOpen, onClose }) => {
   const { language, playerStats } = useGame();
+  const titleId = useId();
+  const dialogRef = useModalAccessibility(isOpen, onClose);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fade-in">
-      <div className="w-full max-w-md bg-slate-900 border border-white/20 rounded-3xl p-5 text-white space-y-4 shadow-2xl relative max-h-[85vh] flex flex-col">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="w-full max-w-md bg-slate-900 border border-white/20 rounded-3xl p-5 text-white space-y-4 shadow-2xl relative max-h-[85vh] flex flex-col"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <div className="flex items-center space-x-2">
             <Trophy className="w-5 h-5 text-amber-400" />
-            <h2 className="text-lg font-black">{getTranslation(language, 'achievements')}</h2>
+            <h2 id={titleId} className="text-lg font-black">
+              {getTranslation(language, 'achievements')}
+            </h2>
           </div>
           <button
             onClick={onClose}
+            aria-label={getTranslation(language, 'close')}
             className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition"
           >
             <X className="w-4 h-4 text-white/80" />

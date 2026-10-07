@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { findNextPuzzle } from '../../utils/sudokuLogic';
 import { Star, Trophy, Clock, ArrowRight } from 'lucide-react';
+import { useModalAccessibility } from '../../hooks/useModalAccessibility';
 
 export const VictoryModal: React.FC = () => {
   const {
@@ -14,6 +15,9 @@ export const VictoryModal: React.FC = () => {
     startPuzzle,
     canPlayLevel,
   } = useGame();
+
+  const titleId = useId();
+  const dialogRef = useModalAccessibility(Boolean(victoryData), closeVictoryModal);
 
   if (!victoryData) return null;
 
@@ -37,7 +41,14 @@ export const VictoryModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fade-in">
-      <div className="w-full max-w-sm bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 border border-amber-500/40 rounded-3xl p-6 text-center text-white space-y-5 shadow-2xl shadow-amber-500/20 relative overflow-hidden">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="w-full max-w-sm bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 border border-amber-500/40 rounded-3xl p-6 text-center text-white space-y-5 shadow-2xl shadow-amber-500/20 relative overflow-hidden"
+      >
         <div className="absolute -top-12 -left-12 w-32 h-32 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
 
@@ -46,7 +57,7 @@ export const VictoryModal: React.FC = () => {
         </div>
 
         <div>
-          <h2 className="text-2xl font-black tracking-tight text-white">
+          <h2 id={titleId} className="text-2xl font-black tracking-tight text-white">
             {getTranslation(language, 'congratulations')}
           </h2>
           <p className="text-xs text-white/70 mt-1">
@@ -54,7 +65,11 @@ export const VictoryModal: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex justify-center items-center space-x-2 py-2">
+        <div
+          className="flex justify-center items-center space-x-2 py-2"
+          role="img"
+          aria-label={`${getTranslation(language, 'starsEarned')}: ${victoryData.stars} / 3`}
+        >
           {[1, 2, 3].map((starIdx) => (
             <Star
               key={starIdx}

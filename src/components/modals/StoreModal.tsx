@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { localized } from '../../i18n/localized';
 import { CONTENT_PACKS, packPriceLabel } from '../../data/packs';
 import { X, ShoppingBag, CheckCircle, Lock, Clock } from 'lucide-react';
+import { useModalAccessibility } from '../../hooks/useModalAccessibility';
 
 interface StoreModalProps {
   isOpen: boolean;
@@ -21,6 +22,8 @@ export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
   const { language, ownedPacks, storeProducts, purchasePack, restorePurchases } = useGame();
   const [busy, setBusy] = React.useState<string | null>(null);
   const [message, setMessage] = React.useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
+  const titleId = useId();
+  const dialogRef = useModalAccessibility(isOpen, onClose);
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -52,16 +55,25 @@ export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-slate-950 text-white animate-fade-in">
+    <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      tabIndex={-1}
+      className="fixed inset-0 z-50 flex flex-col bg-slate-950 text-white animate-fade-in"
+    >
       <header className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/50 backdrop-blur-md">
         <div className="flex items-center space-x-2">
           <ShoppingBag className="w-5 h-5 text-amber-400" />
-          <h2 className="text-lg font-black">{getTranslation(language, 'store')}</h2>
+          <h2 id={titleId} className="text-lg font-black">
+            {getTranslation(language, 'store')}
+          </h2>
         </div>
         <button
           onClick={onClose}
           className="p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition"
-          aria-label="Close"
+          aria-label={getTranslation(language, 'close')}
         >
           <X className="w-5 h-5 text-white/80" />
         </button>
@@ -77,6 +89,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
 
         {message && (
           <p
+            role={message.kind === 'error' ? 'alert' : 'status'}
             className={`text-center text-xs font-bold px-3 py-2 rounded-xl ${
               message.kind === 'ok'
                 ? 'bg-emerald-500/15 text-emerald-300'

@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     // Persistence and entitlements both go through localStorage.
     environment: 'jsdom',
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.{ts,tsx}'],
     restoreMocks: true,
   },
 })

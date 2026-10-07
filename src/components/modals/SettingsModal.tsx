@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { localized } from '../../i18n/localized';
@@ -6,6 +6,7 @@ import { THEME_IDS, getTheme } from '../../data/themes';
 import type { Language } from '../../types/sudoku';
 import { APP_VERSION } from '../../version';
 import { X, Palette, CheckCircle, Globe, Vibrate, Volume2, Scale } from 'lucide-react';
+import { useModalAccessibility } from '../../hooks/useModalAccessibility';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -38,20 +39,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     soundEnabled,
     setSoundEnabled,
   } = useGame();
+  const titleId = useId();
+  const dialogRef = useModalAccessibility(isOpen, onClose);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-slate-950 text-white animate-fade-in">
+    <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      tabIndex={-1}
+      className="fixed inset-0 z-50 flex flex-col bg-slate-950 text-white animate-fade-in"
+    >
       <header className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/50 backdrop-blur-md">
         <div className="flex items-center space-x-2">
           <Palette className="w-5 h-5 text-cyan-400" />
-          <h2 className="text-lg font-black">{getTranslation(language, 'settings')}</h2>
+          <h2 id={titleId} className="text-lg font-black">
+            {getTranslation(language, 'settings')}
+          </h2>
         </div>
         <button
           onClick={onClose}
           className="p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition"
-          aria-label="Close"
+          aria-label={getTranslation(language, 'close')}
         >
           <X className="w-5 h-5 text-white/80" />
         </button>
@@ -68,6 +80,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <button
                 key={id}
                 onClick={() => setLanguage(id)}
+                aria-pressed={language === id}
                 className={`py-2.5 rounded-xl text-sm font-bold transition active:scale-[0.98] ${
                   language === id
                     ? 'bg-cyan-500 text-slate-950'
@@ -93,6 +106,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <button
                   key={themeKey}
                   onClick={() => setTheme(themeKey)}
+                  aria-pressed={isSelected}
                   className={`rounded-2xl border overflow-hidden text-left transition-all active:scale-[0.98] ${
                     isSelected ? th.accentRing : 'border-white/10 hover:border-white/25'
                   }`}
@@ -117,6 +131,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <span className="text-sm font-bold pr-3">{getTranslation(language, 'autoCheckErrors')}</span>
             <button
               onClick={() => setAutoCheckErrors(!autoCheckErrors)}
+              aria-label={`${getTranslation(language, 'autoCheckErrors')}: ${getTranslation(language, autoCheckErrors ? 'enabled' : 'disabled')}`}
+              aria-pressed={autoCheckErrors}
               className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${
                 autoCheckErrors ? 'bg-cyan-500' : 'bg-white/20'
               }`}
@@ -136,6 +152,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </span>
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
+              aria-label={`${getTranslation(language, 'soundEffects')}: ${getTranslation(language, soundEnabled ? 'enabled' : 'disabled')}`}
+              aria-pressed={soundEnabled}
               className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${
                 soundEnabled ? 'bg-cyan-500' : 'bg-white/20'
               }`}
@@ -155,6 +173,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </span>
             <button
               onClick={() => setHapticsEnabled(!hapticsEnabled)}
+              aria-label={`${getTranslation(language, 'haptics')}: ${getTranslation(language, hapticsEnabled ? 'enabled' : 'disabled')}`}
+              aria-pressed={hapticsEnabled}
               className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${
                 hapticsEnabled ? 'bg-cyan-500' : 'bg-white/20'
               }`}

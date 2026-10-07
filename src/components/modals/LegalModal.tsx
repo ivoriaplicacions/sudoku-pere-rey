@@ -1,4 +1,4 @@
-import { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
+import { useState, useImperativeHandle, forwardRef, useEffect, useId } from 'react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import {
@@ -18,6 +18,7 @@ import {
   LEGAL_HUB_PATH,
 } from '../../version';
 import { X, Scale, ArrowLeft } from 'lucide-react';
+import { useModalAccessibility } from '../../hooks/useModalAccessibility';
 
 interface LegalModalProps {
   isOpen: boolean;
@@ -40,6 +41,11 @@ export const LegalModal = forwardRef<LegalModalHandle, LegalModalProps>(
   ({ isOpen, onClose }, ref) => {
     const { language } = useGame();
     const [openDoc, setOpenDoc] = useState<string | null>(null);
+    const titleId = useId();
+    const dialogRef = useModalAccessibility(isOpen, onClose, () => {
+      if (openDoc) setOpenDoc(null);
+      else onClose();
+    });
 
     useImperativeHandle(ref, () => ({
       closeNestedDoc: () => {
@@ -61,7 +67,14 @@ export const LegalModal = forwardRef<LegalModalHandle, LegalModalProps>(
     };
 
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-slate-950 text-white animate-fade-in">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="fixed inset-0 z-50 flex flex-col bg-slate-950 text-white animate-fade-in"
+      >
         <header className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/50 backdrop-blur-md">
           <div className="flex items-center space-x-2 min-w-0">
             {openDoc ? (
@@ -69,14 +82,14 @@ export const LegalModal = forwardRef<LegalModalHandle, LegalModalProps>(
                 type="button"
                 onClick={() => setOpenDoc(null)}
                 className="p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition"
-                aria-label="Back"
+                aria-label={getTranslation(language, 'back')}
               >
                 <ArrowLeft className="w-5 h-5 text-white/80" />
               </button>
             ) : (
               <Scale className="w-5 h-5 text-cyan-400 shrink-0" />
             )}
-            <h2 className="text-lg font-black truncate">
+            <h2 id={titleId} className="text-lg font-black truncate">
               {openDoc
                 ? getTranslation(
                     language,
@@ -89,7 +102,7 @@ export const LegalModal = forwardRef<LegalModalHandle, LegalModalProps>(
             type="button"
             onClick={close}
             className="p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition"
-            aria-label="Close"
+            aria-label={getTranslation(language, 'close')}
           >
             <X className="w-5 h-5 text-white/80" />
           </button>
@@ -98,7 +111,10 @@ export const LegalModal = forwardRef<LegalModalHandle, LegalModalProps>(
         {openDoc ? (
           <iframe
             src={openDoc}
-            title={getTranslation(language, 'legal')}
+            title={getTranslation(
+              language,
+              LEGAL_DOCS.find((doc) => doc.path === openDoc)?.labelKey ?? 'legal',
+            )}
             className="flex-1 w-full bg-white"
           />
         ) : (

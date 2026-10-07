@@ -88,6 +88,24 @@ describe('loadSession', () => {
     expect(loadSession()).toBeNull();
   });
 
+  it('rejects a structurally correct session with malformed cell data', () => {
+    const malformed = JSON.parse(JSON.stringify(validSession())) as {
+      board: Array<Array<Record<string, unknown>>>;
+    };
+    malformed.board[0][0].value = 'not a digit';
+    localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(malformed));
+
+    expect(loadSession()).toBeNull();
+  });
+
+  it('drops malformed history instead of restoring unsafe entries', () => {
+    const malformed = JSON.parse(JSON.stringify(validSession())) as { history: unknown[] };
+    malformed.history = [{ cells: [{ row: 99 }] }];
+    localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(malformed));
+
+    expect(loadSession()?.history).toEqual([]);
+  });
+
   it('tolerates a session saved before history existed', () => {
     const { history: _history, ...withoutHistory } = validSession();
     localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(withoutHistory));
@@ -154,9 +172,61 @@ describe('settings fall back rather than break', () => {
     expect(loadProgressMap()).toEqual({});
   });
 
+  it('keeps valid progress entries and ignores malformed ones', () => {
+    localStorage.setItem(
+      STORAGE_KEYS.progress,
+      JSON.stringify({
+        valid: {
+          puzzleId: 'L1_P1',
+          level: 1,
+          puzzleNumber: 1,
+          completed: true,
+          stars: 3,
+          bestTime: 120,
+          mistakes: 0,
+          hintsUsed: 0,
+        },
+        malformed: { puzzleId: 'L1_P2', stars: 'three' },
+      }),
+    );
+
+    expect(loadProgressMap()).toEqual({
+      valid: expect.objectContaining({ puzzleId: 'L1_P1', stars: 3 }),
+    });
+  });
+
   it('merges stored stats over the defaults so new fields survive an upgrade', () => {
     const fallback = { xp: 0, level: 1, streak: 0, puzzlesCompleted: 0 } as unknown as PlayerStats;
     localStorage.setItem(STORAGE_KEYS.stats, JSON.stringify({ xp: 500 }));
     expect(loadPlayerStats(fallback)).toMatchObject({ xp: 500, puzzlesCompleted: 0 });
+  });
+
+  it('keeps defaults when stored stats contain invalid types', () => {
+    const fallback: PlayerStats = {
+      xp: 0,
+      playerLevel: 1,
+      totalStars: 0,
+      puzzlesCompleted: 0,
+      currentStreak: 0,
+      lastPlayedDate: '',
+      unlockedThemes: ['zen'],
+      unlockedAchievements: [],
+    };
+    localStorage.setItem(
+      STORAGE_KEYS.stats,
+      JSON.stringify({
+        xp: '500',
+        playerLevel: -4,
+        unlockedThemes: ['cyber', 'unknown-theme'],
+        unlockedAchievements: ['first_win', 42],
+      }),
+    );
+
+    expect(loadPlayerStats(fallback)).toMatchObject({
+      xp: 0,
+      playerLevel: 1,
+      unlockedThemes: ['cyber'],
+      unlockedAchievements: ['first_win'],
+    });
   });
 });
