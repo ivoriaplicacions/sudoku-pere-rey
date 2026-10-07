@@ -21,11 +21,14 @@ export const PUBLISHER_DUNS = '473131748';
 export const SUPPORT_URL = PUBLISHER_WEBSITE;
 export const SUPPORT_EMAIL = PUBLISHER_EMAIL;
 
-export const LEGAL_BASE_URL = 'https://ivoriaplicacions.github.io/sudoku-pere-rey';
+export const LEGAL_BASE_URL = 'https://ivoriaplicacions.es';
 export const PRIVACY_URL = `${LEGAL_BASE_URL}/privacy.html`;
 export const AI_ACT_URL = `${LEGAL_BASE_URL}/ai-act.html`;
 export const GOVERNANCE_URL = `${LEGAL_BASE_URL}/governance.html`;
-export const LICENSES_URL = `${LEGAL_BASE_URL}/licenses.html`;
+// The corporate site hosts the product privacy, AI Act and governance pages.
+// Keep the repository's generated licence inventory on GitHub Pages until it
+// is published on the corporate site as well.
+export const LICENSES_URL = 'https://ivoriaplicacions.github.io/sudoku-pere-rey/licenses.html';
 export const PRIVACY_PATH = '/privacy.html';
 export const AI_ACT_PATH = '/ai-act.html';
 export const GOVERNANCE_PATH = '/governance.html';
