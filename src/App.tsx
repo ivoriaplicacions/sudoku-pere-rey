@@ -159,7 +159,10 @@ const MainApp: React.FC = () => {
         style={{ background: currentTheme.appBg }}
       />
 
-      <div className="relative z-10 flex flex-col min-h-screen w-full">
+      <div
+        className="relative z-10 flex flex-col min-h-screen w-full"
+        aria-hidden={showIntro}
+      >
         <HeaderBar />
 
         <main

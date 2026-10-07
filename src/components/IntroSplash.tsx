@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { BrandLogo } from './BrandLogo';
 import { useGame } from '../context/GameContext';
 import { getTranslation } from '../i18n/translations';
@@ -15,6 +15,11 @@ const INNER = BOARD - PAD * 2;
 export const IntroSplash: React.FC<IntroSplashProps> = ({ onFinished }) => {
   const { language } = useGame();
   const [phase, setPhase] = useState<'play' | 'exit'>('play');
+  const introButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    introButtonRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     const exitTimer = window.setTimeout(() => setPhase('exit'), 7200);
@@ -42,6 +47,8 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onFinished }) => {
     <button
       type="button"
       onClick={skip}
+      ref={introButtonRef}
+      autoFocus
       className={`intro-splash fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden border-0 cursor-pointer ${
         phase === 'exit' ? 'intro-splash--exit' : ''
       }`}
