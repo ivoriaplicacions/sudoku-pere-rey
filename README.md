@@ -1,4 +1,4 @@
-# Maestros del Sudoku
+# SUDOKU KING
 
 Sudoku gamificat per **Ivori Aplicacions**. Aplicació **multiplataforma**: mateix codi React per **web (PWA)**, **Android** i **iOS**.
 
@@ -43,16 +43,13 @@ Les compres reals només funcionen amb builds signades (Play internal testing / 
 Aquestes dades han de coincidir amb les del **trader status** d’App Store Connect i les
 de verificació de desenvolupador de Play Console; a la UE es publiquen a la fitxa de l’app.
 
-**URLs públiques (web corporativa):**
+**URL pública del producto (web corporativa):**
 
 | Document | URL |
 |----------|-----|
-| Centre legal | https://ivoriaplicacions.es/ |
-| Privadesa | https://ivoriaplicacions.es/privacy.html |
-| Reglament UE d’IA | https://ivoriaplicacions.es/ai-act.html |
-| Governança | https://ivoriaplicacions.es/governance.html |
+| SUDOKU KING — privacidad, gobernanza y Reglamento UE de IA | https://www.ivoriaplicacions.es/sudokuking.html |
 
-Aquesta app **no és un sistema d’IA** (Reglament UE 2024/1689, considerant 12): sudokus deterministes, sense models ni inferència. La mateixa documentació va dins l’app (Configuració → Avís legal). Les pàgines de privacitat i governança públiques les manté el web corporatiu d’Ivori Aplicacions; `public/` continua sent la font de les còpies legals empaquetades amb l’app i `docs/` es conserva com a còpia de contingència.
+Aquesta app **no és un sistema d’IA** (Reglament UE 2024/1689, considerant 12): sudokus deterministes, sense models ni inferència. La mateixa documentació va dins l’app (Configuració → Avís legal). La pàgina pública específica de SUDOKU KING la manté el web corporatiu d’Ivori Aplicacions; `public/` continua sent la font de les còpies legals empaquetades amb l’app i `docs/` es conserva com a còpia de contingència.
 
 `docs/` es **genera** des de `public/`; no l’editis a mà:
 
@@ -110,7 +107,7 @@ chmod +x scripts/create-upload-keystore.sh
 ./scripts/create-upload-keystore.sh
 ```
 
-Genera `android/maestros-release.jks` i `android/keystore.properties` (gitignored). Desa’ls en un gestor de contrasenyes abans de la primera pujada.
+Genera `android/sudoku-king-release.jks` i `android/keystore.properties` (gitignored). Desa’ls en un gestor de contrasenyes abans de la primera pujada.
 
 
 ## iOS (macOS + Xcode)

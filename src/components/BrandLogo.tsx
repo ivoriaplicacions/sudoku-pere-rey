@@ -40,14 +40,14 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ compact = false, header = 
     return (
       <h1
         className="w-full flex items-center justify-center gap-2 sm:gap-2.5 leading-none text-center"
-        aria-label="Maestros del Sudoku"
+        aria-label="SUDOKU KING"
       >
         <span className="text-[0.95rem] sm:text-lg font-black tracking-[0.18em] text-amber-300 uppercase drop-shadow-sm">
-          Maestros
+          SUDOKU
         </span>
         <MasterStar className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 drop-shadow" />
         <span className="text-[0.95rem] sm:text-lg font-black tracking-[0.14em] text-white uppercase drop-shadow-sm">
-          del Sudoku
+          KING
         </span>
       </h1>
     );
@@ -55,26 +55,26 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ compact = false, header = 
 
   if (compact) {
     return (
-      <div className="min-w-0 leading-none flex items-center gap-1.5" aria-label="Maestros del Sudoku">
+      <div className="min-w-0 leading-none flex items-center gap-1.5" aria-label="SUDOKU KING">
         <span className="text-[10px] font-black tracking-[0.16em] text-amber-300 uppercase">
-          Maestros
+          SUDOKU
         </span>
         <MasterStar className="w-4 h-4 shrink-0" />
         <span className="text-[10px] font-black tracking-[0.12em] text-white uppercase">
-          del Sudoku
+          KING
         </span>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center text-center" aria-label="Maestros del Sudoku">
+    <div className="flex flex-col items-center text-center" aria-label="SUDOKU KING">
       <MasterStar className="w-14 h-14 sm:w-16 sm:h-16 mb-2" />
       <span className="text-xs font-bold tracking-[0.35em] text-amber-300/90 uppercase">
-        Maestros
+        SUDOKU
       </span>
       <span className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-none mt-0.5">
-        del Sudoku
+        KING
       </span>
     </div>
   );

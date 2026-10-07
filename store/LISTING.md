@@ -1,4 +1,4 @@
-# Fitxes de botiga — Maestros del Sudoku
+# Fitxes de botiga — SUDOKU KING
 
 Material per enganxar a Google Play Console i App Store Connect. Tots els textos
 estan comptats i caben al seu límit; el recompte va entre parèntesis.
@@ -20,8 +20,8 @@ estan comptats i caben al seu límit; el recompte va entre parèntesis.
 | Correu | hola@ivoriaplicacions.es |
 | Web | https://ivoriaplicacions.es |
 | D-U-N-S | 473131748 |
-| Privadesa | https://ivoriaplicacions.github.io/sudoku-pere-rey/privacy.html |
-| Suport | https://ivoriaplicacions.github.io/sudoku-pere-rey/ |
+| Privadesa | https://www.ivoriaplicacions.es/sudokuking.html#privacy |
+| Suport | https://www.ivoriaplicacions.es/sudokuking.html |
 
 A la UE aquestes dades **es publiquen** a la fitxa (DSA art. 30). Han de coincidir
 exactament a les dues consoles.
@@ -33,7 +33,7 @@ exactament a les dues consoles.
 ### Nom de l'app (30)
 
 ```
-Maestros del Sudoku
+SUDOKU KING
 ```
 (19/30, igual en els tres idiomes)
 
@@ -124,7 +124,7 @@ captures d'iPad.
 ### Nom (30)
 
 ```
-Maestros del Sudoku
+SUDOKU KING
 ```
 (19/30)
 
@@ -240,7 +240,7 @@ Serveix per a Play (descripció completa) i per a l'App Store (descripció).
 ```
 800 sudokus verificats un per un. El primer pack, 200 sudokus, és gratuït.
 
-Maestros del Sudoku no té anuncis, no demana registre i no recull cap dada. Funciona sense connexió, del primer sudoku fins a l'últim.
+SUDOKU KING no té anuncis, no demana registre i no recull cap dada. Funciona sense connexió, del primer sudoku fins a l'últim.
 
 CONTINGUT
 • 4 packs · 40 nivells · 800 sudokus
@@ -279,7 +279,7 @@ hola@ivoriaplicacions.es
 ```
 800 sudokus verificados uno a uno. El primer pack, 200 sudokus, es gratis.
 
-Maestros del Sudoku no tiene anuncios, no pide registro y no recoge ningún dato. Funciona sin conexión, del primer sudoku hasta el último.
+SUDOKU KING no tiene anuncios, no pide registro y no recoge ningún dato. Funciona sin conexión, del primer sudoku hasta el último.
 
 CONTENIDO
 • 4 packs · 40 niveles · 800 sudokus
@@ -318,7 +318,7 @@ hola@ivoriaplicacions.es
 ```
 800 sudokus, every one verified. The first pack, 200 sudokus, is free.
 
-Maestros del Sudoku has no ads, asks for no account and collects no data. It works offline, from the first sudoku to the last.
+SUDOKU KING has no ads, asks for no account and collects no data. It works offline, from the first sudoku to the last.
 
 WHAT YOU GET
 • 4 packs · 40 levels · 800 sudokus

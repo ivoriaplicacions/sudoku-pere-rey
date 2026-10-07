@@ -2,7 +2,7 @@ import type { Language } from '../types/sudoku';
 
 export const translations = {
   ca: {
-    appName: 'Maestros del Sudoku',
+    appName: 'SUDOKU KING',
     subtitle: '4 packs · 800 sudokus · el primer pack és gratuït',
     storeSubtitle: 'Pack 1 gratuït (200 sudokus). Packs II–IV: 0,99 € cadascun (Google Play i App Store).',
     storeUnlockNote:
@@ -106,7 +106,7 @@ export const translations = {
     website: 'Web',
   },
   es: {
-    appName: 'Maestros del Sudoku',
+    appName: 'SUDOKU KING',
     subtitle: '4 packs · 800 sudokus · el primer pack es gratis',
     storeSubtitle: 'Pack 1 gratis (200 sudokus). Packs II–IV: 0,99 € cada uno (Google Play y App Store).',
     storeUnlockNote:
@@ -210,7 +210,7 @@ export const translations = {
     website: 'Web',
   },
   en: {
-    appName: 'Maestros del Sudoku',
+    appName: 'SUDOKU KING',
     subtitle: '4 packs · 800 sudokus · free starter pack',
     storeSubtitle: 'Pack 1 free (200 sudokus). Packs II–IV: 0,99 € each (Google Play and App Store).',
     storeUnlockNote:

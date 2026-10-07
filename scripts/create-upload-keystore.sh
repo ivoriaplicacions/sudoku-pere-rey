@@ -2,7 +2,7 @@
 # Creates a Play upload keystore locally. Never commit the .jks or keystore.properties.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-KEYSTORE="$ROOT/android/maestros-release.jks"
+KEYSTORE="$ROOT/android/sudoku-king-release.jks"
 PROPS="$ROOT/android/keystore.properties"
 
 if [[ -f "$KEYSTORE" || -f "$PROPS" ]]; then
@@ -16,14 +16,14 @@ if ! command -v keytool >/dev/null; then
 fi
 
 PASS="$(openssl rand -base64 18 | tr -d '/+=' | head -c 24)"
-ALIAS=maestros
+ALIAS=sudoku-king
 
 keytool -genkeypair -keystore "$KEYSTORE" -alias "$ALIAS" -keyalg RSA -keysize 2048 -validity 10000 \
   -storepass "$PASS" -keypass "$PASS" -noprompt \
-  -dname "CN=Ivori Aplicacions, OU=Maestros del Sudoku, O=Ivori Aplicacions, L=Tarragona, C=ES"
+  -dname "CN=Ivori Aplicacions, OU=SUDOKU KING, O=Ivori Aplicacions, L=Tarragona, C=ES"
 
 cat > "$PROPS" <<EOF
-storeFile=maestros-release.jks
+storeFile=sudoku-king-release.jks
 storePassword=$PASS
 keyAlias=$ALIAS
 keyPassword=$PASS

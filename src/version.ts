@@ -21,17 +21,18 @@ export const PUBLISHER_DUNS = '473131748';
 export const SUPPORT_URL = PUBLISHER_WEBSITE;
 export const SUPPORT_EMAIL = PUBLISHER_EMAIL;
 
-export const LEGAL_BASE_URL = 'https://ivoriaplicacions.es';
-export const PRIVACY_URL = `${LEGAL_BASE_URL}/privacy.html`;
-export const AI_ACT_URL = `${LEGAL_BASE_URL}/ai-act.html`;
-export const GOVERNANCE_URL = `${LEGAL_BASE_URL}/governance.html`;
-// The corporate site hosts the product privacy, AI Act and governance pages.
+export const LEGAL_BASE_URL = 'https://www.ivoriaplicacions.es';
+export const PRODUCT_LEGAL_URL = `${LEGAL_BASE_URL}/sudokuking.html`;
+export const PRIVACY_URL = `${PRODUCT_LEGAL_URL}#privacy`;
+export const AI_ACT_URL = `${PRODUCT_LEGAL_URL}#ai-act`;
+export const GOVERNANCE_URL = `${PRODUCT_LEGAL_URL}#governance`;
+// The corporate site hosts the product's privacy, AI Act and governance record.
 // Keep the repository's generated licence inventory on GitHub Pages until it
-// is published on the corporate site as well.
+// is published on the product page as well.
 export const LICENSES_URL = 'https://ivoriaplicacions.github.io/sudoku-pere-rey/licenses.html';
 export const PRIVACY_PATH = '/privacy.html';
 export const AI_ACT_PATH = '/ai-act.html';
 export const GOVERNANCE_PATH = '/governance.html';
 export const LICENSES_PATH = '/licenses.html';
 export const LEGAL_HUB_PATH = '/legal-index.html';
-export const LEGAL_HUB_URL = `${LEGAL_BASE_URL}/`;
+export const LEGAL_HUB_URL = PRODUCT_LEGAL_URL;

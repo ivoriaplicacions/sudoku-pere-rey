@@ -1,4 +1,4 @@
-# Crèdits i llicències — Maestros del Sudoku
+# Crèdits i llicències — SUDOKU KING
 
 Titular: Francesc Siuraneta Jové — IVORI APLICACIONS · NIF 47983327Z ·
 <hola@ivoriaplicacions.es>
