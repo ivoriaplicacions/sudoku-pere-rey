@@ -37,7 +37,9 @@ check(versionMatch, `package.json version is not semver: ${version}`);
 
 if (versionMatch) {
   const [, major, minor, patch] = versionMatch.map(Number);
-  const build = major * 10000 + minor * 100 + patch;
+  const derivedBuild = major * 10000 + minor * 100 + patch;
+  const build = Number.isInteger(packageJson.buildNumber) ? packageJson.buildNumber : derivedBuild;
+  check(build >= derivedBuild, `package.json buildNumber ${build} cannot be below ${derivedBuild}`);
   const versionSource = read('src/version.ts');
   const android = read('android/app/build.gradle');
   const ios = read('ios/App/App.xcodeproj/project.pbxproj');

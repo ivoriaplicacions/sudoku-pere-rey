@@ -53,35 +53,38 @@ export const BottomBar: React.FC<BottomBarProps> = ({
         </div>
 
         <button
+          type="button"
           onClick={onOpenStore}
           className={`${cell} bg-amber-500/20 hover:bg-amber-500/30 border-amber-400/30`}
           aria-label={getTranslation(language, 'store')}
         >
           <ShoppingBag className="w-4 h-4 text-amber-300" />
-          <span className="text-[10px] font-bold text-amber-200/90 leading-none truncate max-w-full px-0.5">
+          <span className="max-w-full break-words px-0.5 text-center text-[10px] font-bold leading-[0.9] text-amber-200/90">
             {getTranslation(language, 'store')}
           </span>
         </button>
 
         <button
+          type="button"
           onClick={onOpenAchievements}
           className={`${cell} bg-white/10 hover:bg-white/20 border-white/10`}
           aria-label={getTranslation(language, 'achievements')}
         >
           <Trophy className="w-4 h-4 text-amber-400" />
-          <span className="text-[10px] font-bold text-white/80 leading-none truncate max-w-full px-0.5">
+          <span className="max-w-full break-words px-0.5 text-center text-[10px] font-bold leading-[0.9] text-white/80">
             {getTranslation(language, 'achievements')}
           </span>
         </button>
 
         <button
+          type="button"
           onClick={onOpenSettings}
           className={`${cell} bg-white/10 hover:bg-white/20 border-white/10`}
           aria-label={getTranslation(language, 'settings')}
         >
           <Settings className="w-4 h-4 text-slate-200" />
-          <span className="text-[10px] font-bold text-white/80 leading-none truncate max-w-full px-0.5">
-            {getTranslation(language, 'settings')}
+          <span className="max-w-full break-words px-0.5 text-center text-[10px] font-bold leading-[0.9] text-white/80">
+            {getTranslation(language, 'settingsShort')}
           </span>
         </button>
       </nav>

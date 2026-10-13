@@ -3,8 +3,9 @@ import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { localized } from '../../i18n/localized';
 import { CONTENT_PACKS, packPriceLabel } from '../../data/packs';
-import { X, ShoppingBag, CheckCircle, Lock, Clock } from 'lucide-react';
+import { ShoppingBag, CheckCircle, Lock, Clock } from 'lucide-react';
 import { useModalAccessibility } from '../../hooks/useModalAccessibility';
+import { ModalHeader } from './ModalHeader';
 
 interface StoreModalProps {
   isOpen: boolean;
@@ -63,21 +64,13 @@ export const StoreModal: React.FC<StoreModalProps> = ({ isOpen, onClose }) => {
       tabIndex={-1}
       className="fixed inset-0 z-50 flex flex-col bg-slate-950 text-white animate-fade-in"
     >
-      <header className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/50 backdrop-blur-md">
-        <div className="flex items-center space-x-2">
-          <ShoppingBag className="w-5 h-5 text-amber-400" />
-          <h2 id={titleId} className="text-lg font-black">
-            {getTranslation(language, 'store')}
-          </h2>
-        </div>
-        <button
-          onClick={onClose}
-          className="p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition"
-          aria-label={getTranslation(language, 'close')}
-        >
-          <X className="w-5 h-5 text-white/80" />
-        </button>
-      </header>
+      <ModalHeader
+        title={getTranslation(language, 'store')}
+        titleId={titleId}
+        closeLabel={getTranslation(language, 'close')}
+        onClose={onClose}
+        icon={<ShoppingBag className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />}
+      />
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-8">
         <p className="text-sm text-white/70 text-center px-2">

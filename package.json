@@ -2,9 +2,11 @@
   "name": "sudoku-king",
   "private": true,
   "version": "1.0.0",
+  "buildNumber": 10001,
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/patchNativePurchasesForSwift6.mjs && node scripts/patchAndroidCompatibility.mjs",
     "build": "npm run version:sync && npm run legal:sync && tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run",

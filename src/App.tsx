@@ -161,7 +161,7 @@ const MainApp: React.FC = () => {
 
       <div
         className="relative z-10 flex flex-col min-h-screen w-full"
-        aria-hidden={showIntro}
+        aria-hidden={modalBlocking}
       >
         <HeaderBar />
 

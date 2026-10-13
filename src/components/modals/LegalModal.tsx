@@ -17,8 +17,9 @@ import {
   LICENSES_PATH,
   LEGAL_HUB_PATH,
 } from '../../version';
-import { X, Scale, ArrowLeft } from 'lucide-react';
+import { Scale, ArrowLeft } from 'lucide-react';
 import { useModalAccessibility } from '../../hooks/useModalAccessibility';
+import { ModalHeader } from './ModalHeader';
 
 interface LegalModalProps {
   isOpen: boolean;
@@ -75,38 +76,32 @@ export const LegalModal = forwardRef<LegalModalHandle, LegalModalProps>(
         tabIndex={-1}
         className="fixed inset-0 z-50 flex flex-col bg-slate-950 text-white animate-fade-in"
       >
-        <header className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/50 backdrop-blur-md">
-          <div className="flex items-center space-x-2 min-w-0">
-            {openDoc ? (
+        <ModalHeader
+          title={
+            openDoc
+              ? getTranslation(
+                  language,
+                  LEGAL_DOCS.find((d) => d.path === openDoc)?.labelKey ?? 'legal',
+                )
+              : getTranslation(language, 'legal')
+          }
+          titleId={titleId}
+          closeLabel={getTranslation(language, 'close')}
+          onClose={close}
+          icon={<Scale className="mt-0.5 h-5 w-5 shrink-0 text-cyan-400" />}
+          leading={
+            openDoc ? (
               <button
                 type="button"
                 onClick={() => setOpenDoc(null)}
-                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition"
+                className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 transition hover:bg-white/20 active:scale-95"
                 aria-label={getTranslation(language, 'back')}
               >
-                <ArrowLeft className="w-5 h-5 text-white/80" />
+                <ArrowLeft className="h-5 w-5 text-white/80" />
               </button>
-            ) : (
-              <Scale className="w-5 h-5 text-cyan-400 shrink-0" />
-            )}
-            <h2 id={titleId} className="text-lg font-black truncate">
-              {openDoc
-                ? getTranslation(
-                    language,
-                    LEGAL_DOCS.find((d) => d.path === openDoc)?.labelKey ?? 'legal',
-                  )
-                : getTranslation(language, 'legal')}
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={close}
-            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition"
-            aria-label={getTranslation(language, 'close')}
-          >
-            <X className="w-5 h-5 text-white/80" />
-          </button>
-        </header>
+            ) : undefined
+          }
+        />
 
         {openDoc ? (
           <iframe

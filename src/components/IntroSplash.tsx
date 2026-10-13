@@ -152,9 +152,6 @@ export const IntroSplash: React.FC<IntroSplashProps> = ({ onFinished }) => {
         </div>
       </div>
 
-      <span className="intro-splash__hint absolute bottom-12 text-sm tracking-widest uppercase text-white/50 font-medium">
-        {getTranslation(language, 'tapToContinue')}
-      </span>
     </button>
   );
 };

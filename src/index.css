@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@source not "../.build";
+@source not "../android";
+@source not "../ios";
+@source not "../dist";
 
 /* Keyboard focus was invisible everywhere; the board is playable with a keyboard. */
 :focus-visible {
@@ -123,11 +127,6 @@
   animation: introTaglineIn 1s 3.4s ease-out forwards;
 }
 
-.intro-splash__hint {
-  opacity: 0;
-  animation: introHintIn 0.9s 5.2s ease-out forwards;
-}
-
 .intro-splash__particles .intro-particle {
   position: absolute;
   width: 3px;
@@ -185,11 +184,6 @@
 @keyframes introTaglineIn {
   from { opacity: 0; letter-spacing: 0.35em; }
   to { opacity: 1; letter-spacing: 0.18em; }
-}
-
-@keyframes introHintIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 @keyframes introParticle {

@@ -7,8 +7,8 @@
  * and fails loudly if any target no longer matches the shape it expects, rather
  * than silently leaving one behind.
  *
- * versionCode is derived as major*10000 + minor*100 + patch, so it always grows
- * with the version name and leaves room for 99 minors and 99 patches.
+ * versionCode is derived as major*10000 + minor*100 + patch, unless buildNumber
+ * is explicitly set for a new store build of the same marketing version.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -18,13 +18,17 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (p) => readFileSync(join(root, p), 'utf8');
 const write = (p, text) => writeFileSync(join(root, p), text);
 
-const { version } = JSON.parse(read('package.json'));
+const { version, buildNumber } = JSON.parse(read('package.json'));
 const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(version);
 if (!match) {
   throw new Error(`package.json version "${version}" is not major.minor.patch`);
 }
 const [, major, minor, patch] = match.map(Number);
-const versionCode = major * 10000 + minor * 100 + patch;
+const derivedVersionCode = major * 10000 + minor * 100 + patch;
+const versionCode = Number.isInteger(buildNumber) ? buildNumber : derivedVersionCode;
+if (versionCode < derivedVersionCode) {
+  throw new Error(`package.json buildNumber ${versionCode} cannot be below derived version code ${derivedVersionCode}`);
+}
 
 /** Applies one replacement and refuses to continue if the anchor has moved. */
 function patchFile(path, edits) {

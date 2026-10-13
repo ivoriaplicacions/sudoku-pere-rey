@@ -29,19 +29,20 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ isOpen, on
         className="w-full max-w-md bg-slate-900 border border-white/20 rounded-3xl p-5 text-white space-y-4 shadow-2xl relative max-h-[85vh] flex flex-col"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-3">
           <div className="flex items-center space-x-2">
             <Trophy className="w-5 h-5 text-amber-400" />
-            <h2 id={titleId} className="text-lg font-black">
+            <h2 id={titleId} className="min-w-0 break-words text-lg font-black leading-tight">
               {getTranslation(language, 'achievements')}
             </h2>
           </div>
           <button
+            type="button"
             onClick={onClose}
             aria-label={getTranslation(language, 'close')}
-            className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition"
+            className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 transition hover:bg-white/20 active:scale-95"
           >
-            <X className="w-4 h-4 text-white/80" />
+            <X className="h-5 w-5 text-white/80" />
           </button>
         </div>
 

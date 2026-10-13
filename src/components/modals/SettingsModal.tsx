@@ -5,8 +5,9 @@ import { localized } from '../../i18n/localized';
 import { THEME_IDS, getTheme } from '../../data/themes';
 import type { Language } from '../../types/sudoku';
 import { APP_VERSION } from '../../version';
-import { X, Palette, CheckCircle, Globe, Vibrate, Volume2, Scale } from 'lucide-react';
+import { Palette, CheckCircle, Globe, Vibrate, Volume2, Scale } from 'lucide-react';
 import { useModalAccessibility } from '../../hooks/useModalAccessibility';
+import { ModalHeader } from './ModalHeader';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -53,21 +54,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       tabIndex={-1}
       className="fixed inset-0 z-50 flex flex-col bg-slate-950 text-white animate-fade-in"
     >
-      <header className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/50 backdrop-blur-md">
-        <div className="flex items-center space-x-2">
-          <Palette className="w-5 h-5 text-cyan-400" />
-          <h2 id={titleId} className="text-lg font-black">
-            {getTranslation(language, 'settings')}
-          </h2>
-        </div>
-        <button
-          onClick={onClose}
-          className="p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition"
-          aria-label={getTranslation(language, 'close')}
-        >
-          <X className="w-5 h-5 text-white/80" />
-        </button>
-      </header>
+      <ModalHeader
+        title={getTranslation(language, 'settings')}
+        titleId={titleId}
+        closeLabel={getTranslation(language, 'close')}
+        onClose={onClose}
+        icon={<Palette className="mt-0.5 h-5 w-5 shrink-0 text-cyan-400" />}
+      />
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5 pb-8">
         <section className="space-y-3">
