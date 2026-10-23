@@ -196,7 +196,7 @@ sudokus,puzzle,numbers,logic,brain,offline,no ads,training,classic,game,solitair
 | Actiu | Requisit | Estat |
 |-------|----------|-------|
 | Icona | 1024×1024 PNG, **sense canal alfa** | ✅ `store/appstore-icon-1024.png` |
-| iPhone 6,9" | 1290×2796 o 1320×2868, vertical, 2–10 | ❌ per fer |
+| iPhone 6,9" | 1290×2796 o 1320×2868, vertical, 2–10 | ✅ `store/screenshots/iphone-6.9/` — 6 a 1320×2868 |
 | iPad | — | no cal, l'app és d'iPhone |
 
 Apple escala el joc de 6,9" per als iPhone més petits; ja no calen els jocs de
@@ -358,32 +358,91 @@ precontractual, i evita la reclamació de qui compra esperant una cosa altra.
 
 ---
 
+## 3 bis. Novetats de la versió — 1.1.0 (build 10100)
+
+El camp «Novetats» de Play té un límit de **500 caràcters**; el d'Apple, 4000. Els
+tres textos caben al límit més estret, així que serveix el mateix per a les dues
+botigues.
+
+### Català (345/500)
+
+```
+Sis temes clars nous: Alba Daurada, Prat Fresc, Lavanda Suau, Platja Clara, Cítrics i Aurora Clara.
+
+Els temes ara es guanyen: quatre oberts des del primer dia i la resta amb estrelles.
+
+Nova pantalla d'estadístiques: sudokus completats, estrelles, millor temps i temps mitjà, ratxa i progrés de cada pack.
+
+Si ja jugaves, conserves el teu tema.
+```
+
+### Castellà (358/500)
+
+```
+Seis temas claros nuevos: Amanecer Dorado, Prado Fresco, Lavanda Suave, Playa Clara, Cítricos y Aurora Clara.
+
+Los temas ahora se ganan: cuatro abiertos desde el primer día y el resto con estrellas.
+
+Nueva pantalla de estadísticas: sudokus completados, estrellas, mejor tiempo y tiempo medio, racha y progreso de cada pack.
+
+Si ya jugabas, conservas tu tema.
+```
+
+### Anglès (331/500)
+
+```
+Six new light themes: Golden Sunrise, Fresh Meadow, Soft Lavender, Bright Beach, Citrus Grove and Bright Aurora.
+
+Themes are now earned: four open from day one, the rest with stars.
+
+New statistics screen: puzzles solved, stars, best and average time, streak and progress in every pack.
+
+Already playing? Your theme stays as it is.
+```
+
+L'última línia hi és a propòsit: qui ja jugava conserva el tema fosc, i dir-ho
+estalvia la pregunta de per què l'app no s'ha tornat clara com anuncia la fitxa.
+
+**Les captures de la fitxa encara són del tema fosc.** L'app ara arrenca en clar,
+així que convé renovar-les abans de publicar la 1.1.0.
+
+---
+
 ## 4. Captures: què ha de sortir a cadascuna
 
 Sis captures, en aquest ordre. Les dues primeres són les úniques que la majoria
 de gent veurà al resultat de cerca, així que han de dir de què va l'app soles.
 
-| # | Pantalla | Per què |
-|---|----------|---------|
-| 1 | Tauler a mig joc, tema Jardí Zen, amb notes visibles en alguna casella | És el producte. Que es vegi el tauler gran i net |
-| 2 | Graella de nivells amb estrelles i progrés | Comunica volum i progressió |
-| 3 | Botiga interna amb els packs i el preu | Expectatives honestes abans de descarregar |
-| 4 | Tauler amb el mode notes i una pista aplicada | Les mecàniques que diferencien |
-| 5 | Ajustos amb els sis temes | Personalització |
-| 6 | Assoliments i ratxa | Motiu per tornar |
+Capturades el 23 d'octubre de 2026 amb l'iPhone 18 Pro Max del simulador, a
+1320×2868, en castellà i amb el tema clar Amanecer Dorado.
+
+| # | Fitxer | Què mostra |
+|---|--------|------------|
+| 1 | `…-01-level-selection.png` | Llista de nivells amb estrelles, progrés i ratxa |
+| 2 | `…-02-puzzle-selection.png` | Els 20 sudokus d'un nivell amb estrelles i temps |
+| 3 | `…-03-gameplay.png` | Tauler a mig joc: casella seleccionada i ressaltat de fila, columna, caixa i xifra |
+| 4 | `…-04-themes.png` | Els temes clars nous i els que encara s'han de guanyar |
+| 5 | `…-05-statistics.png` | La pantalla d'estadístiques |
+| 6 | `…-06-notes.png` | Mode notes amb anotacions a una casella |
+
+El progrés que es veu és de demostració (62 sudokus, 165 estrelles, ratxa de 5),
+sembrat a `dist/` abans de compilar la build del simulador. No toca cap codi font:
+`dist/` està fora del control de versions i es regenera amb `npm run build`.
+
+**La captura de la botiga no hi és a propòsit.** Al simulador, StoreKit respon amb
+botiga dels Estats Units i el preu surt com a `$0.99`. En un iPhone espanyol surt
+0,99 €, però una captura amb dòlars a una fitxa en castellà enganya. Si la vols,
+fes-la des del teu dispositiu.
 
 Per a la 1.0, captures netes del dispositiu són suficients: no calen marcs ni
 textos superposats. Si més endavant hi afegeixes rètols, hauràs de mantenir-los
 en els tres idiomes.
 
-Com obtenir-les a la mida exacta:
+Per repetir-les: compilar per al simulador, instal·lar i capturar amb
+`xcrun simctl io <udid> screenshot fitxer.png`, que desa a resolució nativa.
 
-```bash
-npm run dev
-```
-
-I al simulador d'iPhone amb pantalla de 6,9", capturar amb `Cmd+S`. Per a Play,
-qualsevol captura d'entre 320 i 3840 px de costat serveix; les d'iPhone valen.
+**Les captures de Play són a part.** Les de `store/screenshots/*.png` són
+1080×2160, mida d'Android, i encara són del tema fosc.
 
 ---
 

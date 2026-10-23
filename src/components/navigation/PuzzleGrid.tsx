@@ -4,6 +4,7 @@ import { getTranslation } from '../../i18n/translations';
 import { ArrowLeft, Star, Clock, CheckCircle2, Play } from 'lucide-react';
 import { ContinueBanner } from './ContinueBanner';
 import { getTheme } from '../../data/themes';
+import { puzzleCardStyles } from '../../utils/puzzleCardTheme';
 
 export const PuzzleGrid: React.FC = () => {
   const { language, selectedLevel, puzzles, progressMap, startPuzzle, setView, savedSession, theme } =
@@ -57,22 +58,21 @@ export const PuzzleGrid: React.FC = () => {
           const isInProgress = savedSession?.puzzleId === puzzle.id;
           const stars = prog ? prog.stars : 0;
           const bestTime = prog && prog.bestTime ? formatTime(prog.bestTime) : getTranslation(language, 'noRecord');
+          const card = puzzleCardStyles({
+            isLight: isLightTheme,
+            isInProgress,
+            isCompleted: Boolean(isCompleted),
+          });
 
           return (
             <button
               key={puzzle.id}
               onClick={() => startPuzzle(puzzle)}
-              className={`p-4 rounded-2xl transition-all duration-300 relative overflow-hidden backdrop-blur-xl border text-left flex flex-col justify-between ${
-                isInProgress
-                  ? 'bg-teal-950/50 border-emerald-400/50 hover:bg-teal-900/60 shadow-lg shadow-emerald-950/40'
-                  : isCompleted
-                  ? 'bg-emerald-950/40 border-emerald-500/40 hover:bg-emerald-900/60 shadow-lg shadow-emerald-950/50'
-                  : 'bg-slate-900/60 border-white/20 hover:bg-slate-800/80 shadow-lg shadow-black/40'
-              } active:scale-95`}
+              className={`p-4 rounded-2xl transition-all duration-300 relative overflow-hidden backdrop-blur-xl border text-left flex flex-col justify-between active:scale-95 ${card.card}`}
             >
               {/* Header: Puzzle Number & Status */}
               <div className="flex items-center justify-between">
-                <span className="font-extrabold text-white text-base">
+                <span className={`font-extrabold text-base ${card.number}`}>
                   #{puzzle.puzzleNumber}
                 </span>
                 {isInProgress ? (
@@ -82,8 +82,8 @@ export const PuzzleGrid: React.FC = () => {
                 ) : isCompleted ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 ) : (
-                  <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
-                    <Play className="w-3 h-3 text-white/80 fill-white ml-0.5" />
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${card.idleBadge}`}>
+                    <Play className="w-3 h-3 text-emerald-600 fill-emerald-600 ml-0.5" />
                   </div>
                 )}
               </div>
@@ -96,19 +96,19 @@ export const PuzzleGrid: React.FC = () => {
                     className={`w-4 h-4 ${
                       starIndex <= stars
                         ? 'text-amber-400 fill-amber-400 animate-pulse'
-                        : 'text-white/20 fill-white/10'
+                        : card.emptyStar
                     }`}
                   />
                 ))}
               </div>
 
               {/* Footer info */}
-              <div className="flex items-center justify-between text-[11px] text-white/70 border-t border-white/10 pt-2 mt-1">
+              <div className={`flex items-center justify-between text-[11px] border-t pt-2 mt-1 ${card.footer} ${card.divider}`}>
                 <span className="flex items-center space-x-1">
-                  <Clock className="w-3 h-3 text-cyan-400" />
+                  <Clock className={`w-3 h-3 ${isLightTheme ? 'text-cyan-700' : 'text-cyan-400'}`} />
                   <span>{bestTime}</span>
                 </span>
-                <span className="text-[10px] text-white/50 bg-white/10 px-1.5 py-0.5 rounded">
+                <span className={`text-[10px] px-1.5 py-0.5 rounded ${card.givenPill}`}>
                   {getTranslation(language, 'givenCount', { count: puzzle.givenCount })}
                 </span>
               </div>
