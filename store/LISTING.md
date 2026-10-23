@@ -358,6 +358,56 @@ precontractual, i evita la reclamació de qui compra esperant una cosa altra.
 
 ---
 
+## 3 bis. Novetats de la versió — 1.1.0 (build 10100)
+
+El camp «Novetats» de Play té un límit de **500 caràcters**; el d'Apple, 4000. Els
+tres textos caben al límit més estret, així que serveix el mateix per a les dues
+botigues.
+
+### Català (345/500)
+
+```
+Sis temes clars nous: Alba Daurada, Prat Fresc, Lavanda Suau, Platja Clara, Cítrics i Aurora Clara.
+
+Els temes ara es guanyen: quatre oberts des del primer dia i la resta amb estrelles.
+
+Nova pantalla d'estadístiques: sudokus completats, estrelles, millor temps i temps mitjà, ratxa i progrés de cada pack.
+
+Si ja jugaves, conserves el teu tema.
+```
+
+### Castellà (358/500)
+
+```
+Seis temas claros nuevos: Amanecer Dorado, Prado Fresco, Lavanda Suave, Playa Clara, Cítricos y Aurora Clara.
+
+Los temas ahora se ganan: cuatro abiertos desde el primer día y el resto con estrellas.
+
+Nueva pantalla de estadísticas: sudokus completados, estrellas, mejor tiempo y tiempo medio, racha y progreso de cada pack.
+
+Si ya jugabas, conservas tu tema.
+```
+
+### Anglès (331/500)
+
+```
+Six new light themes: Golden Sunrise, Fresh Meadow, Soft Lavender, Bright Beach, Citrus Grove and Bright Aurora.
+
+Themes are now earned: four open from day one, the rest with stars.
+
+New statistics screen: puzzles solved, stars, best and average time, streak and progress in every pack.
+
+Already playing? Your theme stays as it is.
+```
+
+L'última línia hi és a propòsit: qui ja jugava conserva el tema fosc, i dir-ho
+estalvia la pregunta de per què l'app no s'ha tornat clara com anuncia la fitxa.
+
+**Les captures de la fitxa encara són del tema fosc.** L'app ara arrenca en clar,
+així que convé renovar-les abans de publicar la 1.1.0.
+
+---
+
 ## 4. Captures: què ha de sortir a cadascuna
 
 Sis captures, en aquest ordre. Les dues primeres són les úniques que la majoria
