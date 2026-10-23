@@ -1,12 +1,26 @@
 export type Language = 'ca' | 'es' | 'en';
 
-export type ThemeId = 'zen' | 'cyber' | 'cosmic' | 'sunset' | 'mediterrani' | 'montroig';
+export type ThemeId =
+  | 'zen'
+  | 'cyber'
+  | 'cosmic'
+  | 'sunset'
+  | 'mediterrani'
+  | 'montroig'
+  | 'alba'
+  | 'prado'
+  | 'lavanda'
+  | 'playa'
+  | 'citrus'
+  | 'aurora';
 
 export interface ThemeConfig {
   id: ThemeId;
   name: { ca: string; es: string; en: string };
   /** CSS background for the app shell (gradients, no image files). */
   appBg: string;
+  /** Whether the shell background needs dark foreground surfaces/text. */
+  isLight?: boolean;
   boardOuter: string;
   boardInner: string;
   gridMajor: string;

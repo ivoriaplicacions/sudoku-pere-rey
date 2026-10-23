@@ -10,7 +10,7 @@ import type {
   SerializedCell,
   ThemeId,
 } from '../types/sudoku';
-import { DEFAULT_THEME, isThemeId } from '../data/themes';
+import { DEFAULT_THEME, LEGACY_DEFAULT_THEME, isThemeId } from '../data/themes';
 
 export const STORAGE_KEYS = {
   progress: 'sudoku_master_progress_v1',
@@ -153,9 +153,15 @@ export function saveHapticsEnabled(enabled: boolean): void {
   safeSetItem(STORAGE_KEYS.haptics, String(enabled));
 }
 
+/** Someone who has already played has progress or stats on the device. */
+function hasExistingPlayerData(): boolean {
+  return safeGetItem(STORAGE_KEYS.progress) !== null || safeGetItem(STORAGE_KEYS.stats) !== null;
+}
+
 export function loadTheme(): ThemeId {
   const saved = safeGetItem(STORAGE_KEYS.theme);
-  return isThemeId(saved) ? saved : DEFAULT_THEME;
+  if (isThemeId(saved)) return saved;
+  return hasExistingPlayerData() ? LEGACY_DEFAULT_THEME : DEFAULT_THEME;
 }
 
 export function saveTheme(theme: ThemeId): void {

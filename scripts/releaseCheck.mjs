@@ -78,7 +78,8 @@ for (const [file, size] of expectedIcons) {
 }
 
 warn(exists('android/keystore.properties'), 'Android signing keystore is not configured locally');
-warn(exists('store/featured-graphic.png') || exists('store/featured-graphic.jpg'), 'Google Play featured graphic is still pending');
+const featuredGraphic = ['store/play-featured-1024x500.png', 'store/featured-graphic.png', 'store/featured-graphic.jpg'];
+warn(featuredGraphic.some(exists), 'Google Play featured graphic is still pending');
 warn(exists('store/screenshots') || exists('store/screenshots-iphone'), 'Store screenshots are still pending');
 
 if (failures.length > 0) {
