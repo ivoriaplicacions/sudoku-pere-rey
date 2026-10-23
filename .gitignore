@@ -35,6 +35,9 @@ android/.idea/
 *.keystore
 android/keystore.properties
 
+# Native build output (Xcode archives, exports): gigabytes, never committed
+.build/
+
 # Python
 __pycache__/
 *.pyc

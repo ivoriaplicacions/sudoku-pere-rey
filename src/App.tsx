@@ -11,6 +11,7 @@ import { SudokuBoard } from './components/game/SudokuBoard';
 import { NumberKeypad } from './components/game/NumberKeypad';
 import { VictoryModal } from './components/modals/VictoryModal';
 import { AchievementsModal } from './components/modals/AchievementsModal';
+import { StatsModal } from './components/modals/StatsModal';
 import { SettingsModal } from './components/modals/SettingsModal';
 import { StoreModal } from './components/modals/StoreModal';
 import { LegalModal, type LegalModalHandle } from './components/modals/LegalModal';
@@ -44,6 +45,7 @@ const MainApp: React.FC = () => {
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isStoreOpen, setIsStoreOpen] = useState(false);
   const [isLegalOpen, setIsLegalOpen] = useState(false);
   const legalModalRef = useRef<LegalModalHandle>(null);
@@ -85,6 +87,10 @@ const MainApp: React.FC = () => {
         setIsAchievementsOpen(false);
         return;
       }
+      if (isStatsOpen) {
+        setIsStatsOpen(false);
+        return;
+      }
       if (victoryData) {
         closeVictoryModal();
         return;
@@ -110,6 +116,7 @@ const MainApp: React.FC = () => {
     isLegalOpen,
     isSettingsOpen,
     isAchievementsOpen,
+    isStatsOpen,
     victoryData,
     closeVictoryModal,
     view,
@@ -120,6 +127,7 @@ const MainApp: React.FC = () => {
     showIntro ||
     isSettingsOpen ||
     isAchievementsOpen ||
+    isStatsOpen ||
     isStoreOpen ||
     isLegalOpen ||
     Boolean(victoryData);
@@ -163,7 +171,7 @@ const MainApp: React.FC = () => {
         className="relative z-10 flex flex-col min-h-screen w-full"
         aria-hidden={modalBlocking}
       >
-        <HeaderBar />
+        <HeaderBar showHome={view !== 'level-select'} onHome={() => setView('level-select')} />
 
         <main
           className={`flex-1 flex flex-col justify-center items-center p-2 sm:p-4 ${
@@ -224,6 +232,7 @@ const MainApp: React.FC = () => {
           <BottomBar
             onOpenSettings={() => setIsSettingsOpen(true)}
             onOpenAchievements={() => setIsAchievementsOpen(true)}
+            onOpenStats={() => setIsStatsOpen(true)}
             onOpenStore={() => setIsStoreOpen(true)}
           />
         )}
@@ -231,6 +240,7 @@ const MainApp: React.FC = () => {
 
       <VictoryModal />
       <AchievementsModal isOpen={isAchievementsOpen} onClose={() => setIsAchievementsOpen(false)} />
+      <StatsModal isOpen={isStatsOpen} onClose={() => setIsStatsOpen(false)} />
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}

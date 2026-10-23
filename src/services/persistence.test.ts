@@ -14,7 +14,7 @@ import {
   saveSession,
   serializeBoard,
 } from './persistence';
-import { DEFAULT_THEME } from '../data/themes';
+import { DEFAULT_THEME, LEGACY_DEFAULT_THEME } from '../data/themes';
 import type { CellState, PlayerStats } from '../types/sudoku';
 
 const cell = (row: number, col: number, value = 0, notes: number[] = []): CellState => ({
@@ -141,6 +141,28 @@ describe('board serialisation', () => {
 });
 
 describe('settings fall back rather than break', () => {
+  // The light themes shipped with a new default. Flipping a player who has been
+  // using the dark one for weeks is a change they did not ask for.
+  it('keeps the old dark default for someone who has already played', () => {
+    localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify({ L1_P1: { completed: true } }));
+    expect(loadTheme()).toBe(LEGACY_DEFAULT_THEME);
+  });
+
+  it('keeps the old default when only stats exist', () => {
+    localStorage.setItem(STORAGE_KEYS.stats, JSON.stringify({ xp: 10 }));
+    expect(loadTheme()).toBe(LEGACY_DEFAULT_THEME);
+  });
+
+  it('gives a fresh install the new light default', () => {
+    expect(loadTheme()).toBe(DEFAULT_THEME);
+  });
+
+  it('still prefers a theme the player chose, however long they have played', () => {
+    localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify({ L1_P1: { completed: true } }));
+    localStorage.setItem(STORAGE_KEYS.theme, 'cosmic');
+    expect(loadTheme()).toBe('cosmic');
+  });
+
   it('uses the default theme for an unknown value', () => {
     localStorage.setItem(STORAGE_KEYS.theme, 'neon-hologram');
     expect(loadTheme()).toBe(DEFAULT_THEME);

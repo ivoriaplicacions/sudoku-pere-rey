@@ -6,12 +6,14 @@ import { Settings, Flame, Trophy, Star, ShoppingBag } from 'lucide-react';
 interface BottomBarProps {
   onOpenSettings: () => void;
   onOpenAchievements: () => void;
+  onOpenStats: () => void;
   onOpenStore: () => void;
 }
 
 export const BottomBar: React.FC<BottomBarProps> = ({
   onOpenSettings,
   onOpenAchievements,
+  onOpenStats,
   onOpenStore,
 }) => {
   const { language, playerStats } = useGame();
@@ -42,15 +44,18 @@ export const BottomBar: React.FC<BottomBarProps> = ({
           </span>
         </div>
 
-        <div
-          className={`${cell} bg-white/10 border-white/12 px-1`}
-          title={getTranslation(language, 'stars')}
+        <button
+          type="button"
+          onClick={onOpenStats}
+          className={`${cell} bg-white/10 hover:bg-white/20 border-white/12 px-1`}
+          aria-label={getTranslation(language, 'stats')}
+          title={getTranslation(language, 'stats')}
         >
           <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
           <span className="text-[11px] font-black text-amber-200 tabular-nums leading-none">
             {playerStats.totalStars}
           </span>
-        </div>
+        </button>
 
         <button
           type="button"
@@ -59,7 +64,7 @@ export const BottomBar: React.FC<BottomBarProps> = ({
           aria-label={getTranslation(language, 'store')}
         >
           <ShoppingBag className="w-4 h-4 text-amber-300" />
-          <span className="max-w-full break-words px-0.5 text-center text-[10px] font-bold leading-[0.9] text-amber-200/90">
+          <span className="max-w-full truncate px-0.5 text-center text-[10px] font-bold leading-[0.9] text-amber-200/90">
             {getTranslation(language, 'store')}
           </span>
         </button>
@@ -71,8 +76,8 @@ export const BottomBar: React.FC<BottomBarProps> = ({
           aria-label={getTranslation(language, 'achievements')}
         >
           <Trophy className="w-4 h-4 text-amber-400" />
-          <span className="max-w-full break-words px-0.5 text-center text-[10px] font-bold leading-[0.9] text-white/80">
-            {getTranslation(language, 'achievements')}
+          <span className="max-w-full truncate px-0.5 text-center text-[10px] font-bold leading-[0.9] text-white/80">
+            {getTranslation(language, 'achievementsShort')}
           </span>
         </button>
 
@@ -83,7 +88,7 @@ export const BottomBar: React.FC<BottomBarProps> = ({
           aria-label={getTranslation(language, 'settings')}
         >
           <Settings className="w-4 h-4 text-slate-200" />
-          <span className="max-w-full break-words px-0.5 text-center text-[10px] font-bold leading-[0.9] text-white/80">
+          <span className="max-w-full truncate px-0.5 text-center text-[10px] font-bold leading-[0.9] text-white/80">
             {getTranslation(language, 'settingsShort')}
           </span>
         </button>

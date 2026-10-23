@@ -18,7 +18,7 @@ export const ContinueBanner: React.FC = () => {
     <button
       type="button"
       onClick={resumeSession}
-      className="w-full text-left p-4 rounded-2xl bg-gradient-to-r from-emerald-600/45 to-teal-500/30 border border-emerald-400/50 shadow-lg shadow-emerald-950/40 active:scale-[0.98] transition"
+      className="w-full text-left p-4 rounded-2xl bg-gradient-to-r from-emerald-700/80 to-teal-700/70 border border-emerald-400/60 shadow-lg shadow-emerald-950/40 active:scale-[0.98] transition"
     >
       <div className="flex items-center gap-3">
         <div className="w-11 h-11 rounded-2xl bg-emerald-400/20 border border-emerald-300/40 flex items-center justify-center shrink-0">

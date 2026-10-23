@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { MAX_HINTS_PER_PUZZLE } from '../../utils/sudokuLogic';
+import { getTheme } from '../../data/themes';
 import { Edit3, Eraser, Lightbulb, Pause, Play, RotateCcw, Undo2 } from 'lucide-react';
 
 export const NumberKeypad: React.FC = () => {
@@ -19,9 +20,11 @@ export const NumberKeypad: React.FC = () => {
     isPaused,
     setIsPaused,
     hintsUsed,
+    theme,
   } = useGame();
   const [confirmRestart, setConfirmRestart] = useState(false);
   const hintsLeft = Math.max(0, MAX_HINTS_PER_PUZZLE - hintsUsed);
+  const isLightTheme = getTheme(theme).isLight === true;
 
   const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0 };
   board.forEach((row) => {
@@ -33,7 +36,11 @@ export const NumberKeypad: React.FC = () => {
   });
 
   const actionClass =
-    'flex flex-col items-center justify-center p-2 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 transition border border-white/10 text-white/90 disabled:opacity-35 disabled:pointer-events-none';
+    `flex flex-col items-center justify-center p-2 rounded-2xl active:scale-95 transition border disabled:opacity-45 disabled:pointer-events-none ${
+      isLightTheme
+        ? 'bg-slate-800/80 hover:bg-slate-700/90 border-slate-700/40 text-white'
+        : 'bg-white/10 hover:bg-white/20 border-white/10 text-white/90'
+    }`;
 
   return (
     <div className="w-full max-w-md mx-auto space-y-3 px-2">
@@ -90,8 +97,12 @@ export const NumberKeypad: React.FC = () => {
           onClick={() => setIsNotesMode((prev) => !prev)}
           className={`flex flex-col items-center justify-center p-2 rounded-2xl transition border active:scale-95 ${
             isNotesMode
-              ? 'bg-amber-500/30 border-amber-400 text-amber-300 shadow-md shadow-amber-500/20'
-              : 'bg-white/10 border-white/10 hover:bg-white/20 text-white/90'
+              ? isLightTheme
+                ? 'bg-amber-600/85 border-amber-700 text-white shadow-md shadow-amber-900/20'
+                : 'bg-amber-500/30 border-amber-400 text-amber-300 shadow-md shadow-amber-500/20'
+              : isLightTheme
+                ? 'bg-slate-800/80 border-slate-700/40 hover:bg-slate-700/90 text-white'
+                : 'bg-white/10 border-white/10 hover:bg-white/20 text-white/90'
           }`}
         >
           <Edit3 className="w-4 h-4 text-amber-300" />

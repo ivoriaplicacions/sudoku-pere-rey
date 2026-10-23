@@ -3,9 +3,10 @@ import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { localized } from '../../i18n/localized';
 import { THEME_IDS, getTheme } from '../../data/themes';
+import { isThemeUnlocked, starsUntilTheme } from '../../utils/themeUnlocks';
 import type { Language } from '../../types/sudoku';
 import { APP_VERSION } from '../../version';
-import { Palette, CheckCircle, Globe, Vibrate, Volume2, Scale } from 'lucide-react';
+import { Palette, CheckCircle, Globe, Vibrate, Volume2, Scale, Lock } from 'lucide-react';
 import { useModalAccessibility } from '../../hooks/useModalAccessibility';
 import { ModalHeader } from './ModalHeader';
 
@@ -39,6 +40,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setHapticsEnabled,
     soundEnabled,
     setSoundEnabled,
+    playerStats,
   } = useGame();
   const titleId = useId();
   const dialogRef = useModalAccessibility(isOpen, onClose);
@@ -94,18 +96,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {THEME_IDS.map((themeKey) => {
               const th = getTheme(themeKey);
               const isSelected = theme === themeKey;
+              const unlocked = isThemeUnlocked(
+                themeKey,
+                playerStats.totalStars,
+                playerStats.unlockedThemes,
+              );
+              const missing = starsUntilTheme(
+                themeKey,
+                playerStats.totalStars,
+                playerStats.unlockedThemes,
+              );
 
               return (
                 <button
                   key={themeKey}
-                  onClick={() => setTheme(themeKey)}
+                  onClick={() => unlocked && setTheme(themeKey)}
+                  disabled={!unlocked}
                   aria-pressed={isSelected}
-                  className={`rounded-2xl border overflow-hidden text-left transition-all active:scale-[0.98] ${
-                    isSelected ? th.accentRing : 'border-white/10 hover:border-white/25'
-                  }`}
+                  aria-label={
+                    unlocked
+                      ? localized(th.name, language)
+                      : `${localized(th.name, language)} — ${getTranslation(language, 'themeLocked', { count: missing })}`
+                  }
+                  className={`rounded-2xl border overflow-hidden text-left transition-all ${
+                    unlocked ? 'active:scale-[0.98]' : 'cursor-not-allowed'
+                  } ${isSelected ? th.accentRing : 'border-white/10 hover:border-white/25'}`}
                 >
                   <div className="relative aspect-[4/3]" style={{ background: th.appBg }}>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
+                    {!unlocked && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-slate-950/70 backdrop-blur-[2px]">
+                        <Lock className="w-4 h-4 text-white/80" />
+                        <span className="text-[11px] font-black text-amber-200 tabular-nums">
+                          {getTranslation(language, 'themeLocked', { count: missing })}
+                        </span>
+                      </div>
+                    )}
                     <div className="absolute bottom-0 left-0 right-0 p-2.5 flex items-end justify-between gap-1">
                       <span className="text-xs font-bold text-white leading-snug drop-shadow">
                         {localized(th.name, language)}

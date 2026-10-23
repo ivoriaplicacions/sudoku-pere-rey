@@ -18,6 +18,7 @@ import {
   MAX_HINTS_PER_PUZZLE,
 } from '../utils/sudokuLogic';
 import { canPlayLevel as isLevelPlayable } from '../utils/levelProgress';
+import { isThemeUnlocked } from '../utils/themeUnlocks';
 import { audioSynth } from '../utils/audio';
 import {
   getOwnedPacks,
@@ -134,7 +135,9 @@ const defaultPlayerStats: PlayerStats = {
   puzzlesCompleted: 0,
   currentStreak: 0,
   lastPlayedDate: '',
-  unlockedThemes: ['zen', 'cyber', 'cosmic', 'sunset', 'mediterrani', 'montroig'],
+  // Empty on a fresh install: availability is derived from stars. Whatever an
+  // existing player already had is merged in by loadPlayerStats and acts as a floor.
+  unlockedThemes: [],
   unlockedAchievements: [],
 };
 
@@ -177,10 +180,16 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     saveLanguage(lang);
   }, []);
 
-  const setTheme = useCallback((next: ThemeId) => {
-    setThemeState(next);
-    saveTheme(next);
-  }, []);
+  const setTheme = useCallback(
+    (next: ThemeId) => {
+      // The picker already hides locked themes; this keeps a stale saved value or a
+      // future caller from putting the player in one they have not earned.
+      if (!isThemeUnlocked(next, playerStats.totalStars, playerStats.unlockedThemes)) return;
+      setThemeState(next);
+      saveTheme(next);
+    },
+    [playerStats.totalStars, playerStats.unlockedThemes],
+  );
 
   const setSoundEnabled = useCallback((val: boolean) => {
     setSoundEnabledState(val);

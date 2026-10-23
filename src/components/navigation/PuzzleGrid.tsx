@@ -3,10 +3,12 @@ import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { ArrowLeft, Star, Clock, CheckCircle2, Play } from 'lucide-react';
 import { ContinueBanner } from './ContinueBanner';
+import { getTheme } from '../../data/themes';
 
 export const PuzzleGrid: React.FC = () => {
-  const { language, selectedLevel, puzzles, progressMap, startPuzzle, setView, savedSession } =
+  const { language, selectedLevel, puzzles, progressMap, startPuzzle, setView, savedSession, theme } =
     useGame();
+  const isLightTheme = getTheme(theme).isLight === true;
 
   // Filter puzzles for selected level
   const levelPuzzles = puzzles.filter(p => p.level === selectedLevel);
@@ -23,7 +25,9 @@ export const PuzzleGrid: React.FC = () => {
       <div className="flex items-center justify-between">
         <button
           onClick={() => setView('level-select')}
-          className="flex items-center space-x-2 text-xs font-bold text-white/90 bg-white/15 px-3 py-2 rounded-xl hover:bg-white/20 active:scale-95 transition"
+          className={`flex items-center space-x-2 text-xs font-bold px-3 py-2 rounded-xl hover:bg-white/20 active:scale-95 transition ${
+            isLightTheme ? 'text-white bg-slate-900/75' : 'text-white/90 bg-white/15'
+          }`}
         >
           <ArrowLeft className="w-4 h-4" />
           <span>{getTranslation(language, 'backToLevels')}</span>
@@ -35,10 +39,10 @@ export const PuzzleGrid: React.FC = () => {
       </div>
 
       <div className="text-center my-2 space-y-1">
-        <h2 className="text-2xl font-black text-white tracking-tight">
+        <h2 className={`text-2xl font-black tracking-tight ${isLightTheme ? 'text-slate-900' : 'text-white'}`}>
           {getTranslation(language, 'selectPuzzle')}
         </h2>
-        <p className="text-xs text-white/70">
+        <p className={`text-xs ${isLightTheme ? 'text-slate-800' : 'text-white/70'}`}>
           {getTranslation(language, 'puzzleSelectSubtitle')}
         </p>
       </div>
