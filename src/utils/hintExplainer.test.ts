@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { PACKED_PUZZLES } from '../data/puzzles';
 import { techniqueForLevel } from '../data/ladder';
-import { TECHNIQUES } from '../solver/humanSolver';
+import { TECHNIQUES, candidatesOf, createState } from '../solver/humanSolver';
 import type { Technique } from '../solver/humanSolver';
-import { describeHintFrame, explainNextStep, techniqueName } from './hintExplainer';
+import { cellsOfUnit, describeHintFrame, explainNextStep, techniqueName } from './hintExplainer';
 import type { ExplainedHint } from './hintExplainer';
 
 const toGrid = (digits: string): number[][] =>
@@ -111,6 +111,70 @@ describe('explainNextStep', () => {
       }
       expect(hint.frames[hint.frames.length - 1].afterSetup).toBe(true);
     }
+  });
+
+  it('shows the candidates of a pattern, and never those of the cell to fill', () => {
+    const { puzzle, solution } = catalogue.find((entry) => techniqueForLevel(entry.level) === 'naked-pair')!;
+    let checked = 0;
+    playWithHints(puzzle, solution, (hint) => {
+      const last = hint.frames[hint.frames.length - 1];
+      expect(last.candidates).toBeUndefined();
+      expect(hint.frames[0].candidates).toBeUndefined();
+
+      for (const frame of hint.frames.slice(1, -1)) {
+        checked++;
+        const shown = new Map(frame.candidates!.map((entry) => [entry.cell, entry.digits]));
+        // Every cell of the pattern and every cell it changes has its candidates.
+        for (const cell of [...frame.pattern, ...frame.eliminated]) expect(shown.has(cell)).toBe(true);
+        // What the step rules out was really there, and the answer is never ruled out.
+        for (const removed of frame.step!.eliminations) {
+          expect(shown.get(removed.cell)).toContain(removed.digit);
+          expect(solution[Math.floor(removed.cell / 9)][removed.cell % 9]).not.toBe(removed.digit);
+        }
+        // The right digit is always among the candidates shown.
+        for (const [cell, digits] of shown) {
+          expect(digits).toContain(solution[Math.floor(cell / 9)][cell % 9]);
+        }
+      }
+    });
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it('explains enough: the steps it keeps really lead to the digit', () => {
+    // Replay only what the hint explains, on a fresh board, and check the cell is then forced.
+    let withSetup = 0;
+    let frames = 0;
+    for (const { id, puzzle, solution } of catalogue.filter((_, index) => index % 10 === 4)) {
+      const board = puzzle.map((row) => [...row]);
+      for (;;) {
+        const hint = explainNextStep(board, solution);
+        if (!hint?.placement) break;
+        const { row, col, digit } = hint.placement;
+        const last = hint.frames[hint.frames.length - 1].step!;
+
+        if (hint.frames.length > 2) {
+          withSetup++;
+          frames += hint.frames.length;
+          const state = createState(board);
+          for (const frame of hint.frames.slice(1, -1)) {
+            for (const removed of frame.step!.eliminations) {
+              state.candidates[removed.cell] &= ~(1 << (removed.digit - 1));
+            }
+          }
+          const target = row * 9 + col;
+          if (last.technique === 'naked-single') {
+            expect(candidatesOf(state, target), id).toEqual([digit]);
+          } else {
+            const places = cellsOfUnit(last.units[0]).filter((cell) => candidatesOf(state, cell).includes(digit));
+            expect(places, id).toEqual([target]);
+          }
+        }
+        board[row][col] = digit;
+      }
+    }
+    expect(withSetup).toBeGreaterThan(20);
+    // And not too much: on average a hint with setup stays short.
+    expect(frames / withSetup).toBeLessThan(4.5);
   });
 
   it('never marks a pattern cell as eliminated too', () => {

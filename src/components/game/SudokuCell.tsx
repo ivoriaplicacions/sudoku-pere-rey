@@ -21,6 +21,15 @@ interface SudokuCellProps {
   isHighlighted: boolean;
   isSameNumber: boolean;
   hintMark?: HintMark;
+  /**
+   * Candidates an open hint shows in this cell in place of the player's notes,
+   * so its explanation can be followed without having pencilled anything.
+   */
+  hintNotes?: number[];
+  /** Among those, the candidates the hint rules out. */
+  hintRemoved?: number[];
+  /** The digit of the selected cell: notes of it stand out across the board. */
+  highlightNote?: number;
   theme: ThemeConfig;
   /** Spoken description of the cell, built by the board which knows the language. */
   label: string;
@@ -33,11 +42,15 @@ export const SudokuCell: React.FC<SudokuCellProps> = ({
   isHighlighted,
   isSameNumber,
   hintMark,
+  hintNotes,
+  hintRemoved,
+  highlightNote,
   theme,
   label,
   onSelect,
 }) => {
   const isGiven = cell.initialValue !== 0;
+  const shownNotes = hintNotes ? new Set(hintNotes) : cell.notes;
 
   let bgClasses = theme.cellIdle;
 
@@ -85,16 +98,26 @@ export const SudokuCell: React.FC<SudokuCellProps> = ({
         >
           {cell.value}
         </span>
-      ) : cell.notes.size > 0 ? (
+      ) : shownNotes.size > 0 ? (
         <div
           className={`grid h-full w-full grid-cols-3 grid-rows-3 font-medium ${theme.notesText}`}
           style={{ fontSize: 'clamp(0.45rem, 2.2vw, 0.65rem)', lineHeight: 1 }}
         >
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
-            <div key={n} className="flex items-center justify-center">
-              {cell.notes.has(n) ? n : ''}
-            </div>
-          ))}
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => {
+            const shown = shownNotes.has(n);
+            const noteClass = !shown
+              ? ''
+              : hintRemoved?.includes(n)
+                ? 'rounded-sm bg-rose-600 font-black text-white line-through'
+                : highlightNote === n
+                  ? 'rounded-sm bg-amber-400 font-black text-slate-950'
+                  : '';
+            return (
+              <div key={n} className={`flex items-center justify-center ${noteClass}`}>
+                {shown ? n : ''}
+              </div>
+            );
+          })}
         </div>
       ) : null}
     </button>

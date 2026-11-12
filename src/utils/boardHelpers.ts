@@ -51,6 +51,42 @@ export function clearNotesForDigit(board: CellState[][], row: number, col: numbe
   });
 }
 
+/**
+ * Automatic notes: every empty cell gets the digits its row, column and box
+ * still allow. Returns the new board and the cells that changed, for undo, or
+ * null when the notes were already exactly that.
+ *
+ * It reads the digits on the board as they are. A wrong digit therefore hides a
+ * candidate somewhere, the same as it would for someone pencilling by hand.
+ */
+export function fillAllNotes(
+  board: CellState[][],
+): { board: CellState[][]; changed: HistoryCellSnapshot[] } | null {
+  const next = cloneBoard(board);
+  const changed: HistoryCellSnapshot[] = [];
+
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      const cell = board[row][col];
+      if (cell.value !== 0) continue;
+
+      const used = new Set<number>();
+      forEachHouseCell(row, col, (r, c) => {
+        if (board[r][c].value !== 0) used.add(board[r][c].value);
+      });
+      const notes = new Set<number>();
+      for (let digit = 1; digit <= 9; digit++) if (!used.has(digit)) notes.add(digit);
+
+      const same = notes.size === cell.notes.size && [...notes].every((digit) => cell.notes.has(digit));
+      if (same) continue;
+      changed.push(snapshotCell(cell));
+      next[row][col].notes = notes;
+    }
+  }
+
+  return changed.length > 0 ? { board: next, changed } : null;
+}
+
 export function restoreHistoryEntry(board: CellState[][], entry: HistoryEntry): CellState[][] {
   const next = cloneBoard(board);
   for (const snap of entry.cells) {
