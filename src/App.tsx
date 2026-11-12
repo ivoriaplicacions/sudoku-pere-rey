@@ -9,6 +9,7 @@ import { LevelGrid } from './components/navigation/LevelGrid';
 import { PuzzleGrid } from './components/navigation/PuzzleGrid';
 import { SudokuBoard } from './components/game/SudokuBoard';
 import { NumberKeypad } from './components/game/NumberKeypad';
+import { HintPanel } from './components/game/HintPanel';
 import { VictoryModal } from './components/modals/VictoryModal';
 import { AchievementsModal } from './components/modals/AchievementsModal';
 import { StatsModal } from './components/modals/StatsModal';
@@ -222,6 +223,8 @@ const MainApp: React.FC = () => {
               ) : (
                 <SudokuBoard />
               )}
+
+              {!isPaused && <HintPanel />}
 
               {!isPaused && <NumberKeypad />}
             </div>

@@ -68,8 +68,14 @@ import {
   restoreHistoryEntry,
 } from '../utils/boardHelpers';
 import { applyDailyStreak } from '../utils/streak';
+import { explainNextStep, type ExplainedHint } from '../utils/hintExplainer';
 import { evaluateNewAchievements } from '../data/achievements';
 import confetti from 'canvas-confetti';
+
+export interface ActiveHint {
+  hint: ExplainedHint;
+  index: number;
+}
 
 interface GameContextType {
   language: Language;
@@ -120,6 +126,11 @@ interface GameContextType {
   inputNumber: (num: number) => void;
   eraseCell: () => void;
   giveHint: () => void;
+  /** The hint on screen and the frame it is on, or null. */
+  activeHint: ActiveHint | null;
+  advanceHint: () => void;
+  placeHint: () => void;
+  closeHint: () => void;
   undoMove: () => void;
   canUndo: boolean;
   restartPuzzle: () => void;
@@ -175,6 +186,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [autoCheckErrors, setAutoCheckErrorsState] = useState<boolean>(loadAutoCheckErrors);
 
   const [victoryData, setVictoryData] = useState<{ stars: number; xpEarned: number; time: number } | null>(null);
+  const [activeHint, setActiveHint] = useState<ActiveHint | null>(null);
+
+  // A hint explains one position. Any change to the board, or leaving it, ends it.
+  useEffect(() => {
+    setActiveHint(null);
+  }, [board, view, isPaused]);
 
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
@@ -582,28 +599,43 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setBoard(newBoard);
   };
 
+  /**
+   * Opens a hint: the next step a person would take from here, explained frame by
+   * frame. Reading it is free and always available; only placing the digit at the
+   * end uses up one of the puzzle's hints.
+   */
   const giveHint = () => {
-    if (isCompleted || isPaused || !selectedPuzzle) return;
+    if (isCompleted || isPaused || !selectedPuzzle || board.length !== 9) return;
+    if (activeHint) return;
+
+    const hint = explainNextStep(
+      board.map((row) => row.map((cell) => cell.value)),
+      selectedPuzzle.solutionGrid,
+    );
+    if (!hint) return;
+
+    hapticSelect();
+    audioSynth.playHint();
+    setActiveHint({ hint, index: 0 });
+    const shown = hint.frames[0].target;
+    if (shown !== null) setSelectedCell({ row: Math.floor(shown / 9), col: shown % 9 });
+  };
+
+  const advanceHint = () => {
+    if (!activeHint || activeHint.index >= activeHint.hint.frames.length - 1) return;
+    hapticTap();
+    setActiveHint({ ...activeHint, index: activeHint.index + 1 });
+  };
+
+  const closeHint = useCallback(() => setActiveHint(null), []);
+
+  /** Places the digit the open hint led to. This is the part that costs a hint. */
+  const placeHint = () => {
+    if (isCompleted || isPaused || !selectedPuzzle || !activeHint?.hint.placement) return;
+    if (activeHint.index < activeHint.hint.frames.length - 1) return;
     if (hintsUsed >= MAX_HINTS_PER_PUZZLE) return;
 
-    const selectedEmpty =
-      selectedCell &&
-      board[selectedCell.row][selectedCell.col].value === 0 &&
-      board[selectedCell.row][selectedCell.col].initialValue === 0;
-
-    let targetPos = selectedEmpty ? selectedCell : null;
-    if (!targetPos) {
-      outer: for (let r = 0; r < 9; r++) {
-        for (let c = 0; c < 9; c++) {
-          if (board[r][c].value === 0 && board[r][c].initialValue === 0) {
-            targetPos = { row: r, col: c };
-            break outer;
-          }
-        }
-      }
-    }
-
-    if (!targetPos) return;
+    const targetPos = { row: activeHint.hint.placement.row, col: activeHint.hint.placement.col };
 
     hapticSelect();
     audioSynth.playHint();
@@ -698,6 +730,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         inputNumber,
         eraseCell,
         giveHint,
+        activeHint,
+        advanceHint,
+        placeHint,
+        closeHint,
         undoMove,
         canUndo: history.length > 0,
         restartPuzzle,
