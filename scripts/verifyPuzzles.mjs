@@ -5,11 +5,19 @@
  * puzzle is a subset of it, the puzzle has exactly one solution, the given count
  * is accurate, and no row, column or box is left almost empty.
  *
+ * It also holds the catalogue to its promise of difficulty: every puzzle must
+ * demand the technique src/data/ladder.ts assigns to its level as its hardest
+ * step, no easier and no harder, every level must be complete, and no puzzle
+ * may appear twice.
+ *
  * Run with: node scripts/verifyPuzzles.mjs
+ * Needs Node 22.18 or later, which imports TypeScript files directly.
  */
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { LADDER, LEVEL_COUNT, PUZZLES_PER_LEVEL, ladderStepForLevel } from '../src/data/ladder.ts';
+import { solveWithTechniques } from '../src/solver/humanSolver.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DATA_FILE = resolve(HERE, '../src/data/puzzles.ts');
@@ -121,6 +129,8 @@ function isLegalComplete(grid) {
 const failures = [];
 let minUnitGivens = 81;
 const perLevel = new Map();
+const seenIds = new Set();
+const seenPuzzles = new Map();
 
 for (const entry of entries) {
   const [levelRaw, numberRaw, givenRaw, puzzleStr, solutionStr] = entry.split('|');
@@ -130,6 +140,29 @@ for (const entry of entries) {
   if (puzzleStr?.length !== 81 || solutionStr?.length !== 81) {
     failures.push(`${id}: grids must be 81 characters`);
     continue;
+  }
+
+  if (seenIds.has(id)) failures.push(`${id}: appears more than once`);
+  seenIds.add(id);
+  if (seenPuzzles.has(puzzleStr)) failures.push(`${id}: same puzzle as ${seenPuzzles.get(puzzleStr)}`);
+  seenPuzzles.set(puzzleStr, id);
+
+  // The promise of difficulty: the hardest step is the technique of the level.
+  if (level < 1 || level > LEVEL_COUNT) {
+    failures.push(`${id}: level ${level} is not on the ladder`);
+  } else {
+    const step = ladderStepForLevel(level);
+    const graded = solveWithTechniques(puzzleStr);
+    if (graded.status !== 'solved') {
+      failures.push(`${id}: cannot be solved without guessing (level asks for ${step.technique})`);
+    } else if (graded.hardest !== step.technique) {
+      failures.push(`${id}: demands ${graded.hardest}, but its level asks for ${step.technique}`);
+    } else if (graded.grid.join('') !== solutionStr) {
+      failures.push(`${id}: the technique solver reached a grid that is not the stored solution`);
+    }
+    if (step.givens && Number(givenRaw) !== step.givens) {
+      failures.push(`${id}: has ${givenRaw} givens, but its level asks for ${step.givens}`);
+    }
   }
 
   const puzzle = Int8Array.from(puzzleStr, (ch) => ch.charCodeAt(0) - 48);
@@ -161,12 +194,26 @@ for (const entry of entries) {
   if (worst < 2) failures.push(`${id}: a row, column or box only has ${worst} digit(s)`);
   minUnitGivens = Math.min(minUnitGivens, worst);
 
-  const stats = perLevel.get(level) ?? { level, puzzles: 0, minGivens: 81, maxGivens: 0, worstUnit: 9 };
+  const stats = perLevel.get(level) ?? {
+    level,
+    technique: LADDER.find((step) => level >= step.from && level <= step.to)?.technique ?? '?',
+    puzzles: 0,
+    minGivens: 81,
+    maxGivens: 0,
+    worstUnit: 9,
+  };
   stats.puzzles++;
   stats.minGivens = Math.min(stats.minGivens, givens);
   stats.maxGivens = Math.max(stats.maxGivens, givens);
   stats.worstUnit = Math.min(stats.worstUnit, worst);
   perLevel.set(level, stats);
+}
+
+for (let level = 1; level <= LEVEL_COUNT; level++) {
+  const count = perLevel.get(level)?.puzzles ?? 0;
+  if (count !== PUZZLES_PER_LEVEL) {
+    failures.push(`Level ${level}: has ${count} puzzles, expected ${PUZZLES_PER_LEVEL}`);
+  }
 }
 
 console.log(`Audited ${entries.length} puzzles`);
@@ -179,4 +226,5 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log('\nAll puzzles are uniquely solvable, consistent and balanced.');
+console.log('\nAll puzzles are uniquely solvable, consistent and balanced,');
+console.log('and each one demands exactly the technique of its level.');

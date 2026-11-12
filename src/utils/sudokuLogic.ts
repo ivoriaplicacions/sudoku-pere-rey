@@ -81,8 +81,7 @@ export function calculateStars(timeSeconds: number, mistakes: number, hintsUsed:
   return 1;
 }
 
-export const PUZZLES_PER_LEVEL = 20;
-export const LEVEL_COUNT = 40;
+export { LEVEL_COUNT, PUZZLES_PER_LEVEL } from '../data/ladder';
 export const MAX_HINTS_PER_PUZZLE = 3;
 
 export function findNextPuzzle(

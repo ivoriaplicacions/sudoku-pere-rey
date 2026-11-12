@@ -86,9 +86,30 @@ iconos de tienda. También avisa de materiales comerciales todavía pendientes.
 
 ## Sudokus
 
+La dificultat es mesura per la tècnica que cal, no pel nombre de pistes. Els 40 nivells
+són una sola pujada, definida a `src/data/ladder.ts`:
+
+| Pack | Nivells | Tècnica més difícil que exigeix |
+|------|---------|---------------------------------|
+| I (gratis) | 1–3 | Singles nus |
+| I (gratis) | 4–6 | Singles ocults |
+| I (gratis) | 7–10 | Candidats bloquejats |
+| II | 11–13 | Parells nus |
+| II | 14–16 | Trios nus |
+| II | 17–20 | Parells ocults |
+| III | 21–30 | X-Wing |
+| IV | 31–33 | XY-Wing |
+| IV | 34–36 | Swordfish |
+| IV | 37–40 | Cadenes curtes |
+
+`puzzles:verify` falla si un sol sudoku no exigeix exactament la tècnica del seu nivell.
+Si es regenera el catàleg, cal apujar `CATALOGUE_VERSION` a `src/services/persistence.ts`:
+els identificadors passen a anomenar altres sudokus i el progrés desat s'ha de migrar.
+
 ```bash
-npm run puzzles:generate   # regenera 800 puzzles
+npm run puzzles:generate   # regenera els 800 sudokus (uns minuts)
 npm run puzzles:verify
+npm run puzzles:yield      # quants sudokus surten de cada tècnica
 npm run puzzles:grade      # tècnica més difícil que exigeix cada sudoku
 ```
 

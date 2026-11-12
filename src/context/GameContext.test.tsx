@@ -96,6 +96,48 @@ describe('GameProvider integration', () => {
     await act(async () => root.unmount());
   });
 
+  it('keeps the stars a player earned before the catalogue was replaced', async () => {
+    const earlier = (puzzleNumber: number, stars: number) => ({
+      puzzleId: `L1_P${puzzleNumber}`,
+      level: 1,
+      puzzleNumber,
+      completed: true,
+      stars,
+      bestTime: 300,
+      mistakes: 0,
+      hintsUsed: 0,
+    });
+    // No catalogue marker: this is someone arriving from the previous 800 puzzles.
+    localStorage.setItem(
+      'sudoku_master_progress_v1',
+      JSON.stringify({ L1_P1: earlier(1, 3), L1_P2: earlier(2, 2) }),
+    );
+    localStorage.setItem(
+      'sudoku_master_stats_v1',
+      JSON.stringify({ xp: 700, playerLevel: 2, totalStars: 5, puzzlesCompleted: 2, currentStreak: 0 }),
+    );
+
+    const { root } = await renderGame();
+    expect(current?.progressMap).toEqual({});
+    expect(current?.playerStats.totalStars).toBe(5);
+    expect(current?.playerStats.puzzlesCompleted).toBe(2);
+
+    const puzzle = await startFirstPuzzle();
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        if (puzzle.initialGrid[row][col] === 0) await enterValue(row, col, puzzle.solutionGrid[row][col]);
+      }
+    }
+
+    // The new puzzle is new: it counts as a completion and adds to the old stars.
+    expect(current?.victoryData?.stars).toBe(3);
+    expect(current?.playerStats.totalStars).toBe(8);
+    expect(current?.playerStats.puzzlesCompleted).toBe(3);
+    expect(current?.playerStats.xp).toBeGreaterThan(700);
+
+    await act(async () => root.unmount());
+  });
+
   it('counts wrong entries even when visual error feedback is disabled', async () => {
     const { root } = await renderGame();
     const puzzle = await startFirstPuzzle();
