@@ -235,7 +235,7 @@ Sense contingut generat per usuaris, sense anuncis, sense web sense restriccions
 
 Serveix per a Play (descripció completa) i per a l'App Store (descripció).
 
-### Català (1273/4000)
+### Català (1274/4000)
 
 ```
 800 sudokus verificats un per un. El primer pack, 200 sudokus, és gratuït.
@@ -262,7 +262,7 @@ COM ES JUGA
 
 TAMBÉ
 • Català, castellà i anglès
-• 6 temes visuals
+• 12 temes visuals
 • Ratxa diària i assoliments
 • Vibració, que pots desactivar
 • Teclat físic: xifres, fletxes, esborrar i desfer
@@ -274,7 +274,7 @@ Francesc Siuraneta Jové — IVORI APLICACIONS · Tarragona
 hola@ivoriaplicacions.es
 ```
 
-### Castellà (1305/4000)
+### Castellà (1306/4000)
 
 ```
 800 sudokus verificados uno a uno. El primer pack, 200 sudokus, es gratis.
@@ -301,7 +301,7 @@ CÓMO SE JUEGA
 
 ADEMÁS
 • Catalán, castellano e inglés
-• 6 temas visuales
+• 12 temas visuales
 • Racha diaria y logros
 • Vibración, que puedes desactivar
 • Teclado físico: cifras, flechas, borrar y deshacer
@@ -313,7 +313,7 @@ Francesc Siuraneta Jové — IVORI APLICACIONS · Tarragona
 hola@ivoriaplicacions.es
 ```
 
-### Anglès (1196/4000)
+### Anglès (1197/4000)
 
 ```
 800 sudokus, every one verified. The first pack, 200 sudokus, is free.
@@ -340,7 +340,7 @@ HOW IT PLAYS
 
 ALSO
 • Catalan, Spanish and English
-• 6 visual themes
+• 12 visual themes
 • Daily streak and achievements
 • Haptics you can switch off
 • Hardware keyboard: digits, arrows, erase and undo
@@ -405,6 +405,43 @@ estalvia la pregunta de per què l'app no s'ha tornat clara com anuncia la fitxa
 
 **Les captures de la fitxa encara són del tema fosc.** L'app ara arrenca en clar,
 així que convé renovar-les abans de publicar la 1.1.0.
+
+---
+
+## 3 ter. Novetats de la versió — 1.1.1 (build 10101)
+
+Versió de manteniment: tanca la vulnerabilitat CVE-2026-103922 de Capacitor i deixa
+de prometre una dificultat que els sudokus actuals no exigeixen.
+
+### Català
+
+```
+Actualització de seguretat.
+
+Les descripcions dels nivells ara diuen el que cada nivell ofereix de debò.
+
+A l'App Store, l'app ja consta en català, castellà i anglès.
+```
+
+### Castellà
+
+```
+Actualización de seguridad.
+
+Las descripciones de los niveles ahora dicen lo que cada nivel ofrece de verdad.
+
+En la App Store, la app ya consta en catalán, castellano e inglés.
+```
+
+### Anglès
+
+```
+Security update.
+
+Level descriptions now say what each level really offers.
+
+On the App Store, the app is now listed in Catalan, Spanish and English.
+```
 
 ---
 

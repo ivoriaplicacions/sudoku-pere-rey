@@ -13,10 +13,10 @@ const DIFFICULTY_META: Array<{
   { name: { ca: 'Mitjà', es: 'Medio', en: 'Medium' }, givenRange: '39', icon: '🔥', description: { ca: 'Agilitat mental', es: 'Agilidad mental', en: 'Mental agility' } },
   { name: { ca: 'Intermedi', es: 'Intermedio', en: 'Intermediate' }, givenRange: '37', icon: '🎯', description: { ca: 'Nivell equilibrat', es: 'Nivel equilibrado', en: 'Balanced level' } },
   { name: { ca: 'Avançat', es: 'Avanzado', en: 'Advanced' }, givenRange: '35', icon: '⚡', description: { ca: 'Requereix concentració', es: 'Requiere concentración', en: 'Requires focus' } },
-  { name: { ca: 'Desafiament', es: 'Desafío', en: 'Challenge' }, givenRange: '33', icon: '🏆', description: { ca: 'Tècniques avançades', es: 'Técnicas avanzadas', en: 'Advanced techniques' } },
-  { name: { ca: 'Expert', es: 'Experto', en: 'Expert' }, givenRange: '32', icon: '💎', description: { ca: 'Per a jugadors versats', es: 'Para jugadores versados', en: 'For seasoned players' } },
-  { name: { ca: 'Extrem', es: 'Extremo', en: 'Extreme' }, givenRange: '31', icon: '🌌', description: { ca: 'Dificultat màxima', es: 'Máxima dificultad', en: 'Maximum difficulty' } },
-  { name: { ca: 'Mestre', es: 'Maestro', en: 'Master' }, givenRange: '30', icon: '👑', description: { ca: 'Només per als millors', es: 'Solo para los mejores', en: 'Only for the best' } },
+  { name: { ca: 'Desafiament', es: 'Desafío', en: 'Challenge' }, givenRange: '33', icon: '🏆', description: { ca: 'Menys pistes, més atenció', es: 'Menos pistas, más atención', en: 'Fewer clues, closer attention' } },
+  { name: { ca: 'Expert', es: 'Experto', en: 'Expert' }, givenRange: '32', icon: '💎', description: { ca: 'Cada número s’ha de buscar', es: 'Cada número hay que buscarlo', en: 'Every number takes a search' } },
+  { name: { ca: 'Extrem', es: 'Extremo', en: 'Extreme' }, givenRange: '31', icon: '🌌', description: { ca: 'Tauler molt buit', es: 'Tablero muy vacío', en: 'A very sparse board' } },
+  { name: { ca: 'Mestre', es: 'Maestro', en: 'Master' }, givenRange: '30', icon: '👑', description: { ca: 'El mínim de pistes', es: 'El mínimo de pistas', en: 'The fewest clues' } },
 ];
 
 export interface LevelDefinition {
