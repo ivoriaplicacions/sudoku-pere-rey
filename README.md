@@ -7,7 +7,7 @@ Sudoku gamificat per **Ivori Aplicacions**. Aplicació **multiplataforma**: mate
 - **4 packs × 200 sudokus = 800 puzzles** verificats (solució única)
 - **Pack 1 gratuït**; Packs II–IV a **0,99 €** via **Google Play Billing / App Store**
 - Estrelles, XP, ratxa diària i assoliments
-- **6 temes visuals** (zen, cyber, cosmic, sunset, mediterrani, montroig)
+- **12 temes visuals**: sis de foscos (Jardí Zen, Ciutat Neó, Galàxia Còsmica, Posta de Sol, Mediterrani, Mont-roig) i sis de clars (Alba Daurada, Prat Fresc, Lavanda Suau, Platja Clara, Cítrics, Aurora Clara)
 - **Multilenguatge**: català, castellà i anglès
 - **Vibració** (hàptics) en dispositius mòbils
 - Intro animada i progrés guardat localment
