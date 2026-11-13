@@ -15,7 +15,10 @@ export interface ContentPack {
   description: LocalizedText;
 }
 
-/** Each pack = 10 levels × 20 sudokus = 200 puzzles */
+/**
+ * Each pack = 10 levels × 20 sudokus = 200 puzzles. The descriptions name the
+ * techniques src/data/ladder.ts puts in those levels: keep the two in step.
+ */
 export const CONTENT_PACKS: ContentPack[] = [
   {
     id: 'pack1',
@@ -27,9 +30,9 @@ export const CONTENT_PACKS: ContentPack[] = [
     productId: null,
     name: { ca: 'Pack Inicial', es: 'Pack Inicial', en: 'Starter Pack' },
     description: {
-      ca: '200 sudokus gratuïts · nivells 1–10',
-      es: '200 sudokus gratis · niveles 1–10',
-      en: '200 free sudokus · levels 1–10',
+      ca: '200 sudokus gratuïts · de singles a candidats bloquejats',
+      es: '200 sudokus gratis · de singles a candidatos bloqueados',
+      en: '200 free sudokus · singles to locked candidates',
     },
   },
   {
@@ -42,9 +45,9 @@ export const CONTENT_PACKS: ContentPack[] = [
     productId: 'maestros_pack_2',
     name: { ca: 'Pack II', es: 'Pack II', en: 'Pack II' },
     description: {
-      ca: '200 sudokus nous · nivells 11–20',
-      es: '200 sudokus nuevos · niveles 11–20',
-      en: '200 new sudokus · levels 11–20',
+      ca: '200 sudokus · parells i trios',
+      es: '200 sudokus · pares y tríos',
+      en: '200 sudokus · pairs and triples',
     },
   },
   {
@@ -57,9 +60,9 @@ export const CONTENT_PACKS: ContentPack[] = [
     productId: 'maestros_pack_3',
     name: { ca: 'Pack III', es: 'Pack III', en: 'Pack III' },
     description: {
-      ca: '200 sudokus nous · nivells 21–30',
-      es: '200 sudokus nuevos · niveles 21–30',
-      en: '200 new sudokus · levels 21–30',
+      ca: '200 sudokus · X-Wing',
+      es: '200 sudokus · X-Wing',
+      en: '200 sudokus · X-Wing',
     },
   },
   {
@@ -72,9 +75,9 @@ export const CONTENT_PACKS: ContentPack[] = [
     productId: 'maestros_pack_4',
     name: { ca: 'Pack IV', es: 'Pack IV', en: 'Pack IV' },
     description: {
-      ca: '200 sudokus nous · nivells 31–40',
-      es: '200 sudokus nuevos · niveles 31–40',
-      en: '200 new sudokus · levels 31–40',
+      ca: '200 sudokus · XY-Wing, Swordfish i cadenes',
+      es: '200 sudokus · XY-Wing, Swordfish y cadenas',
+      en: '200 sudokus · XY-Wing, Swordfish and chains',
     },
   },
 ];

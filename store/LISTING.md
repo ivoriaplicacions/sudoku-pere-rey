@@ -235,7 +235,7 @@ Sense contingut generat per usuaris, sense anuncis, sense web sense restriccions
 
 Serveix per a Play (descripció completa) i per a l'App Store (descripció).
 
-### Català (1274/4000)
+### Català (1290/4000)
 
 ```
 800 sudokus verificats un per un. El primer pack, 200 sudokus, és gratuït.
@@ -244,7 +244,7 @@ SUDOKU KING no té anuncis, no demana registre i no recull cap dada. Funciona se
 
 CONTINGUT
 • 4 packs · 40 nivells · 800 sudokus
-• Del nivell Iniciació (50 pistes) al Mestre (30 pistes)
+• Dels singles nus a les cadenes curtes: cada nivell exigeix una tècnica
 • Cada sudoku té una única solució, comprovada amb un verificador abans de publicar-lo
 
 PACK INICIAL GRATUÏT
@@ -274,7 +274,7 @@ Francesc Siuraneta Jové — IVORI APLICACIONS · Tarragona
 hola@ivoriaplicacions.es
 ```
 
-### Castellà (1306/4000)
+### Castellà (1325/4000)
 
 ```
 800 sudokus verificados uno a uno. El primer pack, 200 sudokus, es gratis.
@@ -283,7 +283,7 @@ SUDOKU KING no tiene anuncios, no pide registro y no recoge ningún dato. Funcio
 
 CONTENIDO
 • 4 packs · 40 niveles · 800 sudokus
-• Del nivel Iniciación (50 pistas) al Maestro (30 pistas)
+• De los singles desnudos a las cadenas cortas: cada nivel exige una técnica
 • Cada sudoku tiene una única solución, comprobada con un verificador antes de publicarlo
 
 PACK INICIAL GRATIS
@@ -313,7 +313,7 @@ Francesc Siuraneta Jové — IVORI APLICACIONS · Tarragona
 hola@ivoriaplicacions.es
 ```
 
-### Anglès (1197/4000)
+### Anglès (1217/4000)
 
 ```
 800 sudokus, every one verified. The first pack, 200 sudokus, is free.
@@ -322,7 +322,7 @@ SUDOKU KING has no ads, asks for no account and collects no data. It works offli
 
 WHAT YOU GET
 • 4 packs · 40 levels · 800 sudokus
-• From Initiation (50 clues) to Master (30 clues)
+• From naked singles to short chains: every level demands a technique
 • Every sudoku has exactly one solution, checked by a verifier before release
 
 FREE STARTER PACK

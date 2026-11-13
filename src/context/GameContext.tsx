@@ -37,6 +37,7 @@ import {
   loadHapticsEnabled,
   saveHapticsEnabled,
   loadProgressMap,
+  loadCarriedStars,
   saveProgressMap,
   loadPlayerStats,
   savePlayerStats,
@@ -457,7 +458,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     setProgressMap(newProgressMap);
 
-    const totalStars = Object.values(newProgressMap).reduce((sum, p) => sum + p.stars, 0);
+    // Stars from a catalogue that was later replaced still belong to the player.
+    const totalStars =
+      loadCarriedStars() + Object.values(newProgressMap).reduce((sum, p) => sum + p.stars, 0);
     const withStreak = applyDailyStreak(playerStats);
     const puzzlesCompleted = alreadyCompleted
       ? withStreak.puzzlesCompleted

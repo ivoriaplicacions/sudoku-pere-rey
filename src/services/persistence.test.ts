@@ -1,16 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  CATALOGUE_VERSION,
   STORAGE_KEYS,
   buildSession,
   clearSession,
   deserializeBoard,
+  loadCarriedStars,
   loadLanguage,
   loadPlayerStats,
   loadProgressMap,
   loadSession,
   loadTheme,
+  migrateCatalogue,
   safeGetItem,
   safeSetItem,
+  saveProgressMap,
   saveSession,
   serializeBoard,
 } from './persistence';
@@ -45,6 +49,96 @@ const validSession = () =>
 
 beforeEach(() => {
   localStorage.clear();
+  // A player already on the current catalogue; the migration has its own tests.
+  localStorage.setItem(STORAGE_KEYS.catalogue, String(CATALOGUE_VERSION));
+});
+
+const progressEntry = (level: number, puzzleNumber: number, stars: number) => ({
+  puzzleId: `L${level}_P${puzzleNumber}`,
+  level,
+  puzzleNumber,
+  completed: true,
+  stars,
+  bestTime: 200,
+  mistakes: 0,
+  hintsUsed: 0,
+});
+
+describe('moving to a new catalogue', () => {
+  const oldProgress = { L1_P1: progressEntry(1, 1, 3), L1_P2: progressEntry(1, 2, 2) };
+
+  beforeEach(() => {
+    localStorage.removeItem(STORAGE_KEYS.catalogue);
+  });
+
+  it('drops the per-puzzle results, which now name other puzzles', () => {
+    localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify(oldProgress));
+    expect(loadProgressMap()).toEqual({});
+    expect(localStorage.getItem(STORAGE_KEYS.progress)).toBeNull();
+  });
+
+  it('carries the stars over as a total', () => {
+    localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify(oldProgress));
+    migrateCatalogue();
+    expect(loadCarriedStars()).toBe(5);
+  });
+
+  it('keeps the old progress under another key instead of deleting it', () => {
+    localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify(oldProgress));
+    migrateCatalogue();
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEYS.progressArchive)!)).toEqual(oldProgress);
+  });
+
+  it('drops a half-played board, whose puzzle no longer exists', () => {
+    saveSession(validSession());
+    expect(loadSession()).toBeNull();
+    expect(localStorage.getItem(STORAGE_KEYS.session)).toBeNull();
+  });
+
+  it('leaves stats, settings and purchases alone', () => {
+    const stats = JSON.stringify({ xp: 900, totalStars: 5, puzzlesCompleted: 2, currentStreak: 4 });
+    localStorage.setItem(STORAGE_KEYS.stats, stats);
+    localStorage.setItem(STORAGE_KEYS.language, 'ca');
+    localStorage.setItem('some_other_key', 'kept');
+    migrateCatalogue();
+    expect(localStorage.getItem(STORAGE_KEYS.stats)).toBe(stats);
+    expect(localStorage.getItem(STORAGE_KEYS.language)).toBe('ca');
+    expect(localStorage.getItem('some_other_key')).toBe('kept');
+  });
+
+  it('acts once: progress earned afterwards survives the next launch', () => {
+    localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify(oldProgress));
+    migrateCatalogue();
+    const fresh = { L1_P1: progressEntry(1, 1, 1) };
+    saveProgressMap(fresh);
+    saveSession(validSession());
+
+    migrateCatalogue();
+    expect(loadProgressMap()).toEqual(fresh);
+    expect(loadSession()?.puzzleId).toBe('L1_P1');
+    expect(loadCarriedStars()).toBe(5);
+  });
+
+  it('survives corrupt old progress, carrying nothing', () => {
+    localStorage.setItem(STORAGE_KEYS.progress, '{oops');
+    expect(loadProgressMap()).toEqual({});
+    expect(loadCarriedStars()).toBe(0);
+    expect(localStorage.getItem(STORAGE_KEYS.catalogue)).toBe(String(CATALOGUE_VERSION));
+  });
+
+  it('does nothing to a fresh install beyond marking the catalogue', () => {
+    migrateCatalogue();
+    expect(loadCarriedStars()).toBe(0);
+    expect(localStorage.getItem(STORAGE_KEYS.progressArchive)).toBeNull();
+    expect(localStorage.getItem(STORAGE_KEYS.catalogue)).toBe(String(CATALOGUE_VERSION));
+  });
+
+  it('ignores a carried total that is not a whole positive number', () => {
+    localStorage.setItem(STORAGE_KEYS.carriedStars, 'lots');
+    expect(loadCarriedStars()).toBe(0);
+    localStorage.setItem(STORAGE_KEYS.carriedStars, '-3');
+    expect(loadCarriedStars()).toBe(0);
+  });
 });
 
 describe('safe storage wrappers', () => {

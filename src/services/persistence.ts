@@ -22,7 +22,17 @@ export const STORAGE_KEYS = {
   theme: 'maestros_theme_v1',
   sound: 'maestros_sound_v1',
   autoCheck: 'maestros_autocheck_v1',
+  catalogue: 'maestros_catalogue_v1',
+  carriedStars: 'maestros_carried_stars_v1',
+  progressArchive: 'sudoku_master_progress_catalogue1',
 } as const;
+
+/**
+ * Which set of 800 puzzles the saved progress belongs to. Version 1 measured
+ * difficulty by givens; version 2 is the ladder in src/data/ladder.ts. Raise it
+ * whenever the puzzles behind the ids change.
+ */
+export const CATALOGUE_VERSION = 2;
 
 export function safeGetItem(key: string): string | null {
   try {
@@ -194,8 +204,7 @@ export function saveAutoCheckErrors(enabled: boolean): void {
   safeSetItem(STORAGE_KEYS.autoCheck, String(enabled));
 }
 
-export function loadProgressMap(): Record<string, PuzzleProgress> {
-  const saved = safeGetItem(STORAGE_KEYS.progress);
+function parseProgressMap(saved: string | null): Record<string, PuzzleProgress> {
   if (!saved) return {};
   try {
     const parsed: unknown = JSON.parse(saved);
@@ -207,6 +216,44 @@ export function loadProgressMap(): Record<string, PuzzleProgress> {
   } catch {
     return {};
   }
+}
+
+/**
+ * Moves a player from an older catalogue to the current one. Safe to call any
+ * number of times; it only acts once.
+ *
+ * The ids (L3_P5) now name different puzzles, so a saved result no longer says
+ * anything about the puzzle on screen, and a half-played board belongs to a
+ * puzzle that is gone. Both are dropped. What the player earned is kept: the
+ * stars are carried over as a total, and XP, streak, completed count, themes,
+ * achievements and purchases live elsewhere and are not touched.
+ *
+ * The old progress is kept under another key rather than deleted, in case it is
+ * ever needed to put something right.
+ */
+export function migrateCatalogue(): void {
+  if (safeGetItem(STORAGE_KEYS.catalogue) === String(CATALOGUE_VERSION)) return;
+
+  const oldProgress = safeGetItem(STORAGE_KEYS.progress);
+  if (oldProgress !== null) {
+    const earned = Object.values(parseProgressMap(oldProgress)).reduce((sum, entry) => sum + entry.stars, 0);
+    safeSetItem(STORAGE_KEYS.carriedStars, String(loadCarriedStars() + earned));
+    safeSetItem(STORAGE_KEYS.progressArchive, oldProgress);
+    safeRemoveItem(STORAGE_KEYS.progress);
+  }
+  safeRemoveItem(STORAGE_KEYS.session);
+  safeSetItem(STORAGE_KEYS.catalogue, String(CATALOGUE_VERSION));
+}
+
+/** Stars earned on a catalogue that has since been replaced. They still count. */
+export function loadCarriedStars(): number {
+  const saved = Number(safeGetItem(STORAGE_KEYS.carriedStars));
+  return Number.isInteger(saved) && saved > 0 ? saved : 0;
+}
+
+export function loadProgressMap(): Record<string, PuzzleProgress> {
+  migrateCatalogue();
+  return parseProgressMap(safeGetItem(STORAGE_KEYS.progress));
 }
 
 export function saveProgressMap(progressMap: Record<string, PuzzleProgress>): void {
@@ -303,6 +350,7 @@ function isValidSession(raw: unknown): raw is InProgressSession {
 }
 
 export function loadSession(): InProgressSession | null {
+  migrateCatalogue();
   const saved = safeGetItem(STORAGE_KEYS.session);
   if (!saved) return null;
   try {

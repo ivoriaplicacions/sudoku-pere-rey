@@ -17,6 +17,7 @@
     "puzzles:generate": "node scripts/generatePuzzles.mjs",
     "puzzles:verify": "node scripts/verifyPuzzles.mjs",
     "puzzles:grade": "node scripts/gradePuzzles.mjs",
+    "puzzles:yield": "node scripts/measureTechniqueYield.mjs",
     "release:check": "node scripts/releaseCheck.mjs",
     "cap:sync": "npm run build && npx cap sync",
     "cap:sync:android": "npm run build && npx cap sync android",
