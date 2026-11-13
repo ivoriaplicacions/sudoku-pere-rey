@@ -359,20 +359,28 @@ describe('gradePuzzle', () => {
   });
 });
 
-describe('the shipped catalogue', () => {
+// Walks all 800 puzzles: real work, so it gets more than the default 5 s.
+// Problems are gathered and checked once, rather than one expect per step.
+describe('the shipped catalogue', { timeout: 60_000 }, () => {
   it('is never contradicted by a deduction, and every solved grid is the stored solution', () => {
     expect(PACKED_PUZZLES.length).toBeGreaterThan(0);
+    const problems: string[] = [];
     for (const entry of PACKED_PUZZLES) {
       const [level, number, , puzzle, solution] = entry.split('|');
       const result = solveWithTechniques(puzzle);
       const id = `L${level}_P${number}`;
-      expect(result.status, id).not.toBe('contradiction');
+      if (result.status === 'contradiction') problems.push(`${id}: contradiction`);
       for (const step of result.steps) {
-        if (step.placement) expect(solution[step.placement.cell], id).toBe(String(step.placement.digit));
-        for (const e of step.eliminations) expect(solution[e.cell], id).not.toBe(String(e.digit));
+        if (step.placement && solution[step.placement.cell] !== String(step.placement.digit)) {
+          problems.push(`${id}: ${step.technique} placed a wrong digit`);
+        }
+        for (const e of step.eliminations) {
+          if (solution[e.cell] === String(e.digit)) problems.push(`${id}: ${step.technique} removed the answer`);
+        }
       }
-      if (result.status === 'solved') expect(result.grid.join(''), id).toBe(solution);
+      if (result.status === 'solved' && result.grid.join('') !== solution) problems.push(`${id}: wrong grid`);
     }
+    expect(problems).toEqual([]);
   });
 });
 
