@@ -60,6 +60,42 @@
 }
 
 /* ── Intro splash ─────────────────────────────────────────── */
+/*
+ * The intro video is 16:9 and the app is portrait. At 140% of the screen width it
+ * keeps the logo, the phones and the closing line in view and crops only dark
+ * edges; on a wide screen it is capped at the screen height instead.
+ */
+.intro-video__media {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(140vw, calc(100vh * 16 / 9));
+  max-width: none;
+  height: auto;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.intro-video__hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1rem));
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgb(255 255 255 / 0.55);
+  opacity: 0;
+  animation: intro-video-hint 600ms ease-out 1.5s forwards;
+}
+
+@keyframes intro-video-hint {
+  to {
+    opacity: 1;
+  }
+}
+
 .intro-splash {
   background: #020617;
   animation: introFadeIn 0.35s ease-out both;
