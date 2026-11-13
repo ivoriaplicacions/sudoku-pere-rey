@@ -1,8 +1,9 @@
-import React, { useId } from 'react';
+import React, { useEffect, useId, useState } from 'react';
+import { resultMessage, shareResult } from '../../utils/shareResult';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { findNextPuzzle } from '../../utils/sudokuLogic';
-import { Star, Trophy, Clock, ArrowRight } from 'lucide-react';
+import { Star, Trophy, Clock, ArrowRight, Share2 } from 'lucide-react';
 import { useModalAccessibility } from '../../hooks/useModalAccessibility';
 
 export const VictoryModal: React.FC = () => {
@@ -17,6 +18,9 @@ export const VictoryModal: React.FC = () => {
   } = useGame();
 
   const titleId = useId();
+  const [copied, setCopied] = useState(false);
+  // A new win starts with the plain label again.
+  useEffect(() => setCopied(false), [victoryData]);
   const dialogRef = useModalAccessibility(Boolean(victoryData), closeVictoryModal);
 
   if (!victoryData) return null;
@@ -113,6 +117,20 @@ export const VictoryModal: React.FC = () => {
             >
               <span>{getTranslation(language, 'nextPuzzle')}</span>
               <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
+
+          {selectedPuzzle && (
+            <button
+              type="button"
+              onClick={async () => {
+                const outcome = await shareResult(resultMessage(selectedPuzzle, victoryData, language));
+                if (outcome === 'copied') setCopied(true);
+              }}
+              className="w-full py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white/90 font-bold text-xs active:scale-95 transition border border-white/10 flex items-center justify-center gap-2"
+            >
+              <Share2 className="w-4 h-4 text-cyan-300" />
+              {getTranslation(language, copied ? 'shareCopied' : 'shareResult')}
             </button>
           )}
 

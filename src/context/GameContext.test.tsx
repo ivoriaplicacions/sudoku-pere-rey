@@ -219,6 +219,39 @@ describe('GameProvider integration', () => {
     await act(async () => root.unmount());
   });
 
+  it('grants at start-up the achievements already earned, but none that need a game', async () => {
+    const done = (n: number) => ({
+      puzzleId: `L1_P${n}`,
+      level: 1,
+      puzzleNumber: n,
+      completed: true,
+      stars: 3,
+      bestTime: 100,
+      mistakes: 0,
+      hintsUsed: 0,
+    });
+    localStorage.setItem('maestros_catalogue_v1', '2');
+    localStorage.setItem(
+      'sudoku_master_progress_v1',
+      JSON.stringify(Object.fromEntries(Array.from({ length: 20 }, (_, i) => [`L1_P${i + 1}`, done(i + 1)]))),
+    );
+    localStorage.setItem(
+      'sudoku_master_stats_v1',
+      JSON.stringify({ xp: 1000, playerLevel: 3, totalStars: 60, puzzlesCompleted: 20, currentStreak: 7, unlockedAchievements: ['first_win'] }),
+    );
+
+    const { root } = await renderGame();
+    const unlocked = current!.playerStats.unlockedAchievements;
+    expect(unlocked).toEqual(expect.arrayContaining(['first_win', 'technique_naked-single', 'streak_3', 'streak_7', 'stars_30']));
+    expect(unlocked.filter((id) => id === 'first_win')).toHaveLength(1);
+    // Nothing about a particular game: no fast, flawless or hint-free win happened just now.
+    expect(unlocked).not.toEqual(expect.arrayContaining(['speed_demon']));
+    expect(unlocked).not.toContain('no_errors');
+    expect(unlocked).not.toContain('no_hints');
+    expect(current!.playerStats.xp).toBeGreaterThan(1000);
+    await act(async () => root.unmount());
+  });
+
   describe('the daily challenge', () => {
     const DATE = '2026-11-13';
 

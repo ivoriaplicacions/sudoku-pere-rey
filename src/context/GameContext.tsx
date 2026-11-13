@@ -322,6 +322,30 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     savePlayerStats(playerStats);
   }, [playerStats]);
 
+  // Achievements are checked after each win. A player arriving with the work
+  // already done (after an update that added achievements, or an imported file)
+  // gets what they have earned at once, instead of seeing "20 / 20" locked until
+  // their next win. Only what builds up over time can be caught up this way: the
+  // neutral game below earns none of the single-game ones.
+  useEffect(() => {
+    setPlayerStats((current) => {
+      const { ids, xp } = evaluateNewAchievements({
+        unlocked: current.unlockedAchievements,
+        progressMap: loadProgressMap(),
+        stats: current,
+        justCompleted: { level: 0, mistakes: 1, hintsUsed: 1, time: Number.MAX_SAFE_INTEGER },
+      });
+      if (ids.length === 0) return current;
+      const total = current.xp + xp;
+      return {
+        ...current,
+        xp: total,
+        playerLevel: Math.floor(total / 500) + 1,
+        unlockedAchievements: [...current.unlockedAchievements, ...ids],
+      };
+    });
+  }, []);
+
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
     if (view === 'game' && !isPaused && !isCompleted && board.length > 0) {

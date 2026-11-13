@@ -1,7 +1,18 @@
 import type { Achievement, PlayerStats, PuzzleProgress } from '../types/sudoku';
-import { PUZZLES_PER_LEVEL } from '../utils/sudokuLogic';
+import type { Technique } from '../solver/humanSolver';
+import { getTranslation } from '../i18n/translations';
+import { dateOfDailyId, techniqueForDate } from '../utils/dailyChallenge';
+import { techniqueName } from '../utils/hintExplainer';
+import { LADDER, PUZZLES_PER_LEVEL, techniqueForLevel } from './ladder';
+import { CONTENT_PACKS } from './packs';
 
-export const achievementsData: Achievement[] = [
+/**
+ * Achievements: a few that come quickly, to welcome a new player, and a longer
+ * set that keeps a regular player busy for months: one per technique on the
+ * ladder, long streaks, and every pack completed.
+ */
+
+const SHORT_TERM: Achievement[] = [
   {
     id: 'first_win',
     title: { ca: 'Primer Pas', es: 'Primer Paso', en: 'First Step' },
@@ -69,8 +80,10 @@ export const achievementsData: Achievement[] = [
     xpReward: 500,
   },
   {
+    // The id stays: players already hold it. Level 10 used to be the hardest
+    // band; on the ladder it is the top of the free pack, and the title says so.
     id: 'level_10_master',
-    title: { ca: 'Mestre Absolut', es: 'Maestro Absoluto', en: 'Grand Master' },
+    title: { ca: 'Cim del Pack Inicial', es: 'Cima del Pack Inicial', en: 'Top of the Starter Pack' },
     description: {
       ca: 'Completar tots els Sudokus del Nivell 10',
       es: 'Completar todos los Sudokus del Nivel 10',
@@ -92,12 +105,171 @@ export const achievementsData: Achievement[] = [
   },
 ];
 
-function isLevelFullyCompleted(progressMap: Record<string, PuzzleProgress>, level: number): boolean {
-  for (let puzzleNumber = 1; puzzleNumber <= PUZZLES_PER_LEVEL; puzzleNumber++) {
-    if (!progressMap[`L${level}_P${puzzleNumber}`]?.completed) return false;
-  }
-  return true;
+/** Sudokus a player has to solve with a technique to have mastered it. */
+export const TECHNIQUE_MASTERY_TARGET = 20;
+
+const TECHNIQUE_ICONS: Partial<Record<Technique, string>> = {
+  'naked-single': '🌱',
+  'hidden-single': '🔍',
+  'locked-candidates': '🔒',
+  'naked-pair': '👯',
+  'naked-triple': '🎲',
+  'hidden-pair': '🕵️',
+  'x-wing': '✖️',
+  'xy-wing': '🪁',
+  swordfish: '🐟',
+  'short-chain': '🔗',
+};
+
+const LADDER_TECHNIQUES: Technique[] = [...new Set(LADDER.map((step) => step.technique))];
+
+const techniqueAchievementId = (technique: Technique) => `technique_${technique}`;
+
+function trilingual(build: (language: 'ca' | 'es' | 'en') => string) {
+  return { ca: build('ca'), es: build('es'), en: build('en') };
 }
+
+const TECHNIQUE_MASTERY: Achievement[] = LADDER_TECHNIQUES.map((technique) => {
+  const name = (language: 'ca' | 'es' | 'en') => techniqueName(technique, language);
+  return {
+    id: techniqueAchievementId(technique),
+    title: trilingual((language) => getTranslation(language, 'achievementMasteryTitle', { name: name(language) })),
+    description: trilingual((language) =>
+      getTranslation(language, 'achievementMasteryDescription', { count: TECHNIQUE_MASTERY_TARGET, name: name(language) }),
+    ),
+    icon: TECHNIQUE_ICONS[technique] ?? '🎓',
+    xpReward: 300,
+  };
+});
+
+/** Long streaks, beyond the three days of the first one. */
+export const STREAK_TARGETS = [7, 30, 100] as const;
+
+const STREAKS: Achievement[] = [
+  {
+    id: 'streak_7',
+    title: { ca: 'Una Setmana', es: 'Una Semana', en: 'One Week' },
+    description: { ca: 'Ràtxa de 7 dies seguits', es: 'Racha de 7 días seguidos', en: '7 days in a row' },
+    icon: '📅',
+    xpReward: 400,
+  },
+  {
+    id: 'streak_30',
+    title: { ca: 'Un Mes Sencer', es: 'Un Mes Entero', en: 'A Whole Month' },
+    description: { ca: 'Ràtxa de 30 dies seguits', es: 'Racha de 30 días seguidos', en: '30 days in a row' },
+    icon: '🗓️',
+    xpReward: 1000,
+  },
+  {
+    id: 'streak_100',
+    title: { ca: 'Centenari', es: 'Centenario', en: 'Centurion' },
+    description: { ca: 'Ràtxa de 100 dies seguits', es: 'Racha de 100 días seguidos', en: '100 days in a row' },
+    icon: '💯',
+    xpReward: 3000,
+  },
+];
+
+const packAchievementId = (packId: string) => `pack_${packId}`;
+
+const PACKS: Achievement[] = CONTENT_PACKS.map((pack, index) => ({
+  id: packAchievementId(pack.id),
+  title: trilingual((language) =>
+    getTranslation(language, 'achievementPackTitle', { name: pack.name[language] ?? pack.name.es }),
+  ),
+  description: trilingual((language) =>
+    getTranslation(language, 'achievementPackDescription', {
+      count: (pack.levelEnd - pack.levelStart + 1) * PUZZLES_PER_LEVEL,
+      name: pack.name[language] ?? pack.name.es,
+    }),
+  ),
+  icon: ['🥉', '🥈', '🥇', '🏅'][index] ?? '🏅',
+  xpReward: index === CONTENT_PACKS.length - 1 ? 2000 : 1000,
+}));
+
+export const achievementsData: Achievement[] = [...SHORT_TERM, ...TECHNIQUE_MASTERY, ...STREAKS, ...PACKS];
+
+// ---------------------------------------------------------------------------
+// Progress
+// ---------------------------------------------------------------------------
+
+/** The technique a completed sudoku demanded, level or daily challenge. */
+function techniqueOfEntry(entry: PuzzleProgress): Technique | null {
+  const date = dateOfDailyId(entry.puzzleId);
+  if (date) return techniqueForDate(date);
+  if (entry.level >= 1) {
+    try {
+      return techniqueForLevel(entry.level);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+/** Completed sudokus per technique. */
+export function solvedPerTechnique(progressMap: Record<string, PuzzleProgress>): Map<Technique, number> {
+  const counts = new Map<Technique, number>();
+  for (const entry of Object.values(progressMap)) {
+    if (!entry.completed) continue;
+    const technique = techniqueOfEntry(entry);
+    if (technique) counts.set(technique, (counts.get(technique) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function completedInLevels(progressMap: Record<string, PuzzleProgress>, from: number, to: number): number {
+  let count = 0;
+  for (let level = from; level <= to; level++) {
+    for (let puzzleNumber = 1; puzzleNumber <= PUZZLES_PER_LEVEL; puzzleNumber++) {
+      if (progressMap[`L${level}_P${puzzleNumber}`]?.completed) count++;
+    }
+  }
+  return count;
+}
+
+export interface AchievementProgress {
+  current: number;
+  target: number;
+}
+
+/**
+ * How far a player is towards an achievement, for those that build up over
+ * time. Null for the ones that happen in a single game.
+ */
+export function achievementProgress(
+  id: string,
+  progressMap: Record<string, PuzzleProgress>,
+  stats: Pick<PlayerStats, 'currentStreak' | 'totalStars'>,
+): AchievementProgress | null {
+  const technique = LADDER_TECHNIQUES.find((candidate) => techniqueAchievementId(candidate) === id);
+  if (technique) {
+    const current = Math.min(solvedPerTechnique(progressMap).get(technique) ?? 0, TECHNIQUE_MASTERY_TARGET);
+    return { current, target: TECHNIQUE_MASTERY_TARGET };
+  }
+
+  const streak = /^streak_(\d+)$/.exec(id);
+  if (streak) {
+    const target = Number(streak[1]);
+    return { current: Math.min(stats.currentStreak, target), target };
+  }
+
+  const pack = CONTENT_PACKS.find((candidate) => packAchievementId(candidate.id) === id);
+  if (pack) {
+    const target = (pack.levelEnd - pack.levelStart + 1) * PUZZLES_PER_LEVEL;
+    return { current: completedInLevels(progressMap, pack.levelStart, pack.levelEnd), target };
+  }
+
+  if (id === 'level_5_master' || id === 'level_10_master') {
+    const level = id === 'level_5_master' ? 5 : 10;
+    return { current: completedInLevels(progressMap, level, level), target: PUZZLES_PER_LEVEL };
+  }
+  if (id === 'stars_30') return { current: Math.min(stats.totalStars, 30), target: 30 };
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Evaluation
+// ---------------------------------------------------------------------------
 
 export function evaluateNewAchievements(params: {
   unlocked: string[];
@@ -119,9 +291,13 @@ export function evaluateNewAchievements(params: {
   if (justCompleted.hintsUsed === 0 && justCompleted.level >= 5) unlock('no_hints');
   if (justCompleted.time < 180) unlock('speed_demon');
   if (stats.currentStreak >= 3) unlock('streak_3');
-  if (isLevelFullyCompleted(progressMap, 5)) unlock('level_5_master');
-  if (isLevelFullyCompleted(progressMap, 10)) unlock('level_10_master');
   if (stats.totalStars >= 30) unlock('stars_30');
+
+  // Everything that builds up over time reaches its target the same way.
+  for (const achievement of achievementsData) {
+    const progress = achievementProgress(achievement.id, progressMap, stats);
+    if (progress && progress.current >= progress.target) unlock(achievement.id);
+  }
 
   const xp = earned.reduce((sum, id) => {
     const achievement = achievementsData.find((item) => item.id === id);

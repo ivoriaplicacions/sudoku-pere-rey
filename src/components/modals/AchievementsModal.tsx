@@ -2,7 +2,7 @@ import React, { useId } from 'react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { localized } from '../../i18n/localized';
-import { achievementsData } from '../../data/achievements';
+import { achievementProgress, achievementsData } from '../../data/achievements';
 import { X, Trophy, Lock } from 'lucide-react';
 import { useModalAccessibility } from '../../hooks/useModalAccessibility';
 
@@ -12,7 +12,7 @@ interface AchievementsModalProps {
 }
 
 export const AchievementsModal: React.FC<AchievementsModalProps> = ({ isOpen, onClose }) => {
-  const { language, playerStats } = useGame();
+  const { language, playerStats, progressMap } = useGame();
   const titleId = useId();
   const dialogRef = useModalAccessibility(isOpen, onClose);
 
@@ -50,6 +50,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ isOpen, on
         <div className="overflow-y-auto space-y-3 pr-1 flex-1">
           {achievementsData.map((ach) => {
             const isUnlocked = playerStats.unlockedAchievements.includes(ach.id);
+            const progress = achievementProgress(ach.id, progressMap, playerStats);
 
             return (
               <div
@@ -57,7 +58,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ isOpen, on
                 className={`p-3.5 rounded-2xl border transition-all flex items-center space-x-3 ${
                   isUnlocked
                     ? 'bg-amber-950/30 border-amber-500/40 text-amber-100 shadow-md shadow-amber-950/30'
-                    : 'bg-black/40 border-white/10 text-white/50 opacity-60'
+                    : 'bg-black/40 border-white/10 text-white/50 opacity-75'
                 }`}
               >
                 <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-2xl shadow-inner ${
@@ -78,6 +79,19 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({ isOpen, on
                   <p className="text-xs text-white/60 mt-0.5">
                     {localized(ach.description, language)}
                   </p>
+                  {!isUnlocked && progress && progress.current > 0 && (
+                    <div className="mt-1.5 flex items-center gap-2" aria-label={`${progress.current} / ${progress.target}`}>
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+                        <div
+                          className="h-full rounded-full bg-amber-400"
+                          style={{ width: `${Math.round((progress.current / progress.target) * 100)}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-bold tabular-nums text-white/70">
+                        {progress.current} / {progress.target}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             );
