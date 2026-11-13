@@ -10,6 +10,7 @@ import { Palette, CheckCircle, Globe, Vibrate, Volume2, Scale, Lock } from 'luci
 import { useModalAccessibility } from '../../hooks/useModalAccessibility';
 import { ModalHeader } from './ModalHeader';
 import { ProgressBackupSection } from './ProgressBackupSection';
+import { StreakReminderToggle } from './StreakReminderToggle';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -189,6 +190,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               />
             </button>
           </div>
+
+          <StreakReminderToggle />
 
           <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10">
             <span className="text-sm font-bold pr-3 flex items-center gap-2">

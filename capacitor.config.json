@@ -11,6 +11,10 @@
       "style": "DARK",
       "backgroundColor": "#030712"
     },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_sudoku",
+      "iconColor": "#F59E0B"
+    },
     "SplashScreen": {
       "launchAutoHide": false,
       "backgroundColor": "#020617",
