@@ -114,7 +114,7 @@ export const NumberKeypad: React.FC = () => {
         <button
           type="button"
           onClick={giveHint}
-          disabled={hintsLeft === 0}
+          // Never disabled: the explanation is free. Only placing the digit is counted.
           className={`${actionClass} relative`}
         >
           <Lightbulb className="w-4 h-4 text-yellow-400" />

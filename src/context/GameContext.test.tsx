@@ -56,6 +56,22 @@ async function enterValue(row: number, col: number, value: number): Promise<void
   });
 }
 
+/** Opens a hint, reads it to the end and takes the digit it offers. */
+async function takeWholeHint(): Promise<void> {
+  await act(async () => {
+    current?.giveHint();
+  });
+  const frames = current?.activeHint?.hint.frames.length ?? 0;
+  for (let i = 1; i < frames; i++) {
+    await act(async () => {
+      current?.advanceHint();
+    });
+  }
+  await act(async () => {
+    current?.placeHint();
+  });
+}
+
 beforeEach(() => {
   localStorage.clear();
   current = null;
@@ -82,12 +98,8 @@ describe('GameProvider integration', () => {
       await enterValue(position.row, position.col, puzzle.solutionGrid[position.row][position.col]);
     }
 
-    await act(async () => {
-      current?.giveHint();
-    });
-    await act(async () => {
-      current?.giveHint();
-    });
+    await takeWholeHint();
+    await takeWholeHint();
 
     expect(current?.hintsUsed).toBe(2);
     expect(current?.victoryData?.stars).toBe(2);
@@ -134,6 +146,98 @@ describe('GameProvider integration', () => {
     expect(current?.playerStats.totalStars).toBe(8);
     expect(current?.playerStats.puzzlesCompleted).toBe(3);
     expect(current?.playerStats.xp).toBeGreaterThan(700);
+
+    await act(async () => root.unmount());
+  });
+
+  it('explains a hint for free and only counts it when the digit is placed', async () => {
+    const { root } = await renderGame();
+    const puzzle = await startFirstPuzzle();
+
+    await act(async () => {
+      current?.giveHint();
+    });
+    const hint = current?.activeHint?.hint;
+    expect(hint?.frames[0].kind).toBe('zone');
+    expect(hint?.frames.length).toBeGreaterThanOrEqual(2);
+    expect(current?.hintsUsed).toBe(0);
+
+    // The digit cannot be taken before the explanation has been read.
+    await act(async () => {
+      current?.placeHint();
+    });
+    expect(current?.hintsUsed).toBe(0);
+    expect(current?.activeHint).not.toBeNull();
+
+    for (let i = 1; i < (hint?.frames.length ?? 0); i++) {
+      await act(async () => {
+        current?.advanceHint();
+      });
+    }
+    expect(current?.hintsUsed).toBe(0);
+
+    await act(async () => {
+      current?.placeHint();
+    });
+    const { row, col, digit } = hint!.placement!;
+    expect(digit).toBe(puzzle.solutionGrid[row][col]);
+    expect(current?.board[row][col].value).toBe(digit);
+    expect(current?.board[row][col].isHint).toBe(true);
+    expect(current?.hintsUsed).toBe(1);
+    expect(current?.activeHint).toBeNull();
+
+    await act(async () => root.unmount());
+  });
+
+  it('closes an open hint as soon as the board changes', async () => {
+    const { root } = await renderGame();
+    const puzzle = await startFirstPuzzle();
+    await act(async () => {
+      current?.giveHint();
+    });
+    expect(current?.activeHint).not.toBeNull();
+
+    const empty = puzzle.initialGrid.flat().indexOf(0);
+    const row = Math.floor(empty / 9);
+    const col = empty % 9;
+    await enterValue(row, col, puzzle.solutionGrid[row][col]);
+    expect(current?.activeHint).toBeNull();
+
+    await act(async () => root.unmount());
+  });
+
+  it('points at a wrong digit instead of explaining a step built on it', async () => {
+    const { root } = await renderGame();
+    const puzzle = await startFirstPuzzle();
+    const empty = puzzle.initialGrid.flat().indexOf(0);
+    const row = Math.floor(empty / 9);
+    const col = empty % 9;
+    await enterValue(row, col, (puzzle.solutionGrid[row][col] % 9) + 1);
+
+    await act(async () => {
+      current?.giveHint();
+    });
+    expect(current?.activeHint?.hint.frames).toHaveLength(1);
+    expect(current?.activeHint?.hint.frames[0].kind).toBe('mistake');
+    expect(current?.activeHint?.hint.frames[0].target).toBe(empty);
+    expect(current?.activeHint?.hint.placement).toBeNull();
+
+    await act(async () => root.unmount());
+  });
+
+  it('keeps explaining after the three hints are spent, but places nothing more', async () => {
+    const { root } = await renderGame();
+    await startFirstPuzzle();
+    await takeWholeHint();
+    await takeWholeHint();
+    await takeWholeHint();
+    expect(current?.hintsUsed).toBe(3);
+
+    const filledBefore = current?.board.flat().filter((cell) => cell.value !== 0).length;
+    await takeWholeHint();
+    expect(current?.hintsUsed).toBe(3);
+    expect(current?.board.flat().filter((cell) => cell.value !== 0).length).toBe(filledBefore);
+    expect(current?.activeHint).not.toBeNull();
 
     await act(async () => root.unmount());
   });

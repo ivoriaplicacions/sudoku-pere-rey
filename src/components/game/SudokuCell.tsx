@@ -1,11 +1,26 @@
 import React from 'react';
 import type { CellState, ThemeConfig } from '../../types/sudoku';
 
+/** How an open hint marks a cell. */
+export type HintMark = 'zone' | 'pattern' | 'eliminated' | 'target';
+
+/**
+ * Outlines rather than fills, so a mark reads the same on the twelve themes and
+ * does not hide the selection or the digits underneath.
+ */
+const HINT_MARK_CLASS: Record<HintMark, string> = {
+  zone: 'z-10 ring-1 ring-inset ring-amber-400/70',
+  pattern: 'z-10 ring-[3px] ring-inset ring-amber-400',
+  eliminated: 'z-10 ring-[3px] ring-inset ring-rose-500',
+  target: 'z-10 ring-[3px] ring-inset ring-emerald-400',
+};
+
 interface SudokuCellProps {
   cell: CellState;
   isSelected: boolean;
   isHighlighted: boolean;
   isSameNumber: boolean;
+  hintMark?: HintMark;
   theme: ThemeConfig;
   /** Spoken description of the cell, built by the board which knows the language. */
   label: string;
@@ -17,6 +32,7 @@ export const SudokuCell: React.FC<SudokuCellProps> = ({
   isSelected,
   isHighlighted,
   isSameNumber,
+  hintMark,
   theme,
   label,
   onSelect,
@@ -55,7 +71,7 @@ export const SudokuCell: React.FC<SudokuCellProps> = ({
       onClick={() => onSelect(cell.row, cell.col)}
       aria-label={label}
       aria-pressed={isSelected}
-      className={`relative z-0 flex h-full w-full min-h-0 min-w-0 items-center justify-center border-0 p-0 m-0 select-none appearance-none transition-colors duration-150 active:brightness-110 ${bgClasses}`}
+      className={`relative flex h-full w-full min-h-0 min-w-0 items-center justify-center border-0 p-0 m-0 select-none appearance-none transition-colors duration-150 active:brightness-110 ${bgClasses} ${hintMark ? HINT_MARK_CLASS[hintMark] : 'z-0'}`}
       style={{ lineHeight: 1 }}
     >
       {cell.value !== 0 ? (

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGame } from '../../context/GameContext';
-import { SudokuCell } from './SudokuCell';
+import { SudokuCell, type HintMark } from './SudokuCell';
 import { getTheme } from '../../data/themes';
 import { getTranslation } from '../../i18n/translations';
 import type { ThemeConfig } from '../../types/sudoku';
@@ -28,10 +28,20 @@ const BoardGridLines: React.FC<{ theme: ThemeConfig }> = ({ theme }) => (
 );
 
 export const SudokuBoard: React.FC = () => {
-  const { board, selectedCell, setSelectedCell, theme, language } = useGame();
+  const { board, selectedCell, setSelectedCell, theme, language, activeHint } = useGame();
   const themeConfig = getTheme(theme);
 
   if (!board || board.length === 0) return null;
+
+  const hintFrame = activeHint ? activeHint.hint.frames[activeHint.index] : null;
+  const hintMarkOf = (index: number): HintMark | undefined => {
+    if (!hintFrame) return undefined;
+    if (hintFrame.target === index) return 'target';
+    if (hintFrame.pattern.includes(index)) return 'pattern';
+    if (hintFrame.eliminated.includes(index)) return 'eliminated';
+    if (hintFrame.zone.includes(index)) return 'zone';
+    return undefined;
+  };
 
   const selectedVal = selectedCell ? board[selectedCell.row][selectedCell.col].value : 0;
 
@@ -77,6 +87,7 @@ export const SudokuBoard: React.FC = () => {
                 isSelected={isSelected}
                 isHighlighted={isHighlighted}
                 isSameNumber={isSameNumber}
+                hintMark={hintMarkOf(r * 9 + c)}
                 theme={themeConfig}
                 label={getTranslation(language, 'cellLabel', {
                   row: r + 1,
