@@ -16,7 +16,7 @@ import { StatsModal } from './components/modals/StatsModal';
 import { SettingsModal } from './components/modals/SettingsModal';
 import { StoreModal } from './components/modals/StoreModal';
 import { LegalModal, type LegalModalHandle } from './components/modals/LegalModal';
-import { IntroSplash } from './components/IntroSplash';
+import { IntroSequence } from './components/IntroSequence';
 import { getTranslation } from './i18n/translations';
 import { hasSeenIntro, loadSeenLessons, markIntroSeen, markLessonSeen } from './services/persistence';
 import { techniqueForLevel } from './data/ladder';
@@ -197,7 +197,7 @@ const MainApp: React.FC = () => {
 
   return (
     <div className="relative min-h-screen w-full flex flex-col justify-between overflow-x-hidden font-sans text-slate-100 bg-slate-950 select-none">
-      {showIntro && <IntroSplash key={introKey} onFinished={finishIntro} />}
+      {showIntro && <IntroSequence key={introKey} onFinished={finishIntro} />}
 
       <div
         className="fixed inset-0 z-0 transition-all duration-700"
