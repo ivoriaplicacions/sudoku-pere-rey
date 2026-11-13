@@ -1,8 +1,8 @@
 {
   "name": "sudoku-king",
   "private": true,
-  "version": "1.1.1",
-  "buildNumber": 10101,
+  "version": "2.0.0",
+  "buildNumber": 20000,
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,5 +1,5 @@
-export const APP_VERSION = '1.1.1';
-export const APP_BUILD = 10101;
+export const APP_VERSION = '2.0.0';
+export const APP_BUILD = 20000;
 
 /** Trade name shown in the UI. Registered as IVORI APLICACIONS. */
 export const PUBLISHER = 'Ivori Aplicacions';

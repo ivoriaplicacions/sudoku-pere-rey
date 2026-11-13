@@ -6,7 +6,7 @@ estan comptats i caben al seu límit; el recompte va entre parèntesis.
 > Els límits i les mides de captura els canvien Google i Apple sense avisar.
 > Confirma cada xifra a la consola abans de produir els actius.
 
-**Versió**: 1.0.0 (versionCode 10000) · **Bundle**: `com.ivoriaplicacions.maestrosdelsudoku`
+**Versió**: 2.0.0 (build 20000) · **Bundle**: `com.ivoriaplicacions.maestrosdelsudoku`
 
 ---
 
@@ -41,21 +41,21 @@ SUDOKU KING
 
 **ca**
 ```
-800 sudokus verificats. 200 gratis. Sense anuncis ni registre.
+El sudoku sense anuncis que t'ensenya tècniques. 800 sudokus, 200 gratis.
 ```
-(62/80)
+(73/80)
 
 **es**
 ```
-800 sudokus verificados. 200 gratis. Sin anuncios ni registro.
+El sudoku sin anuncios que te enseña técnicas. 800 sudokus, 200 gratis.
 ```
-(62/80)
+(71/80)
 
 **en**
 ```
-800 verified sudokus. 200 free. No ads, no sign-up, no tracking.
+The ad-free sudoku that teaches you techniques. 800 puzzles, 200 free.
 ```
-(64/80)
+(70/80)
 
 ### Descripció completa (4000)
 
@@ -67,8 +67,8 @@ per a Play i per a l'App Store.
 | Actiu | Requisit | Estat |
 |-------|----------|-------|
 | Icona | 512×512 PNG, ≤1 MB | ✅ `store/play-icon-512.png` |
-| Gràfic destacat | 1024×500 JPG o PNG 24 bits, **sense transparència** | ❌ per fer |
-| Captures de telèfon | 2–8, costat entre 320 i 3840 px, proporció entre 16:9 i 9:16 | ❌ per fer |
+| Gràfic destacat | 1024×500 JPG o PNG 24 bits, **sense transparència** | ✅ `store/play-featured-1024x500.png` |
+| Captures de telèfon | 2–8, costat entre 320 i 3840 px, proporció entre 16:9 i 9:16 | ❌ per refer amb la 2.0 (les de `store/screenshots/` són de l'1.0, tema fosc) |
 | Captures de tauleta | opcionals | — (l'app és de telèfon) |
 
 Sense captures de tauleta, Play mostra un avís als usuaris de tauleta. No bloqueja
@@ -132,75 +132,75 @@ SUDOKU KING
 
 **ca**
 ```
-800 sudokus, sense anuncis
+Sense anuncis. Aprèn tècniques
 ```
-(26/30)
+(30/30)
 
 **es**
 ```
-800 sudokus, sin anuncios
+Sin anuncios. Aprende técnicas
 ```
-(25/30)
+(30/30)
 
 **en**
 ```
-800 sudokus, no ads, offline
+No ads. Learn real techniques
 ```
-(28/30)
+(29/30)
 
 ### Text promocional (170) — es pot canviar sense revisió
 
 **ca**
 ```
-Pack inicial gratuït: 200 sudokus de solució única. Sense anuncis, sense registre i sense connexió. Els packs són compra única, mai subscripció.
+Novetat 2.0: cada nivell exigeix una tècnica, i l'app te l'ensenya amb una lliçó i amb pistes que expliquen el pas. Repte diari. Compra única, mai subscripció.
 ```
-(144/170)
+(159/170)
 
 **es**
 ```
-Pack inicial gratis: 200 sudokus de solución única. Sin anuncios, sin registro y sin conexión. Los packs son compra única, nunca suscripción.
+Novedad 2.0: cada nivel exige una técnica, y la app te la enseña con una lección y con pistas que explican el paso. Reto diario. Compra única, nunca suscripción.
 ```
-(141/170)
+(161/170)
 
 **en**
 ```
-Free starter pack: 200 sudokus with a single verified solution. No ads, no sign-up, works offline. Packs are one-time purchases, never a subscription.
+New in 2.0: every level asks for a technique, and the app teaches it with a lesson and hints that explain the step. Daily challenge. One-time purchases, no subscription.
 ```
-(150/170)
+(169/170)
 
 ### Paraules clau (100, separades per comes, sense espai després de la coma)
 
 No repeteixis paraules que ja són al nom o al subtítol: Apple ja les indexa i
-gastaries caràcters.
+gastaries caràcters. Per això «sense anuncis» i «tècniques» ja no hi són: ara van al subtítol.
 
 **ca**
 ```
-sudokus,passatemps,nombres,lògica,mental,sense connexió,sense anuncis,trencaclosques,joc,cervell
+sudokus,passatemps,nombres,lògica,repte diari,pistes,lliçons,sense connexió,trencaclosques,cervell
 ```
-(96/100)
+(98/100)
 
 **es**
 ```
-sudokus,pasatiempos,numeros,logica,mental,offline,sin anuncios,rompecabezas,juego,cerebro,puzzle
+sudokus,pasatiempos,numeros,logica,reto diario,pistas,lecciones,offline,rompecabezas,juego,cerebro
 ```
-(96/100)
+(98/100)
 
 **en**
 ```
-sudokus,puzzle,numbers,logic,brain,offline,no ads,training,classic,game,solitaire,mind,teaser
+sudokus,puzzle,numbers,logic,daily challenge,hints,lessons,offline,brain,classic,game,mind,teaser
 ```
-(93/100)
+(97/100)
 
 ### Captures
 
 | Actiu | Requisit | Estat |
 |-------|----------|-------|
 | Icona | 1024×1024 PNG, **sense canal alfa** | ✅ `store/appstore-icon-1024.png` |
-| iPhone 6,9" | 1290×2796 o 1320×2868, vertical, 2–10 | ✅ `store/screenshots/iphone-6.9/` — 6 a 1320×2868 |
+| iPhone (pantalla mitjana) | 1179×2556 o 1206×2622, vertical, 2–10 | ❌ per refer amb la 2.0. Les de `store/screenshots/iphone-6.9/` (1320×2868) no les accepta aquesta fitxa |
 | iPad | — | no cal, l'app és d'iPhone |
 
-Apple escala el joc de 6,9" per als iPhone més petits; ja no calen els jocs de
-6,5" i 5,5".
+La fitxa d'aquesta app només ofereix la classe «iPhone amb Dynamic Island (pantalla
+mitjana)». El simulador de l'iPhone 17 captura exactament a 1206×2622.
 
 ### Productes de compra integrada
 
@@ -235,17 +235,18 @@ Sense contingut generat per usuaris, sense anuncis, sense web sense restriccions
 
 Serveix per a Play (descripció completa) i per a l'App Store (descripció).
 
-### Català (1290/4000)
+### Català (1963/4000)
 
 ```
-800 sudokus verificats un per un. El primer pack, 200 sudokus, és gratuït.
+El sudoku sense anuncis que t'ensenya a resoldre els més difícils.
 
-SUDOKU KING no té anuncis, no demana registre i no recull cap dada. Funciona sense connexió, del primer sudoku fins a l'últim.
+Cada nivell exigeix una tècnica concreta, de la més senzilla a la més avançada. Quan n'arribes a una de nova, una lliçó curta te l'ensenya sobre un tauler de debò. I si t'encalles, la pista no et regala el número: t'assenyala on mirar i t'explica el pas.
 
 CONTINGUT
 • 4 packs · 40 nivells · 800 sudokus
-• Dels singles nus a les cadenes curtes: cada nivell exigeix una tècnica
-• Cada sudoku té una única solució, comprovada amb un verificador abans de publicar-lo
+• 10 tècniques en escala: singles nus i ocults, candidats bloquejats, parells i trios nus, parells ocults, X-Wing, XY-Wing, Swordfish i cadenes curtes
+• Cada sudoku té una única solució i exigeix exactament la tècnica del seu nivell, comprovat un per un
+• Repte diari: el mateix sudoku per a tothom, cada dia, amb el calendari del mes
 
 PACK INICIAL GRATUÏT
 200 sudokus, nivells 1 a 10. Els nivells s'obren a mesura que completes partides.
@@ -254,37 +255,40 @@ PACKS DE PAGAMENT
 Els packs II, III i IV són compres úniques, mai subscripcions. En comprar un pack, els seus 10 nivells s'obren immediatament, sense haver d'esperar cap progrés.
 
 COM ES JUGA
-• Notes a cada casella
-• Fins a 3 pistes per sudoku
-• Desfer sense límit
-• Comprovació d'errors, que pots desactivar
+• Pistes que expliquen el pas: on mirar, quina tècnica i, al final, el número. Llegir-les és gratis; posar el número gasta una de les 3 pistes del sudoku
+• Notes a mà o automàtiques
+• Mode «Número primer»: tria un número i toca les caselles on va
+• Desfer sense límit i comprovació d'errors, que pots desactivar
 • Cronòmetre i estrelles segons temps, errors i pistes
 
 TAMBÉ
 • Català, castellà i anglès
 • 12 temes visuals
-• Ratxa diària i assoliments
+• Ratxa diària, 25 assoliments i un recordatori de ratxa opcional
+• Exporta el progrés a un arxiu per guardar-lo o passar-lo a un altre mòbil
+• Comparteix el resultat en acabar
 • Vibració, que pots desactivar
 • Teclat físic: xifres, fletxes, esborrar i desfer
 
 PRIVADESA
-Cap compte. Cap identificador publicitari. Cap servidor nostre. El progrés es desa només al teu dispositiu. Les compres les processa la botiga.
+Cap compte. Cap identificador publicitari. Cap servidor nostre. El progrés es desa només al teu dispositiu, i el recordatori és una notificació local. Les compres les processa la botiga.
 
 Francesc Siuraneta Jové — IVORI APLICACIONS · Tarragona
 hola@ivoriaplicacions.es
 ```
 
-### Castellà (1325/4000)
+### Castellà (2001/4000)
 
 ```
-800 sudokus verificados uno a uno. El primer pack, 200 sudokus, es gratis.
+El sudoku sin anuncios que te enseña a resolver los más difíciles.
 
-SUDOKU KING no tiene anuncios, no pide registro y no recoge ningún dato. Funciona sin conexión, del primer sudoku hasta el último.
+Cada nivel exige una técnica concreta, de la más sencilla a la más avanzada. Cuando llegas a una nueva, una lección corta te la enseña sobre un tablero de verdad. Y si te atascas, la pista no te regala el número: te señala dónde mirar y te explica el paso.
 
 CONTENIDO
 • 4 packs · 40 niveles · 800 sudokus
-• De los singles desnudos a las cadenas cortas: cada nivel exige una técnica
-• Cada sudoku tiene una única solución, comprobada con un verificador antes de publicarlo
+• 10 técnicas en escala: singles desnudos y ocultos, candidatos bloqueados, pares y tríos desnudos, pares ocultos, X-Wing, XY-Wing, Swordfish y cadenas cortas
+• Cada sudoku tiene una única solución y exige exactamente la técnica de su nivel, comprobado uno a uno
+• Reto diario: el mismo sudoku para todos, cada día, con el calendario del mes
 
 PACK INICIAL GRATIS
 200 sudokus, niveles 1 a 10. Los niveles se abren a medida que completas partidas.
@@ -293,37 +297,40 @@ PACKS DE PAGO
 Los packs II, III y IV son compras únicas, nunca suscripciones. Al comprar un pack, sus 10 niveles se abren de inmediato, sin tener que esperar ningún progreso.
 
 CÓMO SE JUEGA
-• Notas en cada casilla
-• Hasta 3 pistas por sudoku
-• Deshacer sin límite
-• Comprobación de errores, que puedes desactivar
+• Pistas que explican el paso: dónde mirar, qué técnica y, al final, el número. Leerlas es gratis; poner el número gasta una de las 3 pistas del sudoku
+• Notas a mano o automáticas
+• Modo «Número primero»: elige un número y toca las casillas donde va
+• Deshacer sin límite y comprobación de errores, que puedes desactivar
 • Cronómetro y estrellas según tiempo, errores y pistas
 
 ADEMÁS
 • Catalán, castellano e inglés
 • 12 temas visuales
-• Racha diaria y logros
+• Racha diaria, 25 logros y un recordatorio de racha opcional
+• Exporta el progreso a un archivo para guardarlo o pasarlo a otro móvil
+• Comparte el resultado al terminar
 • Vibración, que puedes desactivar
 • Teclado físico: cifras, flechas, borrar y deshacer
 
 PRIVACIDAD
-Ninguna cuenta. Ningún identificador publicitario. Ningún servidor nuestro. El progreso se guarda solo en tu dispositivo. Las compras las procesa la tienda.
+Ninguna cuenta. Ningún identificador publicitario. Ningún servidor nuestro. El progreso se guarda solo en tu dispositivo, y el recordatorio es una notificación local. Las compras las procesa la tienda.
 
 Francesc Siuraneta Jové — IVORI APLICACIONS · Tarragona
 hola@ivoriaplicacions.es
 ```
 
-### Anglès (1217/4000)
+### Anglès (1916/4000)
 
 ```
-800 sudokus, every one verified. The first pack, 200 sudokus, is free.
+The ad-free sudoku that teaches you to solve harder ones.
 
-SUDOKU KING has no ads, asks for no account and collects no data. It works offline, from the first sudoku to the last.
+Every level demands one technique, from the simplest to the most advanced. When you reach a new one, a short lesson teaches it on a real board. And if you get stuck, the hint does not hand you the digit: it shows you where to look and explains the step.
 
 WHAT YOU GET
 • 4 packs · 40 levels · 800 sudokus
-• From naked singles to short chains: every level demands a technique
-• Every sudoku has exactly one solution, checked by a verifier before release
+• 10 techniques in one climb: naked and hidden singles, locked candidates, naked pairs and triples, hidden pairs, X-Wing, XY-Wing, Swordfish and short chains
+• Every sudoku has exactly one solution and demands exactly its level's technique, each one checked
+• Daily challenge: the same sudoku for everyone, every day, with a monthly calendar
 
 FREE STARTER PACK
 200 sudokus, levels 1 to 10. Levels open as you finish puzzles.
@@ -332,21 +339,23 @@ PAID PACKS
 Packs II, III and IV are one-time purchases, never subscriptions. Buying a pack opens all ten of its levels straight away, with no progress to grind first.
 
 HOW IT PLAYS
-• Pencil notes in any cell
-• Up to 3 hints per sudoku
-• Unlimited undo
-• Mistake checking you can switch off
+• Hints that explain the step: where to look, which technique and, last, the digit. Reading them is free; placing the digit uses one of the puzzle's 3 hints
+• Pencil notes, by hand or automatic
+• Digit-first mode: pick a digit, then tap the cells where it goes
+• Unlimited undo and mistake checking you can switch off
 • Timer and stars based on time, mistakes and hints
 
 ALSO
 • Catalan, Spanish and English
 • 12 visual themes
-• Daily streak and achievements
+• Daily streak, 25 achievements and an optional streak reminder
+• Export your progress to a file to keep it or move it to another phone
+• Share your result when you finish
 • Haptics you can switch off
 • Hardware keyboard: digits, arrows, erase and undo
 
 PRIVACY
-No account. No advertising identifier. No servers of ours. Progress is stored on your device only. Purchases are handled by the store.
+No account. No advertising identifier. No servers of ours. Progress is stored on your device only, and the reminder is a local notification. Purchases are handled by the store.
 
 Francesc Siuraneta Jové — IVORI APLICACIONS · Tarragona
 hola@ivoriaplicacions.es
@@ -358,94 +367,71 @@ precontractual, i evita la reclamació de qui compra esperant una cosa altra.
 
 ---
 
-## 3 bis. Novetats de la versió — 1.1.0 (build 10100)
+## 3 bis. Novetats de la versió — 2.0.0 (build 20000)
 
 El camp «Novetats» de Play té un límit de **500 caràcters**; el d'Apple, 4000. Els
 tres textos caben al límit més estret, així que serveix el mateix per a les dues
-botigues.
+botigues. A l'App Store només hi ha el català; a Play van tots tres en un sol bloc
+(`<ca>`, `<es-ES>`, `<en-US>`).
 
-### Català (345/500)
+La 1.1.1 no es va publicar mai sola: el que portava (pedaç de seguretat de
+Capacitor, CSP, textos de nivell) va dins de la 2.0.0.
 
-```
-Sis temes clars nous: Alba Daurada, Prat Fresc, Lavanda Suau, Platja Clara, Cítrics i Aurora Clara.
-
-Els temes ara es guanyen: quatre oberts des del primer dia i la resta amb estrelles.
-
-Nova pantalla d'estadístiques: sudokus completats, estrelles, millor temps i temps mitjà, ratxa i progrés de cada pack.
-
-Si ja jugaves, conserves el teu tema.
-```
-
-### Castellà (358/500)
+### Català (457/500)
 
 ```
-Seis temas claros nuevos: Amanecer Dorado, Prado Fresco, Lavanda Suave, Playa Clara, Cítricos y Aurora Clara.
+La versió més gran fins ara.
 
-Los temas ahora se ganan: cuatro abiertos desde el primer día y el resto con estrellas.
+Dificultat de debò: 40 nivells en escala, dels singles nus a les cadenes curtes. Cada nivell exigeix la seva tècnica, i una lliçó curta te l'ensenya.
 
-Nueva pantalla de estadísticas: sudokus completados, estrellas, mejor tiempo y tiempo medio, racha y progreso de cada pack.
+Pistes que expliquen el pas abans de donar el número, notes automàtiques i mode «Número primer».
 
-Si ya jugabas, conservas tu tema.
+Repte diari, 25 assoliments, recordatori de ratxa opcional i exportació del progrés.
+
+Els 800 sudokus són nous. Conserves estrelles, experiència, ratxa, nivells oberts i compres.
 ```
 
-### Anglès (331/500)
+### Castellà (466/500)
 
 ```
-Six new light themes: Golden Sunrise, Fresh Meadow, Soft Lavender, Bright Beach, Citrus Grove and Bright Aurora.
+La versión más grande hasta ahora.
 
-Themes are now earned: four open from day one, the rest with stars.
+Dificultad de verdad: 40 niveles en escala, de los singles desnudos a las cadenas cortas. Cada nivel exige su técnica, y una lección corta te la enseña.
 
-New statistics screen: puzzles solved, stars, best and average time, streak and progress in every pack.
+Pistas que explican el paso antes de dar el número, notas automáticas y modo «Número primero».
 
-Already playing? Your theme stays as it is.
+Reto diario, 25 logros, recordatorio de racha opcional y exportación del progreso.
+
+Los 800 sudokus son nuevos. Conservas estrellas, experiencia, racha, niveles abiertos y compras.
 ```
 
-L'última línia hi és a propòsit: qui ja jugava conserva el tema fosc, i dir-ho
-estalvia la pregunta de per què l'app no s'ha tornat clara com anuncia la fitxa.
-
-**Les captures de la fitxa encara són del tema fosc.** L'app ara arrenca en clar,
-així que convé renovar-les abans de publicar la 1.1.0.
-
----
-
-## 3 ter. Novetats de la versió — 1.1.1 (build 10101)
-
-Versió de manteniment: tanca la vulnerabilitat CVE-2026-103922 de Capacitor i deixa
-de prometre una dificultat que els sudokus actuals no exigeixen.
-
-### Català
+### Anglès (433/500)
 
 ```
-Actualització de seguretat.
+Our biggest update yet.
 
-Les descripcions dels nivells ara diuen el que cada nivell ofereix de debò.
+Real difficulty: 40 levels in one climb, from naked singles to short chains. Every level demands its technique, and a short lesson teaches it.
 
-A l'App Store, l'app ja consta en català, castellà i anglès.
+Hints that explain the step before giving the digit, automatic notes and digit-first mode.
+
+Daily challenge, 25 achievements, an optional streak reminder and progress export.
+
+All 800 sudokus are new. You keep your stars, XP, streak, unlocked levels and purchases.
 ```
 
-### Castellà
-
-```
-Actualización de seguridad.
-
-Las descripciones de los niveles ahora dicen lo que cada nivel ofrece de verdad.
-
-En la App Store, la app ya consta en catalán, castellano e inglés.
-```
-
-### Anglès
-
-```
-Security update.
-
-Level descriptions now say what each level really offers.
-
-On the App Store, the app is now listed in Catalan, Spanish and English.
-```
+L'última línia hi és a propòsit. Els sudokus nous canvien quin sudoku hi ha a cada
+casella de la llista, així que es reinicia el resultat de cada sudoku i es perd la
+partida que hi hagués a mitges. El que el jugador s'ha guanyat es conserva, i dir-ho
+s'estalvia la ressenya de qui pensa que ho ha perdut tot.
 
 ---
 
 ## 4. Captures: què ha de sortir a cadascuna
+
+> **Per a la 2.0 cal refer-les.** Les d'aquesta llista són de l'1.1.0 i no ensenyen
+> res del que la 2.0 aporta. Les noves han de mostrar, com a mínim: la llista de
+> nivells amb el repte diari, una pista explicant un pas, una lliçó de tècnica i les
+> notes automàtiques. iPhone a 1206×2622, Android a 1080×2160.
 
 Sis captures, en aquest ordre. Les dues primeres són les úniques que la majoria
 de gent veurà al resultat de cerca, així que han de dir de què va l'app soles.
@@ -501,6 +487,12 @@ from the bottom bar ("Botiga" / "Tienda" / "Store").
 Restore: the shop screen has a "Restore purchases" button that re-reads entitlements from
 the store receipts.
 
+Streak reminder: optional and off by default. Turning it on in Settings asks for
+notification permission and schedules a local notification for 20:00. There is no push
+server and nothing leaves the device.
+
+Daily challenge: generated on the device from the date, with no network access.
+
 The app makes no network requests of its own, collects no personal data and contains no
 advertising. It works fully offline.
 
@@ -516,7 +508,8 @@ Contact: hola@ivoriaplicacions.es
 - [ ] Estat de comerciant / dades públiques del titular
 - [ ] Els 3 productes IAP creats i **actius**, amb preu per país
 - [ ] Seguretat de les dades, IARC, públic objectiu, anuncis, accés a l'app
-- [ ] URL de política de privadesa
+- [ ] URL de política de privadesa, **actualitzada a ivoriaplicacions.es** amb el
+      recordatori i les còpies del progrés (el text és a `public/privacy.html`)
 - [ ] Icona 512, gràfic destacat 1024×500, 2–8 captures
 - [ ] AAB signat pel workflow `Android Release` (no el del CI de cada commit)
 
@@ -529,7 +522,7 @@ nous: es pot enviar a producció directament.
 - [ ] Els 3 productes IAP amb captura i notes de revisió
 - [ ] Privadesa de l'app: *Data Not Collected*
 - [ ] Classificació per edat
-- [ ] URL de suport i de privadesa
+- [ ] URL de suport i de privadesa (la de privadesa, actualitzada com a Play)
 - [ ] Icona 1024 sense alfa, captures d'iPhone 6,9"
 - [ ] Formularis fiscals i perfil bancari
 - [ ] Build pujada des d'Xcode amb l'SDK vigent
