@@ -3,7 +3,7 @@ import { resultMessage, shareResult } from '../../utils/shareResult';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { findNextPuzzle } from '../../utils/sudokuLogic';
-import { Star, Trophy, Clock, ArrowRight, Share2 } from 'lucide-react';
+import { Star, Trophy, Clock, ArrowLeft, ArrowRight, Share2 } from 'lucide-react';
 import { useModalAccessibility } from '../../hooks/useModalAccessibility';
 
 export const VictoryModal: React.FC = () => {
@@ -136,9 +136,10 @@ export const VictoryModal: React.FC = () => {
 
           <button
             onClick={closeVictoryModal}
-            className="w-full py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white/90 font-bold text-xs active:scale-95 transition border border-white/10"
+            className="w-full py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white/90 font-bold text-xs active:scale-95 transition border border-white/10 flex items-center justify-center gap-2"
           >
-            {getTranslation(language, selectedPuzzle?.daily ? 'backToLevels' : 'backToPuzzles')}
+            <ArrowLeft className="w-4 h-4" />
+            <span>{getTranslation(language, selectedPuzzle?.daily ? 'backToLevels' : 'backToPuzzles')}</span>
           </button>
         </div>
       </div>
