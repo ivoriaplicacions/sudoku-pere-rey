@@ -11,6 +11,7 @@ import type {
   ThemeId,
 } from '../types/sudoku';
 import { DEFAULT_THEME, LEGACY_DEFAULT_THEME, isThemeId } from '../data/themes';
+import { mirrorToNative } from './nativeStore';
 
 export const STORAGE_KEYS = {
   progress: 'sudoku_master_progress_v1',
@@ -44,12 +45,19 @@ export function safeGetItem(key: string): string | null {
   }
 }
 
+/** Where the owned packs are cached. Kept by monetization.ts; listed here so it is backed up too. */
+export const OWNED_PACKS_KEY = 'maestros_owned_packs_v1';
+
+/** Everything the native copy keeps: all of the player's data and settings. */
+export const NATIVE_BACKUP_KEYS: readonly string[] = [...Object.values(STORAGE_KEYS), OWNED_PACKS_KEY];
+
 export function safeSetItem(key: string, value: string): void {
   try {
     localStorage.setItem(key, value);
   } catch {
     // Quota / private mode
   }
+  mirrorToNative(key, value);
 }
 
 export function safeRemoveItem(key: string): void {
@@ -58,6 +66,7 @@ export function safeRemoveItem(key: string): void {
   } catch {
     // ignore
   }
+  mirrorToNative(key, null);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

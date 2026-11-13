@@ -2,4 +2,5 @@
 <!-- Android 11 and below (minSdk 24). Same intent as data_extraction_rules.xml. -->
 <full-backup-content>
   <include domain="root" path="app_webview" />
+  <include domain="sharedpref" path="CapacitorStorage.xml" />
 </full-backup-content>

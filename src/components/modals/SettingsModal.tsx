@@ -9,6 +9,7 @@ import { APP_VERSION } from '../../version';
 import { Palette, CheckCircle, Globe, Vibrate, Volume2, Scale, Lock } from 'lucide-react';
 import { useModalAccessibility } from '../../hooks/useModalAccessibility';
 import { ModalHeader } from './ModalHeader';
+import { ProgressBackupSection } from './ProgressBackupSection';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -231,6 +232,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </button>
           </div>
         </section>
+
+        <ProgressBackupSection language={language} />
 
         {onReplayIntro && (
           <button
