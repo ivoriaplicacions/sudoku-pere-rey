@@ -110,26 +110,31 @@ describe('the shipped puzzle set', () => {
     expect(new Set(puzzles.map((p) => p.id)).size).toBe(puzzles.length);
   });
 
+  // Problems are gathered and checked once: one expect per cell made this test
+  // slow enough to hit the time limit on a busy machine.
   it('decodes into 9x9 grids whose given count matches the clues', () => {
+    const problems: string[] = [];
     for (const puzzle of puzzles) {
-      expect(puzzle.initialGrid).toHaveLength(9);
-      expect(puzzle.solutionGrid).toHaveLength(9);
+      if (puzzle.initialGrid.length !== 9 || puzzle.solutionGrid.length !== 9) {
+        problems.push(`${puzzle.id}: not 9 rows`);
+        continue;
+      }
       let givens = 0;
       for (let r = 0; r < 9; r++) {
-        expect(puzzle.initialGrid[r]).toHaveLength(9);
+        if (puzzle.initialGrid[r].length !== 9) problems.push(`${puzzle.id}: row ${r} is not 9 cells`);
         for (let c = 0; c < 9; c++) {
           const clue = puzzle.initialGrid[r][c];
-          expect(clue).toBeGreaterThanOrEqual(0);
-          expect(clue).toBeLessThanOrEqual(9);
+          if (!Number.isInteger(clue) || clue < 0 || clue > 9) problems.push(`${puzzle.id}: bad clue at ${r},${c}`);
           if (clue !== 0) {
             givens++;
             // A clue must agree with the answer, or the board is unwinnable.
-            expect(clue).toBe(puzzle.solutionGrid[r][c]);
+            if (clue !== puzzle.solutionGrid[r][c]) problems.push(`${puzzle.id}: clue at ${r},${c} contradicts the solution`);
           }
         }
       }
-      expect(givens).toBe(puzzle.givenCount);
+      if (givens !== puzzle.givenCount) problems.push(`${puzzle.id}: ${givens} givens, says ${puzzle.givenCount}`);
     }
+    expect(problems).toEqual([]);
   });
 
   it('ships solutions that are themselves legal boards', () => {

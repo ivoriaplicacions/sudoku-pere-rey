@@ -239,13 +239,13 @@ export function techniqueName(technique: Technique, language: Language): string 
   return getTranslation(language, TECHNIQUE_NAME_KEY[technique]);
 }
 
-function unitName(unit: UnitRef | undefined, language: Language): string {
+export function unitName(unit: UnitRef | undefined, language: Language): string {
   if (!unit) return '';
   const key = unit.kind === 'row' ? 'hintUnitRow' : unit.kind === 'column' ? 'hintUnitColumn' : 'hintUnitBox';
   return getTranslation(language, key, { n: unit.index + 1 });
 }
 
-function digitList(digits: number[], language: Language): string {
+export function digitList(digits: number[], language: Language): string {
   if (digits.length <= 1) return digits.join('');
   const and = getTranslation(language, 'hintAnd');
   return `${digits.slice(0, -1).join(', ')} ${and} ${digits[digits.length - 1]}`;

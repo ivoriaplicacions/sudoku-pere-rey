@@ -1,12 +1,17 @@
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
-import { ArrowLeft, Star, Clock, CheckCircle2, Play } from 'lucide-react';
+import { ArrowLeft, Star, Clock, CheckCircle2, GraduationCap, Play } from 'lucide-react';
 import { ContinueBanner } from './ContinueBanner';
 import { getTheme } from '../../data/themes';
 import { puzzleCardStyles } from '../../utils/puzzleCardTheme';
 
-export const PuzzleGrid: React.FC = () => {
+interface PuzzleGridProps {
+  /** Opens the lesson for the technique this level demands. */
+  onOpenLesson?: () => void;
+}
+
+export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ onOpenLesson }) => {
   const { language, selectedLevel, puzzles, progressMap, startPuzzle, setView, savedSession, theme } =
     useGame();
   const isLightTheme = getTheme(theme).isLight === true;
@@ -34,9 +39,23 @@ export const PuzzleGrid: React.FC = () => {
           <span>{getTranslation(language, 'backToLevels')}</span>
         </button>
 
-        <span className="text-xs font-extrabold uppercase tracking-wider text-amber-400 bg-amber-500/20 px-3 py-1.5 rounded-full border border-amber-500/30">
-          {getTranslation(language, 'level')} {selectedLevel}
-        </span>
+        <div className="flex items-center gap-2">
+          {onOpenLesson && (
+            <button
+              type="button"
+              onClick={onOpenLesson}
+              className={`flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl hover:bg-white/20 active:scale-95 transition ${
+                isLightTheme ? 'text-white bg-slate-900/75' : 'text-white/90 bg-white/15'
+              }`}
+            >
+              <GraduationCap className="w-4 h-4" />
+              <span>{getTranslation(language, 'lessonOpen')}</span>
+            </button>
+          )}
+          <span className="text-xs font-extrabold uppercase tracking-wider text-amber-400 bg-amber-500/20 px-3 py-1.5 rounded-full border border-amber-500/30">
+            {getTranslation(language, 'level')} {selectedLevel}
+          </span>
+        </div>
       </div>
 
       <div className="text-center my-2 space-y-1">

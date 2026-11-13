@@ -18,7 +18,10 @@ import { StoreModal } from './components/modals/StoreModal';
 import { LegalModal, type LegalModalHandle } from './components/modals/LegalModal';
 import { IntroSplash } from './components/IntroSplash';
 import { getTranslation } from './i18n/translations';
-import { hasSeenIntro, markIntroSeen } from './services/persistence';
+import { hasSeenIntro, loadSeenLessons, markIntroSeen, markLessonSeen } from './services/persistence';
+import { techniqueForLevel } from './data/ladder';
+import type { Technique } from './solver/humanSolver';
+import { LessonModal } from './components/modals/LessonModal';
 import { exitNativeApp, hideNativeSplash } from './native/bootstrap';
 import { usePhysicalKeyboard } from './hooks/usePhysicalKeyboard';
 import { moveSelection } from './utils/boardHelpers';
@@ -30,6 +33,7 @@ const MainApp: React.FC = () => {
     theme,
     view,
     setView,
+    selectedLevel,
     selectedPuzzle,
     setSelectedCell,
     timerSeconds,
@@ -52,6 +56,23 @@ const MainApp: React.FC = () => {
   const legalModalRef = useRef<LegalModalHandle>(null);
   const [showIntro, setShowIntro] = useState(() => !hasSeenIntro());
   const [introKey, setIntroKey] = useState(0);
+
+  // A lesson opens by itself the first time a level asks for a technique the
+  // player has not been shown, and on request from the level's own screen.
+  const [lessonTechnique, setLessonTechnique] = useState<Technique | null>(null);
+  const closeLesson = useCallback(() => setLessonTechnique(null), []);
+  const openLessonForLevel = useCallback((level: number) => {
+    const technique = techniqueForLevel(level);
+    markLessonSeen(technique);
+    setLessonTechnique(technique);
+  }, []);
+  useEffect(() => {
+    if (view !== 'puzzle-select' || showIntro) return;
+    const technique = techniqueForLevel(selectedLevel);
+    if (loadSeenLessons().includes(technique)) return;
+    markLessonSeen(technique);
+    setLessonTechnique(technique);
+  }, [view, selectedLevel, showIntro]);
 
   const finishIntro = useCallback(() => {
     markIntroSeen();
@@ -92,6 +113,10 @@ const MainApp: React.FC = () => {
         setIsStatsOpen(false);
         return;
       }
+      if (lessonTechnique) {
+        closeLesson();
+        return;
+      }
       if (victoryData) {
         closeVictoryModal();
         return;
@@ -118,6 +143,8 @@ const MainApp: React.FC = () => {
     isSettingsOpen,
     isAchievementsOpen,
     isStatsOpen,
+    lessonTechnique,
+    closeLesson,
     victoryData,
     closeVictoryModal,
     view,
@@ -131,6 +158,7 @@ const MainApp: React.FC = () => {
     isStatsOpen ||
     isStoreOpen ||
     isLegalOpen ||
+    lessonTechnique !== null ||
     Boolean(victoryData);
 
   usePhysicalKeyboard({
@@ -181,7 +209,7 @@ const MainApp: React.FC = () => {
         >
           {view === 'level-select' && <LevelGrid onOpenStore={() => setIsStoreOpen(true)} />}
 
-          {view === 'puzzle-select' && <PuzzleGrid />}
+          {view === 'puzzle-select' && <PuzzleGrid onOpenLesson={() => openLessonForLevel(selectedLevel)} />}
 
           {view === 'game' && selectedPuzzle && (
             <div className="w-full max-w-md space-y-3 pb-8">
@@ -241,6 +269,7 @@ const MainApp: React.FC = () => {
         )}
       </div>
 
+      {lessonTechnique && <LessonModal technique={lessonTechnique} onClose={closeLesson} />}
       <VictoryModal />
       <AchievementsModal isOpen={isAchievementsOpen} onClose={() => setIsAchievementsOpen(false)} />
       <StatsModal isOpen={isStatsOpen} onClose={() => setIsStatsOpen(false)} />

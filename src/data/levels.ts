@@ -93,6 +93,11 @@ const TECHNIQUE_TEXT: Partial<Record<Technique, { name: Trilingual; description:
   },
 };
 
+/** The one-line description of a technique, as its levels show it. */
+export function techniqueBlurb(technique: Technique): LocalizedText | undefined {
+  return TECHNIQUE_TEXT[technique]?.description;
+}
+
 const ICONS = ['🌱', '⭐', '🧩', '🔥', '🎯', '⚡', '🏆', '💎', '🌌', '👑'];
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 

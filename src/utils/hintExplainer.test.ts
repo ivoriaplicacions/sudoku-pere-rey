@@ -188,7 +188,9 @@ describe('explainNextStep', () => {
   });
 });
 
-describe('hints across the whole catalogue', () => {
+// Tests that walk all 800 puzzles do real work: a couple of seconds on an idle
+// machine, more on a busy one or in CI. They get room instead of the default 5 s.
+describe('hints across the whole catalogue', { timeout: 60_000 }, () => {
   it('finish every puzzle, one explained step at a time, with no dead end', () => {
     for (const { id, puzzle, solution } of catalogue) {
       let stuck = 0;

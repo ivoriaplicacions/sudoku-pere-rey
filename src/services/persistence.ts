@@ -23,6 +23,7 @@ export const STORAGE_KEYS = {
   sound: 'maestros_sound_v1',
   autoCheck: 'maestros_autocheck_v1',
   digitFirst: 'maestros_digit_first_v1',
+  lessonsSeen: 'maestros_lessons_seen_v1',
   catalogue: 'maestros_catalogue_v1',
   carriedStars: 'maestros_carried_stars_v1',
   progressArchive: 'sudoku_master_progress_catalogue1',
@@ -193,6 +194,22 @@ export function loadAutoCheckErrors(): boolean {
 
 export function saveAutoCheckErrors(enabled: boolean): void {
   safeSetItem(STORAGE_KEYS.autoCheck, String(enabled));
+}
+
+/** The techniques whose lesson the player has already been shown. */
+export function loadSeenLessons(): string[] {
+  try {
+    const parsed: unknown = JSON.parse(safeGetItem(STORAGE_KEYS.lessonsSeen) ?? '[]');
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+export function markLessonSeen(technique: string): void {
+  const seen = loadSeenLessons();
+  if (seen.includes(technique)) return;
+  safeSetItem(STORAGE_KEYS.lessonsSeen, JSON.stringify([...seen, technique]));
 }
 
 /** Off unless the player turned it on: cell-first is what the app has always done. */

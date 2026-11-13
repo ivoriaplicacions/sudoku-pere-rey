@@ -44,7 +44,8 @@ describe('the ladder', () => {
   });
 });
 
-describe('the shipped puzzles keep the promise of the ladder', () => {
+// Walks all 800 puzzles: real work, so it gets more than the default 5 s.
+describe('the shipped puzzles keep the promise of the ladder', { timeout: 60_000 }, () => {
   // `npm run puzzles:verify` checks the same in CI, with more detail. Keeping it
   // in the unit suite means a regenerated catalogue cannot slip past `npm test`.
   it('every puzzle demands exactly the technique of its level', () => {
