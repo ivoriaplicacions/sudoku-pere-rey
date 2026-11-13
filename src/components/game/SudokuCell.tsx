@@ -12,7 +12,8 @@ const HINT_MARK_CLASS: Record<HintMark, string> = {
   zone: 'z-10 ring-1 ring-inset ring-amber-400/70',
   pattern: 'z-10 ring-[3px] ring-inset ring-amber-400',
   eliminated: 'z-10 ring-[3px] ring-inset ring-rose-500',
-  target: 'z-10 ring-[3px] ring-inset ring-emerald-400',
+  // White inside dark: the one pairing that stands out on every theme, the green ones included.
+  target: 'z-10 ring-[5px] ring-inset ring-slate-950 outline-3 -outline-offset-3 outline-white',
 };
 
 interface SudokuCellProps {

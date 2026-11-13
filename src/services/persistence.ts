@@ -22,6 +22,7 @@ export const STORAGE_KEYS = {
   theme: 'maestros_theme_v1',
   sound: 'maestros_sound_v1',
   autoCheck: 'maestros_autocheck_v1',
+  digitFirst: 'maestros_digit_first_v1',
   catalogue: 'maestros_catalogue_v1',
   carriedStars: 'maestros_carried_stars_v1',
   progressArchive: 'sudoku_master_progress_catalogue1',
@@ -192,6 +193,15 @@ export function loadAutoCheckErrors(): boolean {
 
 export function saveAutoCheckErrors(enabled: boolean): void {
   safeSetItem(STORAGE_KEYS.autoCheck, String(enabled));
+}
+
+/** Off unless the player turned it on: cell-first is what the app has always done. */
+export function loadDigitFirst(): boolean {
+  return safeGetItem(STORAGE_KEYS.digitFirst) === 'true';
+}
+
+export function saveDigitFirst(enabled: boolean): void {
+  safeSetItem(STORAGE_KEYS.digitFirst, String(enabled));
 }
 
 function parseProgressMap(saved: string | null): Record<string, PuzzleProgress> {

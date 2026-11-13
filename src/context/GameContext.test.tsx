@@ -219,6 +219,128 @@ describe('GameProvider integration', () => {
     await act(async () => root.unmount());
   });
 
+  describe('digit-first mode', () => {
+    const emptyCellsOf = (puzzle: { initialGrid: number[][] }) =>
+      puzzle.initialGrid.flatMap((row, r) => row.flatMap((value, c) => (value === 0 ? [{ row: r, col: c }] : [])));
+
+    it('is off by default, so a digit key still writes into the selected cell', async () => {
+      const { root } = await renderGame();
+      const puzzle = await startFirstPuzzle();
+      const [first] = emptyCellsOf(puzzle);
+      expect(current?.digitFirst).toBe(false);
+
+      await enterValue(first.row, first.col, puzzle.solutionGrid[first.row][first.col]);
+      expect(current?.board[first.row][first.col].value).toBe(puzzle.solutionGrid[first.row][first.col]);
+      expect(current?.armedDigit).toBeNull();
+
+      await act(async () => root.unmount());
+    });
+
+    it('picks a digit up with its key and writes it into the cells tapped', async () => {
+      const { root } = await renderGame();
+      const puzzle = await startFirstPuzzle();
+      await act(async () => current?.setDigitFirst(true));
+
+      const [first] = emptyCellsOf(puzzle);
+      const digit = puzzle.solutionGrid[first.row][first.col];
+      const second = emptyCellsOf(puzzle).find(
+        (cell) =>
+          (cell.row !== first.row || cell.col !== first.col) && puzzle.solutionGrid[cell.row][cell.col] === digit,
+      )!;
+
+      // The key alone writes nothing, even with a cell selected.
+      await act(async () => current?.setSelectedCell(first));
+      await act(async () => current?.inputNumber(digit));
+      expect(current?.armedDigit).toBe(digit);
+      expect(current?.board[first.row][first.col].value).toBe(0);
+
+      await act(async () => current?.tapCell(first.row, first.col));
+      await act(async () => current?.tapCell(second.row, second.col));
+      expect(current?.board[first.row][first.col].value).toBe(digit);
+      expect(current?.board[second.row][second.col].value).toBe(digit);
+      expect(current?.armedDigit).toBe(digit);
+      expect(current?.mistakes).toBe(0);
+
+      await act(async () => root.unmount());
+    });
+
+    it('never overwrites another digit, and leaves givens alone', async () => {
+      const { root } = await renderGame();
+      const puzzle = await startFirstPuzzle();
+      await act(async () => current?.setDigitFirst(true));
+
+      const [first] = emptyCellsOf(puzzle);
+      const right = puzzle.solutionGrid[first.row][first.col];
+      const other = (right % 9) + 1;
+
+      await act(async () => current?.inputNumber(right));
+      await act(async () => current?.tapCell(first.row, first.col));
+      await act(async () => current?.inputNumber(other));
+      expect(current?.armedDigit).toBe(other);
+      await act(async () => current?.tapCell(first.row, first.col));
+      expect(current?.board[first.row][first.col].value).toBe(right);
+
+      const given = puzzle.initialGrid.flat().findIndex((value) => value !== 0);
+      await act(async () => current?.tapCell(Math.floor(given / 9), given % 9));
+      expect(current?.board[Math.floor(given / 9)][given % 9].value).toBe(puzzle.initialGrid.flat()[given]);
+      expect(current?.selectedCell).toEqual({ row: Math.floor(given / 9), col: given % 9 });
+      expect(current?.mistakes).toBe(0);
+
+      await act(async () => root.unmount());
+    });
+
+    it('takes the digit back out of a cell tapped again, and puts it down with its key', async () => {
+      const { root } = await renderGame();
+      const puzzle = await startFirstPuzzle();
+      await act(async () => current?.setDigitFirst(true));
+      const [first] = emptyCellsOf(puzzle);
+      const digit = puzzle.solutionGrid[first.row][first.col];
+
+      await act(async () => current?.inputNumber(digit));
+      await act(async () => current?.tapCell(first.row, first.col));
+      await act(async () => current?.tapCell(first.row, first.col));
+      expect(current?.board[first.row][first.col].value).toBe(0);
+
+      await act(async () => current?.inputNumber(digit));
+      expect(current?.armedDigit).toBeNull();
+      await act(async () => current?.tapCell(first.row, first.col));
+      expect(current?.board[first.row][first.col].value).toBe(0);
+
+      await act(async () => root.unmount());
+    });
+
+    it('puts the digit down once all nine are on the board, and when the mode is turned off', async () => {
+      const { root } = await renderGame();
+      const puzzle = await startFirstPuzzle();
+      await act(async () => current?.setDigitFirst(true));
+      const [first] = emptyCellsOf(puzzle);
+      const digit = puzzle.solutionGrid[first.row][first.col];
+
+      await act(async () => current?.inputNumber(digit));
+      for (const cell of emptyCellsOf(puzzle)) {
+        if (puzzle.solutionGrid[cell.row][cell.col] !== digit) continue;
+        await act(async () => current?.tapCell(cell.row, cell.col));
+      }
+      expect(current?.board.flat().filter((cell) => cell.value === digit)).toHaveLength(9);
+      expect(current?.armedDigit).toBeNull();
+
+      await act(async () => current?.inputNumber((digit % 9) + 1));
+      expect(current?.armedDigit).toBe((digit % 9) + 1);
+      await act(async () => current?.setDigitFirst(false));
+      expect(current?.armedDigit).toBeNull();
+      expect(localStorage.getItem('maestros_digit_first_v1')).toBe('false');
+
+      await act(async () => root.unmount());
+    });
+
+    it('remembers the setting for the next launch', async () => {
+      localStorage.setItem('maestros_digit_first_v1', 'true');
+      const { root } = await renderGame();
+      expect(current?.digitFirst).toBe(true);
+      await act(async () => root.unmount());
+    });
+  });
+
   it('closes an open hint as soon as the board changes', async () => {
     const { root } = await renderGame();
     const puzzle = await startFirstPuzzle();

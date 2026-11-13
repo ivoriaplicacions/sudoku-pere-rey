@@ -52,6 +52,8 @@ import {
   saveSoundEnabled,
   loadAutoCheckErrors,
   saveAutoCheckErrors,
+  loadDigitFirst,
+  saveDigitFirst,
 } from '../services/persistence';
 import {
   hapticTap,
@@ -120,6 +122,12 @@ interface GameContextType {
   setHapticsEnabled: (val: boolean) => void;
   autoCheckErrors: boolean;
   setAutoCheckErrors: (val: boolean) => void;
+  /** Digit-first play: pick a digit, then tap the cells it goes in. */
+  digitFirst: boolean;
+  setDigitFirst: (val: boolean) => void;
+  /** The digit picked up in digit-first mode, or null. */
+  armedDigit: number | null;
+  tapCell: (row: number, col: number) => void;
 
   startPuzzle: (puzzle: Puzzle, options?: { fresh?: boolean }) => void;
   resumeSession: () => void;
@@ -186,9 +194,21 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [soundEnabled, setSoundEnabledState] = useState<boolean>(loadSoundEnabled);
   const [hapticsEnabled, setHapticsEnabledState] = useState<boolean>(loadHapticsEnabled);
   const [autoCheckErrors, setAutoCheckErrorsState] = useState<boolean>(loadAutoCheckErrors);
+  const [digitFirst, setDigitFirstState] = useState<boolean>(loadDigitFirst);
+  const [armedDigit, setArmedDigit] = useState<number | null>(null);
 
   const [victoryData, setVictoryData] = useState<{ stars: number; xpEarned: number; time: number } | null>(null);
   const [activeHint, setActiveHint] = useState<ActiveHint | null>(null);
+
+  // A picked-up digit belongs to one puzzle, and is put down once all nine are placed.
+  useEffect(() => {
+    setArmedDigit(null);
+  }, [selectedPuzzle]);
+  useEffect(() => {
+    if (armedDigit === null) return;
+    const placed = board.flat().filter((cell) => cell.value === armedDigit && !cell.isError).length;
+    if (placed >= 9) setArmedDigit(null);
+  }, [board, armedDigit]);
 
   // A hint explains one position. Any change to the board, or leaving it, ends it.
   useEffect(() => {
@@ -214,6 +234,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const setSoundEnabled = useCallback((val: boolean) => {
     setSoundEnabledState(val);
     saveSoundEnabled(val);
+  }, []);
+
+  const setDigitFirst = useCallback((val: boolean) => {
+    setDigitFirstState(val);
+    saveDigitFirst(val);
+    setArmedDigit(null);
   }, []);
 
   const setAutoCheckErrors = useCallback((val: boolean) => {
@@ -516,9 +542,37 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return true;
   };
 
+  /**
+   * A digit key. Normally it writes into the selected cell. In digit-first mode
+   * it only picks the digit up (or puts it down again); the cells tapped next
+   * are what get written, through tapCell.
+   */
   const inputNumber = (num: number) => {
-    if (!selectedCell || isCompleted || isPaused || board.length === 0) return;
-    const { row, col } = selectedCell;
+    if (isCompleted || isPaused || board.length === 0) return;
+    if (digitFirst) {
+      hapticTap();
+      setArmedDigit((current) => (current === num ? null : num));
+      return;
+    }
+    if (!selectedCell) return;
+    placeDigitAt(selectedCell.row, selectedCell.col, num);
+  };
+
+  /**
+   * A tap on the board. It always selects the cell. In digit-first mode with a
+   * digit picked up it also writes that digit, but only into an empty cell, or
+   * takes it back out of a cell that already holds it: a stray tap never
+   * overwrites a different digit.
+   */
+  const tapCell = (row: number, col: number) => {
+    setSelectedCell({ row, col });
+    if (!digitFirst || armedDigit === null || isCompleted || isPaused || board.length === 0) return;
+    const cell = board[row][col];
+    if (cell.value !== 0 && cell.value !== armedDigit) return;
+    placeDigitAt(row, col, armedDigit);
+  };
+
+  const placeDigitAt = (row: number, col: number, num: number) => {
     const cell = board[row][col];
 
     if (cell.initialValue !== 0 || cell.isHint) return;
@@ -738,6 +792,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setHapticsEnabled: setHapticsEnabledSetting,
         autoCheckErrors,
         setAutoCheckErrors,
+        digitFirst,
+        setDigitFirst,
+        armedDigit,
+        tapCell,
         startPuzzle,
         resumeSession,
         savedSession,
