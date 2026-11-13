@@ -68,7 +68,7 @@ per a Play i per a l'App Store.
 |-------|----------|-------|
 | Icona | 512×512 PNG, ≤1 MB | ✅ `store/play-icon-512.png` |
 | Gràfic destacat | 1024×500 JPG o PNG 24 bits, **sense transparència** | ✅ `store/play-featured-1024x500.png` |
-| Captures de telèfon | 2–8, costat entre 320 i 3840 px, proporció entre 16:9 i 9:16 | ❌ per refer amb la 2.0 (les de `store/screenshots/` són de l'1.0, tema fosc) |
+| Captures de telèfon | 2–8, costat entre 320 i 3840 px, proporció entre 16:9 i 9:16 | ✅ `store/screenshots/play/{ca,es,en}/` — 6 per idioma a 1080×2160 |
 | Captures de tauleta | opcionals | — (l'app és de telèfon) |
 
 Sense captures de tauleta, Play mostra un avís als usuaris de tauleta. No bloqueja
@@ -196,7 +196,7 @@ sudokus,puzzle,numbers,logic,daily challenge,hints,lessons,offline,brain,classic
 | Actiu | Requisit | Estat |
 |-------|----------|-------|
 | Icona | 1024×1024 PNG, **sense canal alfa** | ✅ `store/appstore-icon-1024.png` |
-| iPhone (pantalla mitjana) | 1179×2556 o 1206×2622, vertical, 2–10 | ❌ per refer amb la 2.0. Les de `store/screenshots/iphone-6.9/` (1320×2868) no les accepta aquesta fitxa |
+| iPhone (pantalla mitjana) | 1179×2556 o 1206×2622, vertical, 2–10 | ✅ `store/screenshots/appstore/{ca,es,en}/` — 6 per idioma a 1179×2556 |
 | iPad | — | no cal, l'app és d'iPhone |
 
 La fitxa d'aquesta app només ofereix la classe «iPhone amb Dynamic Island (pantalla
@@ -428,44 +428,35 @@ s'estalvia la ressenya de qui pensa que ho ha perdut tot.
 
 ## 4. Captures: què ha de sortir a cadascuna
 
-> **Per a la 2.0 cal refer-les.** Les d'aquesta llista són de l'1.1.0 i no ensenyen
-> res del que la 2.0 aporta. Les noves han de mostrar, com a mínim: la llista de
-> nivells amb el repte diari, una pista explicant un pas, una lliçó de tècnica i les
-> notes automàtiques. iPhone a 1206×2622, Android a 1080×2160.
-
-Sis captures, en aquest ordre. Les dues primeres són les úniques que la majoria
-de gent veurà al resultat de cerca, així que han de dir de què va l'app soles.
-
-Capturades el 23 d'octubre de 2026 amb l'iPhone 18 Pro Max del simulador, a
-1320×2868, en castellà i amb el tema clar Amanecer Dorado.
+Sis captures per idioma, en aquest ordre. Les dues primeres són les úniques que la
+majoria de gent veurà al resultat de cerca, així que han de dir de què va l'app soles.
 
 | # | Fitxer | Què mostra |
 |---|--------|------------|
-| 1 | `…-01-level-selection.png` | Llista de nivells amb estrelles, progrés i ratxa |
-| 2 | `…-02-puzzle-selection.png` | Els 20 sudokus d'un nivell amb estrelles i temps |
-| 3 | `…-03-gameplay.png` | Tauler a mig joc: casella seleccionada i ressaltat de fila, columna, caixa i xifra |
-| 4 | `…-04-themes.png` | Els temes clars nous i els que encara s'han de guanyar |
-| 5 | `…-05-statistics.png` | La pantalla d'estadístiques |
-| 6 | `…-06-notes.png` | Mode notes amb anotacions a una casella |
+| 1 | `01-levels.jpg` | Llista de nivells amb el repte diari, estrelles i ratxa |
+| 2 | `02-hint.jpg` | Una pista explicant el pas abans de donar el número |
+| 3 | `03-lesson.jpg` | La lliçó de candidats bloquejats sobre un tauler de debò |
+| 4 | `04-notes.jpg` | Notes automàtiques en un sudoku de nivell 8 |
+| 5 | `05-daily.jpg` | El calendari del repte diari amb els dies fets |
+| 6 | `06-victory.jpg` | Victòria amb tres estrelles, temps i experiència |
 
-El progrés que es veu és de demostració (62 sudokus, 165 estrelles, ratxa de 5),
-sembrat a `dist/` abans de compilar la build del simulador. No toca cap codi font:
-`dist/` està fora del control de versions i es regenera amb `npm run build`.
+Capturades el 13 de novembre de 2026 a l'iPhone 16e (1170×2532) amb proves XCUITest,
+amb el tema clar Alba Daurada i la versió 2.0.0.
 
-**La captura de la botiga no hi és a propòsit.** Al simulador, StoreKit respon amb
-botiga dels Estats Units i el preu surt com a `$0.99`. En un iPhone espanyol surt
-0,99 €, però una captura amb dòlars a una fitxa en castellà enganya. Si la vols,
-fes-la des del teu dispositiu.
+- **App Store** (`store/screenshots/appstore/`): escalades a 1179×2556, la mida de la
+  classe «pantalla mitjana» que admet la fitxa. L'escalat és de menys de l'1 %.
+- **Play** (`store/screenshots/play/`): a 1080×2160, retallades per dalt i per baix per
+  treure la barra d'estat de l'iPhone, que a Android no hi pinta res.
 
-Per a la 1.0, captures netes del dispositiu són suficients: no calen marcs ni
-textos superposats. Si més endavant hi afegeixes rètols, hauràs de mantenir-los
-en els tres idiomes.
+El progrés que es veu és de demostració (73 sudokus, uns 210 estrelles, ratxa de 6),
+sembrat amb un `seed.js` afegit a `dist/` abans de compilar. No toca cap codi font i
+no ha d'arribar mai a una build de botiga: `npm run build` el fa desaparèixer.
 
-Per repetir-les: compilar per al simulador, instal·lar i capturar amb
-`xcrun simctl io <udid> screenshot fitxer.png`, que desa a resolució nativa.
+La barra d'estat és la real del telèfon, carregant. Si es vol la de màrqueting (9:41,
+bateria plena), s'han de refer al simulador de l'iPhone 17, que a aquest Mac de 8 GB
+no arrenca amb la resta d'apps obertes.
 
-**Les captures de Play són a part.** Les de `store/screenshots/*.png` són
-1080×2160, mida d'Android, i encara són del tema fosc.
+Les captures de tauleta de `store/screenshots/android-tablet/` encara són de l'1.x.
 
 ---
 
