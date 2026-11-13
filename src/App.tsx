@@ -22,7 +22,7 @@ import { hasSeenIntro, loadSeenLessons, markIntroSeen, markLessonSeen } from './
 import { techniqueForLevel } from './data/ladder';
 import type { Technique } from './solver/humanSolver';
 import { LessonModal } from './components/modals/LessonModal';
-import { exitNativeApp, hideNativeSplash } from './native/bootstrap';
+import { exitNativeApp, hideNativeSplash, matchStatusBarToPage } from './native/bootstrap';
 import { usePhysicalKeyboard } from './hooks/usePhysicalKeyboard';
 import { moveSelection } from './utils/boardHelpers';
 import { ArrowLeft, Clock, AlertTriangle } from 'lucide-react';
@@ -182,6 +182,12 @@ const MainApp: React.FC = () => {
   }, []);
 
   const currentTheme = getTheme(theme);
+  // The intro and every modal cover the page with a dark backdrop.
+  const pageTopIsLight = currentTheme.isLight === true && !modalBlocking;
+
+  useEffect(() => {
+    void matchStatusBarToPage(pageTopIsLight);
+  }, [pageTopIsLight]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
