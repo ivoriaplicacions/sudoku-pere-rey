@@ -18,6 +18,15 @@
 				<string>CA92.1</string>
 			</array>
 		</dict>
+		<!-- @capacitor/filesystem can read file dates; the app only writes its own export file. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>

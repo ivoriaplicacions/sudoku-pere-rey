@@ -6,7 +6,9 @@ import {
   getPackByProductId,
 } from '../data/packs';
 
-const STORAGE_KEY = 'maestros_owned_packs_v1';
+import { OWNED_PACKS_KEY, safeSetItem } from './persistence';
+
+const STORAGE_KEY = OWNED_PACKS_KEY;
 const FREE_PACK_ID = 'pack1';
 
 export type PurchaseResult = { ok: boolean; error?: string };
@@ -27,7 +29,7 @@ function readStoredOwned(): string[] {
 }
 
 function writeOwned(packIds: string[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(withFreePack(packIds)));
+  safeSetItem(STORAGE_KEY, JSON.stringify(withFreePack(packIds)));
 }
 
 /** Pack 1 is always free and owned */
