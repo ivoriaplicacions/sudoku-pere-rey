@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { dailyPuzzle, dateKey, dateOfDailyId } from '../utils/dailyChallenge';
+import { maybeAskForReview } from '../services/reviewPrompt';
+import {
+  disableReminder,
+  enableReminder,
+  loadReminderEnabled,
+  rescheduleReminder,
+  type EnableResult,
+} from '../services/streakReminder';
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import type {
@@ -125,6 +133,10 @@ interface GameContextType {
   setHapticsEnabled: (val: boolean) => void;
   autoCheckErrors: boolean;
   setAutoCheckErrors: (val: boolean) => void;
+  /** The optional streak reminder, a local notification. Off by default. */
+  reminderEnabled: boolean;
+  /** Turns it on (asking the system for permission) or off. */
+  setReminderEnabled: (enabled: boolean) => Promise<EnableResult | 'disabled'>;
   /** Digit-first play: pick a digit, then tap the cells it goes in. */
   digitFirst: boolean;
   setDigitFirst: (val: boolean) => void;
@@ -321,6 +333,33 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     savePlayerStats(playerStats);
   }, [playerStats]);
+
+  // The streak reminder always points at the next day not played yet.
+  const [reminderEnabled, setReminderEnabledState] = useState<boolean>(loadReminderEnabled);
+  useEffect(() => {
+    if (!reminderEnabled) return;
+    void rescheduleReminder(
+      { lastPlayedDate: playerStats.lastPlayedDate, currentStreak: playerStats.currentStreak },
+      language,
+    );
+  }, [reminderEnabled, playerStats.lastPlayedDate, playerStats.currentStreak, language]);
+
+  const setReminderEnabled = useCallback(
+    async (enabled: boolean): Promise<EnableResult | 'disabled'> => {
+      if (!enabled) {
+        await disableReminder();
+        setReminderEnabledState(false);
+        return 'disabled';
+      }
+      const result = await enableReminder(
+        { lastPlayedDate: playerStats.lastPlayedDate, currentStreak: playerStats.currentStreak },
+        language,
+      );
+      setReminderEnabledState(result === 'enabled');
+      return result;
+    },
+    [playerStats.lastPlayedDate, playerStats.currentStreak, language],
+  );
 
   // Achievements are checked after each win. A player arriving with the work
   // already done (after an update that added achievements, or an imported file)
@@ -593,6 +632,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     setVictoryData({ stars, xpEarned: puzzleXp + achievementXp, time: timerSeconds });
+    maybeAskForReview(stars, puzzlesCompleted);
     setHistory([]);
     dropSession(sessionSlotOf(selectedPuzzle.id));
     return true;
@@ -869,6 +909,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAutoCheckErrors,
         digitFirst,
         setDigitFirst,
+        reminderEnabled,
+        setReminderEnabled,
         armedDigit,
         tapCell,
         startPuzzle,

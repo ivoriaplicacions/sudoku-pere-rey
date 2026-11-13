@@ -25,6 +25,8 @@ export const STORAGE_KEYS = {
   autoCheck: 'maestros_autocheck_v1',
   digitFirst: 'maestros_digit_first_v1',
   dailySession: 'maestros_daily_session_v1',
+  reviewAskedAt: 'maestros_review_asked_v1',
+  streakReminder: 'maestros_streak_reminder_v1',
   lessonsSeen: 'maestros_lessons_seen_v1',
   catalogue: 'maestros_catalogue_v1',
   carriedStars: 'maestros_carried_stars_v1',
