@@ -1,5 +1,5 @@
 import { getTranslation } from '../i18n/translations';
-import { applyStep, createState, findNextStep } from '../solver/humanSolver';
+import { applyStep, candidatesOf, createState, findNextStep } from '../solver/humanSolver';
 import type { SolveStep, Technique, UnitRef } from '../solver/humanSolver';
 import type { Language } from '../types/sudoku';
 
@@ -31,6 +31,12 @@ export interface HintFrame {
   eliminated: number[];
   /** The cell the hint ends up filling, once it is time to show it. */
   target: number | null;
+  /**
+   * What still fits in the cells of the pattern and around it, so the board can
+   * show it even if the player keeps no notes. Only on frames that rule
+   * candidates out; never on the cell about to be filled.
+   */
+  candidates?: Array<{ cell: number; digits: number[] }>;
 }
 
 export interface ExplainedHint {
@@ -60,10 +66,13 @@ const unique = (cells: number[]): number[] => [...new Set(cells)].sort((a, b) =>
 /**
  * Does `later` rest on what `earlier` ruled out?
  *
- * A pattern is valid because of the candidates in its own cells and in the cells
- * that share a unit with them. So if nothing `earlier` removed is in or next to
- * the pattern of `later`, `later` holds without it. This errs towards keeping a
- * step: it may explain one that was not strictly needed, never skip one that was.
+ * A pattern is valid for one of two reasons: what its own cells can still hold
+ * (a naked pair, an XY-Wing), or its digits having no other place in the units
+ * around it (locked candidates, a hidden pair, an X-Wing, a chain). So `later`
+ * can only rest on `earlier` if `earlier` removed something from a cell of the
+ * pattern, or removed one of the pattern's digits from a cell next to it.
+ * This errs towards keeping a step: it may explain one that was not strictly
+ * needed, never skip one that was.
  */
 function dependsOn(later: SolveStep, earlier: SolveStep): boolean {
   if (later.placement) {
@@ -75,8 +84,11 @@ function dependsOn(later: SolveStep, earlier: SolveStep): boolean {
     const unitCells = later.units[0] ? cellsOfUnit(later.units[0]) : [];
     return earlier.eliminations.some((removed) => removed.digit === digit && unitCells.includes(removed.cell));
   }
-  return earlier.eliminations.some((removed) =>
-    later.cells.some((patternCell) => patternCell === removed.cell || sees(patternCell, removed.cell)),
+  return earlier.eliminations.some(
+    (removed) =>
+      later.cells.includes(removed.cell) ||
+      (later.digits.includes(removed.digit) &&
+        later.cells.some((patternCell) => sees(patternCell, removed.cell))),
   );
 }
 
@@ -117,10 +129,19 @@ export function explainNextStep(values: number[][], solution: number[][]): Expla
 
   const state = createState(values);
   const setup: SolveStep[] = [];
+  /** For each setup step, the candidates of the cells it touches, before it. */
+  const candidatesBefore = new Map<SolveStep, Array<{ cell: number; digits: number[] }>>();
   let placement: SolveStep | null = null;
   for (;;) {
     const step = findNextStep(state);
     if (!step) break;
+    if (!step.placement) {
+      const touched = unique([...step.cells, ...step.eliminations.map((removed) => removed.cell)]);
+      candidatesBefore.set(
+        step,
+        touched.map((cell) => ({ cell, digits: candidatesOf(state, cell) })),
+      );
+    }
     applyStep(state, step);
     if (step.placement) {
       placement = step;
@@ -158,6 +179,7 @@ export function explainNextStep(values: number[][], solution: number[][]): Expla
           (cell) => !step.cells.includes(cell),
         ),
         target: null,
+        candidates: candidatesBefore.get(step),
       }),
     ),
     {

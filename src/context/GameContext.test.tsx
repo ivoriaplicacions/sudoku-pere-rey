@@ -189,6 +189,36 @@ describe('GameProvider integration', () => {
     await act(async () => root.unmount());
   });
 
+  it('fills every candidate in one go and takes it back with one undo', async () => {
+    const { root } = await renderGame();
+    const puzzle = await startFirstPuzzle();
+
+    await act(async () => {
+      current?.fillNotes();
+    });
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        const cell = current!.board[row][col];
+        if (puzzle.initialGrid[row][col] !== 0) {
+          expect(cell.notes.size).toBe(0);
+        } else {
+          // The answer is always among the notes of an empty cell.
+          expect(cell.notes.has(puzzle.solutionGrid[row][col])).toBe(true);
+        }
+      }
+    }
+    expect(current?.canUndo).toBe(true);
+    expect(current?.hintsUsed).toBe(0);
+
+    await act(async () => {
+      current?.undoMove();
+    });
+    expect(current?.board.flat().every((cell) => cell.notes.size === 0)).toBe(true);
+    expect(current?.canUndo).toBe(false);
+
+    await act(async () => root.unmount());
+  });
+
   it('closes an open hint as soon as the board changes', async () => {
     const { root } = await renderGame();
     const puzzle = await startFirstPuzzle();

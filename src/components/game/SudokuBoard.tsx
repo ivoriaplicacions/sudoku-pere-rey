@@ -42,6 +42,12 @@ export const SudokuBoard: React.FC = () => {
     if (hintFrame.zone.includes(index)) return 'zone';
     return undefined;
   };
+  const hintNotesOf = (index: number): number[] | undefined =>
+    hintFrame?.candidates?.find((entry) => entry.cell === index)?.digits;
+  const hintRemovedOf = (index: number): number[] | undefined => {
+    const removed = hintFrame?.step?.eliminations.filter((entry) => entry.cell === index);
+    return removed && removed.length > 0 ? removed.map((entry) => entry.digit) : undefined;
+  };
 
   const selectedVal = selectedCell ? board[selectedCell.row][selectedCell.col].value : 0;
 
@@ -88,6 +94,9 @@ export const SudokuBoard: React.FC = () => {
                 isHighlighted={isHighlighted}
                 isSameNumber={isSameNumber}
                 hintMark={hintMarkOf(r * 9 + c)}
+                hintNotes={hintNotesOf(r * 9 + c)}
+                hintRemoved={hintRemovedOf(r * 9 + c)}
+                highlightNote={selectedVal !== 0 ? selectedVal : undefined}
                 theme={themeConfig}
                 label={getTranslation(language, 'cellLabel', {
                   row: r + 1,

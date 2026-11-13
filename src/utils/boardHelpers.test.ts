@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cloneBoard, moveSelection, restoreHistoryEntry, snapshotHouse } from './boardHelpers';
+import { cloneBoard, fillAllNotes, moveSelection, restoreHistoryEntry, snapshotHouse } from './boardHelpers';
 import type { CellState } from '../types/sudoku';
 
 const board = (): CellState[][] =>
@@ -14,6 +14,58 @@ const board = (): CellState[][] =>
       isHint: false,
     })),
   );
+
+describe('fillAllNotes', () => {
+  it('pencils in what the row, the column and the box still allow', () => {
+    const start = board();
+    start[0][0].value = 1; // same row
+    start[5][4].value = 2; // same column
+    start[1][3].value = 3; // same box
+    start[8][8].value = 9; // unrelated
+
+    const filled = fillAllNotes(start)!;
+    expect([...filled.board[0][4].notes].sort()).toEqual([4, 5, 6, 7, 8, 9]);
+    expect([...filled.board[4][0].notes].sort()).toEqual([2, 3, 4, 5, 6, 7, 8, 9]);
+  });
+
+  it('leaves filled cells without notes and the original board untouched', () => {
+    const start = board();
+    start[0][0].value = 1;
+    const filled = fillAllNotes(start)!;
+    expect(filled.board[0][0].notes.size).toBe(0);
+    expect(filled.board[0][0].value).toBe(1);
+    expect(start[0][1].notes.size).toBe(0);
+  });
+
+  it('replaces notes the player got wrong or left incomplete', () => {
+    const start = board();
+    start[0][0].value = 1;
+    start[0][1].notes = new Set([1, 2]);
+    const filled = fillAllNotes(start)!;
+    expect([...filled.board[0][1].notes].sort()).toEqual([2, 3, 4, 5, 6, 7, 8, 9]);
+  });
+
+  it('records only the cells it changed, so one undo restores them', () => {
+    const start = board();
+    start[0][0].value = 1;
+    start[0][1].notes = new Set([2, 5]);
+    const filled = fillAllNotes(start)!;
+    expect(filled.changed).toHaveLength(80);
+
+    const restored = restoreHistoryEntry(filled.board, {
+      cells: filled.changed,
+      selectedCell: null,
+      hintsDelta: 0,
+    });
+    expect([...restored[0][1].notes].sort()).toEqual([2, 5]);
+    expect(restored[4][4].notes.size).toBe(0);
+  });
+
+  it('returns null when the notes are already complete', () => {
+    const once = fillAllNotes(board())!;
+    expect(fillAllNotes(once.board)).toBeNull();
+  });
+});
 
 describe('moveSelection', () => {
   it('lands on the top-left cell on the first press', () => {

@@ -65,6 +65,7 @@ import {
   snapshotCell,
   snapshotHouse,
   clearNotesForDigit,
+  fillAllNotes,
   restoreHistoryEntry,
 } from '../utils/boardHelpers';
 import { applyDailyStreak } from '../utils/streak';
@@ -125,6 +126,7 @@ interface GameContextType {
   savedSession: InProgressSession | null;
   inputNumber: (num: number) => void;
   eraseCell: () => void;
+  fillNotes: () => void;
   giveHint: () => void;
   /** The hint on screen and the frame it is on, or null. */
   activeHint: ActiveHint | null;
@@ -599,6 +601,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setBoard(newBoard);
   };
 
+  /** Pencils in every candidate the board allows. One undo takes it all back. */
+  const fillNotes = () => {
+    if (isCompleted || isPaused || board.length !== 9) return;
+    const filled = fillAllNotes(board);
+    if (!filled) return;
+
+    hapticTap();
+    audioSynth.playNote();
+    setHistory((prev) => [...prev, { cells: filled.changed, selectedCell, hintsDelta: 0 }]);
+    setBoard(filled.board);
+  };
+
   /**
    * Opens a hint: the next step a person would take from here, explained frame by
    * frame. Reading it is free and always available; only placing the digit at the
@@ -729,6 +743,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         savedSession,
         inputNumber,
         eraseCell,
+        fillNotes,
         giveHint,
         activeHint,
         advanceHint,

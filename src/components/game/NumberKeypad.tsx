@@ -3,7 +3,7 @@ import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
 import { MAX_HINTS_PER_PUZZLE } from '../../utils/sudokuLogic';
 import { getTheme } from '../../data/themes';
-import { Edit3, Eraser, Lightbulb, Pause, Play, RotateCcw, Undo2 } from 'lucide-react';
+import { Edit3, Eraser, Lightbulb, Pause, Play, RotateCcw, Undo2, Wand2 } from 'lucide-react';
 
 export const NumberKeypad: React.FC = () => {
   const {
@@ -12,6 +12,7 @@ export const NumberKeypad: React.FC = () => {
     inputNumber,
     eraseCell,
     giveHint,
+    fillNotes,
     undoMove,
     canUndo,
     restartPuzzle,
@@ -70,7 +71,7 @@ export const NumberKeypad: React.FC = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-6 gap-1.5">
+      <div className="grid grid-cols-7 gap-1">
         <button type="button" onClick={() => setConfirmRestart(true)} className={actionClass}>
           <RotateCcw className="w-4 h-4 text-cyan-300" />
           <span className="text-[9px] font-semibold mt-1 leading-tight">
@@ -108,6 +109,18 @@ export const NumberKeypad: React.FC = () => {
           <Edit3 className="w-4 h-4 text-amber-300" />
           <span className="text-[9px] font-semibold mt-1 leading-tight">
             {getTranslation(language, 'notes')}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={fillNotes}
+          aria-label={getTranslation(language, 'autoNotesLabel')}
+          className={actionClass}
+        >
+          <Wand2 className="w-4 h-4 text-amber-300" />
+          <span className="text-[9px] font-semibold mt-1 leading-tight">
+            {getTranslation(language, 'autoNotes')}
           </span>
         </button>
 
