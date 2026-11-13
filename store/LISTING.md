@@ -450,7 +450,8 @@ amb el tema clar Alba Daurada i la versió 2.0.0.
 
 El progrés que es veu és de demostració (73 sudokus, uns 210 estrelles, ratxa de 6),
 sembrat amb un `seed.js` afegit a `dist/` abans de compilar. No toca cap codi font i
-no ha d'arribar mai a una build de botiga: `npm run build` el fa desaparèixer.
+no ha d'arribar mai a una build de botiga: `npm run build` el fa desaparèixer. L'arnés
+XCUITest, el `seed.js` i els passos per refer-les són a `store/screenshots/harness/`.
 
 La barra d'estat és la real del telèfon, carregant. Si es vol la de màrqueting (9:41,
 bateria plena), s'han de refer al simulador de l'iPhone 17, que a aquest Mac de 8 GB
