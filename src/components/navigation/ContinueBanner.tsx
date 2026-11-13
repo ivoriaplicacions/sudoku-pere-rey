@@ -2,6 +2,7 @@ import React from 'react';
 import { Play } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
+import { dateOfDailyId, formatDay } from '../../utils/dailyChallenge';
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -13,6 +14,7 @@ export const ContinueBanner: React.FC = () => {
   const { language, savedSession, resumeSession } = useGame();
 
   if (!savedSession) return null;
+  const dailyDate = dateOfDailyId(savedSession.puzzleId);
 
   return (
     <button
@@ -32,9 +34,19 @@ export const ContinueBanner: React.FC = () => {
             {getTranslation(language, 'continueGame')}
           </p>
           <p className="text-xs text-white/70 mt-0.5">
-            {getTranslation(language, 'level')} {savedSession.level}
-            {' · '}
-            {getTranslation(language, 'puzzle')} #{savedSession.puzzleNumber}
+            {dailyDate ? (
+              <>
+                {getTranslation(language, 'dailyChallenge')}
+                {' · '}
+                {formatDay(dailyDate, language)}
+              </>
+            ) : (
+              <>
+                {getTranslation(language, 'level')} {savedSession.level}
+                {' · '}
+                {getTranslation(language, 'puzzle')} #{savedSession.puzzleNumber}
+              </>
+            )}
             {' · '}
             {formatTime(savedSession.timerSeconds)}
           </p>

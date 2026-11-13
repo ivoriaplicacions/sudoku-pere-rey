@@ -219,6 +219,83 @@ describe('GameProvider integration', () => {
     await act(async () => root.unmount());
   });
 
+  describe('the daily challenge', () => {
+    const DATE = '2026-11-13';
+
+    async function startDaily(date = DATE) {
+      await act(async () => {
+        const started = current!.startDailyChallenge(date);
+        vi.advanceTimersByTime(50);
+        await started;
+      });
+    }
+
+    async function solveCurrent() {
+      const puzzle = current!.selectedPuzzle!;
+      for (let row = 0; row < 9; row++) {
+        for (let col = 0; col < 9; col++) {
+          if (puzzle.initialGrid[row][col] === 0) await enterValue(row, col, puzzle.solutionGrid[row][col]);
+        }
+      }
+    }
+
+    it('is open to a new player who has unlocked nothing, and leaves the level list alone', async () => {
+      const { root } = await renderGame();
+      expect(current?.canPlayLevel(7)).toBe(false);
+      await startDaily();
+      expect(current?.view).toBe('game');
+      expect(current?.selectedPuzzle?.id).toBe(`D${DATE}`);
+      expect(current?.selectedPuzzle?.daily?.date).toBe(DATE);
+      expect(current?.selectedLevel).toBe(1);
+      await act(async () => root.unmount());
+    });
+
+    it('is recorded under its date, counts as a completion and offers no next sudoku', async () => {
+      const { root } = await renderGame();
+      await startDaily();
+      await solveCurrent();
+      expect(current?.victoryData?.stars).toBe(3);
+      expect(current?.progressMap[`D${DATE}`]).toMatchObject({ completed: true, stars: 3, level: 0 });
+      expect(current?.playerStats.puzzlesCompleted).toBe(1);
+
+      await act(async () => current?.closeVictoryModal());
+      expect(current?.view).toBe('level-select');
+      await act(async () => root.unmount());
+    });
+
+    it('leaves to the level list, not to a level that does not exist', async () => {
+      const { root } = await renderGame();
+      await startDaily();
+      await act(async () => current?.exitToMenu());
+      expect(current?.view).toBe('level-select');
+
+      // A level sudoku still goes back to its own list.
+      await startFirstPuzzle();
+      await act(async () => current?.exitToMenu());
+      expect(current?.view).toBe('puzzle-select');
+      await act(async () => root.unmount());
+    });
+
+    it('can be resumed after the app is closed halfway', async () => {
+      const first = await renderGame();
+      await startDaily();
+      const puzzle = current!.selectedPuzzle!;
+      const empty = puzzle.initialGrid.flat().indexOf(0);
+      await enterValue(Math.floor(empty / 9), empty % 9, puzzle.solutionGrid[Math.floor(empty / 9)][empty % 9]);
+      await act(async () => first.root.unmount());
+
+      const second = await renderGame();
+      expect(current?.savedSession?.puzzleId).toBe(`D${DATE}`);
+      await act(async () => current?.resumeSession());
+      expect(current?.view).toBe('game');
+      expect(current?.selectedPuzzle?.daily?.date).toBe(DATE);
+      expect(current?.board[Math.floor(empty / 9)][empty % 9].value).toBe(
+        puzzle.solutionGrid[Math.floor(empty / 9)][empty % 9],
+      );
+      await act(async () => second.root.unmount());
+    });
+  });
+
   describe('digit-first mode', () => {
     const emptyCellsOf = (puzzle: { initialGrid: number[][] }) =>
       puzzle.initialGrid.flatMap((row, r) => row.flatMap((value, c) => (value === 0 ? [{ row: r, col: c }] : [])));

@@ -8,6 +8,7 @@ import { CONTENT_PACKS, formatPackPrice, getPackForLevel } from '../../data/pack
 import { completionsNeededForLevel, requiresProgressGate } from '../../utils/levelProgress';
 import { buildLevelList } from '../../data/levels';
 import { ContinueBanner } from './ContinueBanner';
+import { DailyChallengeCard } from './DailyChallengeCard';
 import { getTheme } from '../../data/themes';
 import { levelCardStyles } from '../../utils/levelCardTheme';
 
@@ -45,6 +46,8 @@ export const LevelGrid: React.FC<{ onOpenStore?: () => void }> = ({ onOpenStore 
       </div>
 
       <ContinueBanner />
+
+      <DailyChallengeCard />
 
       {CONTENT_PACKS.map((pack) => {
         const packLevels = LEVEL_LIST.filter((l) => l.packId === pack.id);
