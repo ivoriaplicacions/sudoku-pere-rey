@@ -1,8 +1,8 @@
 {
   "name": "sudoku-king",
   "private": true,
-  "version": "1.1.0",
-  "buildNumber": 10100,
+  "version": "1.1.1",
+  "buildNumber": 10101,
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -29,12 +29,12 @@
     "ios:info": "node scripts/ios-check.mjs"
   },
   "dependencies": {
-    "@capacitor/android": "^8.5.0",
+    "@capacitor/android": "~8.5.1",
     "@capacitor/app": "^8.1.1",
-    "@capacitor/core": "^8.5.0",
+    "@capacitor/core": "~8.5.1",
     "@capacitor/filesystem": "~8.1.5",
     "@capacitor/haptics": "^8.0.0",
-    "@capacitor/ios": "^8.5.0",
+    "@capacitor/ios": "~8.5.1",
     "@capacitor/local-notifications": "~8.3.1",
     "@capacitor/preferences": "~8.0.1",
     "@capacitor/share": "~8.0.3",
@@ -50,7 +50,7 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.5.0",
+    "@capacitor/cli": "~8.5.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^24.13.3",

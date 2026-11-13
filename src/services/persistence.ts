@@ -182,10 +182,20 @@ function hasExistingPlayerData(): boolean {
   return safeGetItem(STORAGE_KEYS.progress) !== null || safeGetItem(STORAGE_KEYS.stats) !== null;
 }
 
+/**
+ * With no theme saved, someone who already has data predates the light themes
+ * and keeps the dark one they were using; a fresh install gets the light default.
+ *
+ * The answer is written down the first time it is worked out. Otherwise a new
+ * player, who has data as soon as the first session ends, would be taken for an
+ * old one on the second launch and flipped from light to dark without asking.
+ */
 export function loadTheme(): ThemeId {
   const saved = safeGetItem(STORAGE_KEYS.theme);
   if (isThemeId(saved)) return saved;
-  return hasExistingPlayerData() ? LEGACY_DEFAULT_THEME : DEFAULT_THEME;
+  const theme = hasExistingPlayerData() ? LEGACY_DEFAULT_THEME : DEFAULT_THEME;
+  saveTheme(theme);
+  return theme;
 }
 
 export function saveTheme(theme: ThemeId): void {

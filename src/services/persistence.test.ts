@@ -294,6 +294,24 @@ describe('settings fall back rather than break', () => {
     expect(loadTheme()).toBe(DEFAULT_THEME);
   });
 
+  // The app writes stats during the first session of anyone. Without remembering
+  // the first answer, the second launch took every new player for an old one.
+  it('keeps a new player on the light default once they have data', () => {
+    expect(loadTheme()).toBe(DEFAULT_THEME);
+    localStorage.setItem(STORAGE_KEYS.stats, JSON.stringify({ xp: 225, puzzlesCompleted: 1 }));
+    localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify({ L1_P1: { completed: true } }));
+    expect(loadTheme()).toBe(DEFAULT_THEME);
+  });
+
+  it('remembers the dark default it gave an existing player', () => {
+    localStorage.setItem(STORAGE_KEYS.stats, JSON.stringify({ xp: 10 }));
+    expect(loadTheme()).toBe(LEGACY_DEFAULT_THEME);
+    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBe(LEGACY_DEFAULT_THEME);
+    // Losing the data later does not flip them to light either.
+    localStorage.removeItem(STORAGE_KEYS.stats);
+    expect(loadTheme()).toBe(LEGACY_DEFAULT_THEME);
+  });
+
   it('still prefers a theme the player chose, however long they have played', () => {
     localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify({ L1_P1: { completed: true } }));
     localStorage.setItem(STORAGE_KEYS.theme, 'cosmic');
