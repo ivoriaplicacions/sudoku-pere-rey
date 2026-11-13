@@ -28,7 +28,7 @@ const BoardGridLines: React.FC<{ theme: ThemeConfig }> = ({ theme }) => (
 );
 
 export const SudokuBoard: React.FC = () => {
-  const { board, selectedCell, setSelectedCell, theme, language, activeHint } = useGame();
+  const { board, selectedCell, tapCell, theme, language, activeHint, digitFirst, armedDigit } = useGame();
   const themeConfig = getTheme(theme);
 
   if (!board || board.length === 0) return null;
@@ -49,7 +49,14 @@ export const SudokuBoard: React.FC = () => {
     return removed && removed.length > 0 ? removed.map((entry) => entry.digit) : undefined;
   };
 
-  const selectedVal = selectedCell ? board[selectedCell.row][selectedCell.col].value : 0;
+  // The digit the board echoes: the one picked up in digit-first mode, or else
+  // the one in the selected cell.
+  const selectedVal =
+    digitFirst && armedDigit !== null
+      ? armedDigit
+      : selectedCell
+        ? board[selectedCell.row][selectedCell.col].value
+        : 0;
 
   return (
     <div
@@ -103,7 +110,7 @@ export const SudokuBoard: React.FC = () => {
                   col: c + 1,
                   value: spokenValue,
                 })}
-                onSelect={(rowPos, colPos) => setSelectedCell({ row: rowPos, col: colPos })}
+                onSelect={tapCell}
               />
             );
           }),

@@ -22,6 +22,8 @@ export const NumberKeypad: React.FC = () => {
     setIsPaused,
     hintsUsed,
     theme,
+    digitFirst,
+    armedDigit,
   } = useGame();
   const [confirmRestart, setConfirmRestart] = useState(false);
   const hintsLeft = Math.max(0, MAX_HINTS_PER_PUZZLE - hintsUsed);
@@ -161,10 +163,13 @@ export const NumberKeypad: React.FC = () => {
               key={num}
               disabled={isFilled}
               onClick={() => inputNumber(num)}
+              aria-pressed={digitFirst ? armedDigit === num : undefined}
               className={`aspect-square rounded-2xl font-black text-xl sm:text-2xl flex flex-col items-center justify-center transition-all duration-150 border active:scale-90 ${
                 isFilled
                   ? 'bg-black/30 border-white/5 text-white/20 cursor-not-allowed'
-                  : isNotesMode
+                  : digitFirst && armedDigit === num
+                    ? 'bg-amber-400 border-amber-200 text-slate-950 shadow-lg shadow-amber-500/40 scale-105'
+                    : isNotesMode
                     ? 'bg-amber-950/40 border-amber-500/40 text-amber-200 hover:bg-amber-900/60 shadow-lg shadow-amber-950/40'
                     : 'bg-slate-900/70 border-white/20 text-white hover:bg-slate-800/90 shadow-lg shadow-black/50'
               }`}

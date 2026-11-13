@@ -36,6 +36,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setTheme,
     autoCheckErrors,
     setAutoCheckErrors,
+    digitFirst,
+    setDigitFirst,
     hapticsEnabled,
     setHapticsEnabled,
     soundEnabled,
@@ -159,6 +161,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div
                 className={`w-5 h-5 rounded-full bg-white transition-all absolute top-1 ${
                   autoCheckErrors ? 'left-6' : 'left-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10">
+            <span className="pr-3">
+              <span className="block text-sm font-bold">{getTranslation(language, 'digitFirst')}</span>
+              <span className="block text-[11px] text-white/60 leading-snug mt-0.5">
+                {getTranslation(language, 'digitFirstHelp')}
+              </span>
+            </span>
+            <button
+              onClick={() => setDigitFirst(!digitFirst)}
+              aria-label={`${getTranslation(language, 'digitFirst')}: ${getTranslation(language, digitFirst ? 'enabled' : 'disabled')}`}
+              aria-pressed={digitFirst}
+              className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${
+                digitFirst ? 'bg-cyan-500' : 'bg-white/20'
+              }`}
+            >
+              <div
+                className={`w-5 h-5 rounded-full bg-white transition-all absolute top-1 ${
+                  digitFirst ? 'left-6' : 'left-1'
                 }`}
               />
             </button>
