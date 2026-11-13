@@ -2,7 +2,6 @@ import React from 'react';
 import { Play } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { getTranslation } from '../../i18n/translations';
-import { dateOfDailyId, formatDay } from '../../utils/dailyChallenge';
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -10,16 +9,19 @@ function formatTime(seconds: number): string {
   return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 }
 
+/**
+ * The level game in progress. A daily challenge in progress is offered on its
+ * own card instead: the two are kept apart and neither replaces the other.
+ */
 export const ContinueBanner: React.FC = () => {
   const { language, savedSession, resumeSession } = useGame();
 
   if (!savedSession) return null;
-  const dailyDate = dateOfDailyId(savedSession.puzzleId);
 
   return (
     <button
       type="button"
-      onClick={resumeSession}
+      onClick={() => resumeSession('level')}
       className="w-full text-left p-4 rounded-2xl bg-gradient-to-r from-emerald-700/80 to-teal-700/70 border border-emerald-400/60 shadow-lg shadow-emerald-950/40 active:scale-[0.98] transition"
     >
       <div className="flex items-center gap-3">
@@ -34,19 +36,9 @@ export const ContinueBanner: React.FC = () => {
             {getTranslation(language, 'continueGame')}
           </p>
           <p className="text-xs text-white/70 mt-0.5">
-            {dailyDate ? (
-              <>
-                {getTranslation(language, 'dailyChallenge')}
-                {' · '}
-                {formatDay(dailyDate, language)}
-              </>
-            ) : (
-              <>
-                {getTranslation(language, 'level')} {savedSession.level}
-                {' · '}
-                {getTranslation(language, 'puzzle')} #{savedSession.puzzleNumber}
-              </>
-            )}
+            {getTranslation(language, 'level')} {savedSession.level}
+            {' · '}
+            {getTranslation(language, 'puzzle')} #{savedSession.puzzleNumber}
             {' · '}
             {formatTime(savedSession.timerSeconds)}
           </p>

@@ -156,8 +156,9 @@ export function checkProgressFile(text: string): ImportCheck {
  */
 export function applyProgressFile(data: Record<string, string>): void {
   for (const key of EXPORTED_KEYS) safeRemoveItem(key);
-  // The half-played board belonged to the progress being replaced.
+  // The half-played boards belonged to the progress being replaced.
   safeRemoveItem(STORAGE_KEYS.session);
+  safeRemoveItem(STORAGE_KEYS.dailySession);
   for (const [key, value] of Object.entries(data)) safeSetItem(key, value);
 }
 

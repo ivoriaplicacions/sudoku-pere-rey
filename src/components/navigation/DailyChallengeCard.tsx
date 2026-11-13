@@ -18,13 +18,15 @@ import { techniqueName } from '../../utils/hintExplainer';
  * the days already played. Earlier days of the month can still be played.
  */
 export const DailyChallengeCard: React.FC = () => {
-  const { language, progressMap, startDailyChallenge } = useGame();
+  const { language, progressMap, startDailyChallenge, savedDailySession } = useGame();
   const [preparing, setPreparing] = useState<string | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
 
   // Read when the card renders: a session that runs past midnight sees the new day.
   const today = dateKey();
   const todayResult = progressMap[dailyPuzzleId(today)];
+  // Starting today's challenge again picks up where the player left it.
+  const todayInProgress = savedDailySession?.puzzleId === dailyPuzzleId(today);
   const t = (key: string, params?: Record<string, string | number>) => getTranslation(language, key, params);
 
   const play = async (key: string) => {
@@ -73,7 +75,7 @@ export const DailyChallengeCard: React.FC = () => {
             className="flex shrink-0 items-center gap-1.5 rounded-xl bg-amber-400 px-3.5 py-2.5 text-sm font-black text-slate-950 transition active:scale-95 disabled:opacity-70"
           >
             <Play className="h-4 w-4 fill-slate-950" />
-            {preparing === today ? t('dailyPreparing') : t('dailyPlay')}
+            {preparing === today ? t('dailyPreparing') : todayInProgress ? t('dailyContinue') : t('dailyPlay')}
           </button>
         )}
       </div>

@@ -16,6 +16,7 @@ import {
   safeSetItem,
   saveProgressMap,
   saveSession,
+  sessionSlotOf,
   serializeBoard,
 } from './persistence';
 import { DEFAULT_THEME, LEGACY_DEFAULT_THEME } from '../data/themes';
@@ -154,6 +155,48 @@ describe('safe storage wrappers', () => {
       throw new Error('QuotaExceededError');
     });
     expect(() => safeSetItem('k', 'v')).not.toThrow();
+  });
+});
+
+describe('two saved games, in separate slots', () => {
+  const dailySession = () =>
+    buildSession({
+      puzzleId: 'D2026-11-13',
+      level: 0,
+      puzzleNumber: 13,
+      board: board(),
+      selectedCell: null,
+      isNotesMode: false,
+      timerSeconds: 7,
+      mistakes: 0,
+      hintsUsed: 0,
+    });
+
+  it('tells the daily challenge from a level game by its id', () => {
+    expect(sessionSlotOf('D2026-11-13')).toBe('daily');
+    expect(sessionSlotOf('L1_P1')).toBe('level');
+    expect(sessionSlotOf('Dsomething')).toBe('level');
+  });
+
+  it('keeps each game in its own slot, so one never overwrites the other', () => {
+    saveSession(validSession());
+    saveSession(dailySession());
+    expect(loadSession('level')?.puzzleId).toBe('L1_P1');
+    expect(loadSession('daily')?.puzzleId).toBe('D2026-11-13');
+    expect(loadSession()?.puzzleId).toBe('L1_P1');
+  });
+
+  it('clears one slot without touching the other', () => {
+    saveSession(validSession());
+    saveSession(dailySession());
+    clearSession('daily');
+    expect(loadSession('daily')).toBeNull();
+    expect(loadSession('level')?.puzzleId).toBe('L1_P1');
+  });
+
+  it('never reads a game back from the wrong slot', () => {
+    localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(dailySession()));
+    expect(loadSession('level')).toBeNull();
   });
 });
 

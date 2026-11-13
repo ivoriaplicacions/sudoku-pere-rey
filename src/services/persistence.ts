@@ -24,6 +24,7 @@ export const STORAGE_KEYS = {
   sound: 'maestros_sound_v1',
   autoCheck: 'maestros_autocheck_v1',
   digitFirst: 'maestros_digit_first_v1',
+  dailySession: 'maestros_daily_session_v1',
   lessonsSeen: 'maestros_lessons_seen_v1',
   catalogue: 'maestros_catalogue_v1',
   carriedStars: 'maestros_carried_stars_v1',
@@ -375,13 +376,33 @@ function isValidSession(raw: unknown): raw is InProgressSession {
   return true;
 }
 
-export function loadSession(): InProgressSession | null {
+/**
+ * Two games can be in progress at once: one from the levels and one daily
+ * challenge. Each has its own slot, so starting the day's sudoku never throws
+ * away a level game halfway through, nor the other way round.
+ */
+export type SessionSlot = 'level' | 'daily';
+
+const DAILY_ID = /^D\d{4}-\d{2}-\d{2}$/;
+
+export function sessionSlotOf(puzzleId: string): SessionSlot {
+  return DAILY_ID.test(puzzleId) ? 'daily' : 'level';
+}
+
+const SESSION_KEY: Record<SessionSlot, string> = {
+  level: STORAGE_KEYS.session,
+  daily: STORAGE_KEYS.dailySession,
+};
+
+export function loadSession(slot: SessionSlot = 'level'): InProgressSession | null {
   migrateCatalogue();
-  const saved = safeGetItem(STORAGE_KEYS.session);
+  const saved = safeGetItem(SESSION_KEY[slot]);
   if (!saved) return null;
   try {
     const parsed: unknown = JSON.parse(saved);
     if (!isValidSession(parsed)) return null;
+    // A game is only ever read back from its own slot.
+    if (sessionSlotOf(parsed.puzzleId) !== slot) return null;
     return {
       ...parsed,
       history:
@@ -394,12 +415,13 @@ export function loadSession(): InProgressSession | null {
   }
 }
 
+/** Saves the game into the slot its puzzle belongs to. */
 export function saveSession(session: InProgressSession): void {
-  safeSetItem(STORAGE_KEYS.session, JSON.stringify(session));
+  safeSetItem(SESSION_KEY[sessionSlotOf(session.puzzleId)], JSON.stringify(session));
 }
 
-export function clearSession(): void {
-  safeRemoveItem(STORAGE_KEYS.session);
+export function clearSession(slot: SessionSlot = 'level'): void {
+  safeRemoveItem(SESSION_KEY[slot]);
 }
 
 export function buildSession(params: {

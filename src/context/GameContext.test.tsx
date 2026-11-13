@@ -285,14 +285,93 @@ describe('GameProvider integration', () => {
       await act(async () => first.root.unmount());
 
       const second = await renderGame();
-      expect(current?.savedSession?.puzzleId).toBe(`D${DATE}`);
-      await act(async () => current?.resumeSession());
+      expect(current?.savedDailySession?.puzzleId).toBe(`D${DATE}`);
+      expect(current?.savedSession).toBeNull();
+      await act(async () => current?.resumeSession('daily'));
       expect(current?.view).toBe('game');
       expect(current?.selectedPuzzle?.daily?.date).toBe(DATE);
       expect(current?.board[Math.floor(empty / 9)][empty % 9].value).toBe(
         puzzle.solutionGrid[Math.floor(empty / 9)][empty % 9],
       );
       await act(async () => second.root.unmount());
+    });
+  });
+
+  describe('a level game and the daily challenge in progress at the same time', () => {
+    const DATE = '2026-11-13';
+    const firstEmpty = (grid: number[][]) => {
+      const index = grid.flat().indexOf(0);
+      return { row: Math.floor(index / 9), col: index % 9 };
+    };
+
+    async function startDaily() {
+      await act(async () => {
+        const started = current!.startDailyChallenge(DATE);
+        vi.advanceTimersByTime(50);
+        await started;
+      });
+    }
+
+    it('starting the daily challenge keeps the level game halfway through', async () => {
+      const { root } = await renderGame();
+      const level = await startFirstPuzzle();
+      const cell = firstEmpty(level.initialGrid);
+      await enterValue(cell.row, cell.col, level.solutionGrid[cell.row][cell.col]);
+
+      await startDaily();
+      expect(current?.selectedPuzzle?.daily?.date).toBe(DATE);
+      expect(current?.savedSession?.puzzleId).toBe(level.id);
+
+      // Back to the level game: the digit entered before is still there.
+      await act(async () => current?.exitToMenu());
+      await act(async () => current?.resumeSession('level'));
+      expect(current?.selectedPuzzle?.id).toBe(level.id);
+      expect(current?.board[cell.row][cell.col].value).toBe(level.solutionGrid[cell.row][cell.col]);
+      await act(async () => root.unmount());
+    });
+
+    it('and the other way round: a level game keeps the daily challenge halfway through', async () => {
+      const { root } = await renderGame();
+      await startDaily();
+      const daily = current!.selectedPuzzle!;
+      const cell = firstEmpty(daily.initialGrid);
+      await enterValue(cell.row, cell.col, daily.solutionGrid[cell.row][cell.col]);
+
+      await startFirstPuzzle();
+      expect(current?.savedDailySession?.puzzleId).toBe(daily.id);
+
+      // Playing the same day again picks the challenge up where it was left.
+      await startDaily();
+      expect(current?.board[cell.row][cell.col].value).toBe(daily.solutionGrid[cell.row][cell.col]);
+      await act(async () => root.unmount());
+    });
+
+    it('both survive closing the app', async () => {
+      const first = await renderGame();
+      const level = await startFirstPuzzle();
+      await startDaily();
+      await act(async () => first.root.unmount());
+
+      const second = await renderGame();
+      expect(current?.savedSession?.puzzleId).toBe(level.id);
+      expect(current?.savedDailySession?.puzzleId).toBe(`D${DATE}`);
+      await act(async () => second.root.unmount());
+    });
+
+    it('finishing the daily challenge clears only its own slot', async () => {
+      const { root } = await renderGame();
+      const level = await startFirstPuzzle();
+      await startDaily();
+      const daily = current!.selectedPuzzle!;
+      for (let row = 0; row < 9; row++) {
+        for (let col = 0; col < 9; col++) {
+          if (daily.initialGrid[row][col] === 0) await enterValue(row, col, daily.solutionGrid[row][col]);
+        }
+      }
+      expect(current?.victoryData).not.toBeNull();
+      expect(current?.savedDailySession).toBeNull();
+      expect(current?.savedSession?.puzzleId).toBe(level.id);
+      await act(async () => root.unmount());
     });
   });
 
