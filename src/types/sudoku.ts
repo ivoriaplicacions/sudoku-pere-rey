@@ -1,3 +1,5 @@
+import type { Technique } from '../solver/humanSolver';
+
 export type Language = 'ca' | 'es' | 'en';
 
 export type ThemeId =
@@ -41,11 +43,13 @@ export interface ThemeConfig {
 
 export interface Puzzle {
   id: string;
-  level: number; // 1 to 10
-  puzzleNumber: number; // 1 to 20
+  level: number; // 1 to 40; 0 for the daily challenge
+  puzzleNumber: number; // 1 to 20; the day of the month for the daily challenge
   initialGrid: number[][]; // 9x9, 0 for empty
   solutionGrid: number[][]; // 9x9
   givenCount: number;
+  /** Set on the daily challenge, which belongs to no level. */
+  daily?: { date: string; technique: Technique };
 }
 
 export interface LevelInfo {

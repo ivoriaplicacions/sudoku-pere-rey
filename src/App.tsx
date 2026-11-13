@@ -46,6 +46,7 @@ const MainApp: React.FC = () => {
     undoMove,
     victoryData,
     closeVictoryModal,
+    exitToMenu,
   } = useGame();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -122,7 +123,7 @@ const MainApp: React.FC = () => {
         return;
       }
       if (view === 'game') {
-        setView('puzzle-select');
+        exitToMenu();
         return;
       }
       if (view === 'puzzle-select') {
@@ -147,6 +148,7 @@ const MainApp: React.FC = () => {
     closeLesson,
     victoryData,
     closeVictoryModal,
+    exitToMenu,
     view,
     setView,
   ]);
@@ -215,11 +217,15 @@ const MainApp: React.FC = () => {
             <div className="w-full max-w-md space-y-3 pb-8">
               <div className="flex items-center justify-between px-2">
                 <button
-                  onClick={() => setView('puzzle-select')}
+                  onClick={exitToMenu}
                   className="flex items-center space-x-1.5 text-xs font-bold text-white/90 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 hover:bg-black/60 active:scale-95 transition"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>{getTranslation(language, 'puzzle')} #{selectedPuzzle.puzzleNumber}</span>
+                  <span>
+                    {selectedPuzzle.daily
+                      ? getTranslation(language, 'dailyChallenge')
+                      : `${getTranslation(language, 'puzzle')} #${selectedPuzzle.puzzleNumber}`}
+                  </span>
                 </button>
 
                 <div className="flex items-center space-x-3 text-xs font-bold bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">

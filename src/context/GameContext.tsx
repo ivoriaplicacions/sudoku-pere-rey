@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { dailyPuzzle, dateKey, dateOfDailyId } from '../utils/dailyChallenge';
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import type {
@@ -44,6 +45,8 @@ import {
   loadSession,
   saveSession,
   clearSession,
+  sessionSlotOf,
+  type SessionSlot,
   buildSession,
   deserializeBoard,
   loadTheme,
@@ -130,8 +133,11 @@ interface GameContextType {
   tapCell: (row: number, col: number) => void;
 
   startPuzzle: (puzzle: Puzzle, options?: { fresh?: boolean }) => void;
-  resumeSession: () => void;
+  resumeSession: (slot?: SessionSlot) => void;
+  /** The level game in progress, if any. */
   savedSession: InProgressSession | null;
+  /** The daily challenge in progress, if any. Kept apart so neither erases the other. */
+  savedDailySession: InProgressSession | null;
   inputNumber: (num: number) => void;
   eraseCell: () => void;
   fillNotes: () => void;
@@ -145,6 +151,8 @@ interface GameContextType {
   canUndo: boolean;
   restartPuzzle: () => void;
   exitToMenu: () => void;
+  /** Builds and starts the daily challenge for a date, today by default. */
+  startDailyChallenge: (date?: string) => Promise<void>;
 
   victoryData: { stars: number; xpEarned: number; time: number } | null;
   closeVictoryModal: () => void;
@@ -179,7 +187,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [progressMap, setProgressMap] = useState<Record<string, PuzzleProgress>>(loadProgressMap);
 
   const [playerStats, setPlayerStats] = useState<PlayerStats>(() => loadPlayerStats(defaultPlayerStats));
-  const [savedSession, setSavedSession] = useState<InProgressSession | null>(loadSession);
+  const [savedSession, setSavedSession] = useState<InProgressSession | null>(() => loadSession('level'));
+  const [savedDailySession, setSavedDailySession] = useState<InProgressSession | null>(() => loadSession('daily'));
 
   const [board, setBoard] = useState<CellState[][]>([]);
   const [selectedCell, setSelectedCell] = useState<CellPosition | null>(null);
@@ -253,9 +262,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     saveHapticsEnabled(val);
   }, []);
 
-  const dropSession = useCallback(() => {
-    setSavedSession(null);
-    clearSession();
+  /** Keeps a game in the slot it belongs to: level games and the daily challenge apart. */
+  const storeSession = useCallback((session: InProgressSession) => {
+    if (sessionSlotOf(session.puzzleId) === 'daily') setSavedDailySession(session);
+    else setSavedSession(session);
+    saveSession(session);
+  }, []);
+
+  const dropSession = useCallback((slot: SessionSlot) => {
+    if (slot === 'daily') setSavedDailySession(null);
+    else setSavedSession(null);
+    clearSession(slot);
   }, []);
 
   const canAccessLevel = (level: number) => isLevelAccessible(level);
@@ -331,8 +348,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       hintsUsed,
       history,
     });
-    setSavedSession(session);
-    saveSession(session);
+    storeSession(session);
   }, [
     board,
     selectedCell,
@@ -344,6 +360,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     selectedPuzzle,
     isCompleted,
     view,
+    storeSession,
   ]);
 
   useEffect(() => {
@@ -374,7 +391,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const applyPuzzleStart = (puzzle: Puzzle, freshBoard: CellState[][]) => {
     setSelectedPuzzle(puzzle);
-    setSelectedLevel(puzzle.level);
+    // The daily challenge belongs to no level: the level list stays where it was.
+    if (!puzzle.daily) setSelectedLevel(puzzle.level);
     setBoard(freshBoard);
     setSelectedCell(null);
     setIsNotesMode(false);
@@ -399,21 +417,25 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       hintsUsed: 0,
       history: [],
     });
-    setSavedSession(session);
-    saveSession(session);
+    storeSession(session);
     hapticSelect();
   };
 
-  const resumeSession = useCallback(() => {
-    const session = savedSession ?? loadSession();
+  /** Picks up the saved game of a slot: the level game unless told otherwise. */
+  const resumeSession = useCallback(
+    (slot: SessionSlot = 'level') => {
+    const session =
+      slot === 'daily' ? (savedDailySession ?? loadSession('daily')) : (savedSession ?? loadSession('level'));
     if (!session) return;
 
-    const puzzle = allPuzzles.find((item) => item.id === session.puzzleId);
-    if (!puzzle || !isLevelAccessible(puzzle.level)) return;
+    const dailyDate = dateOfDailyId(session.puzzleId);
+    const puzzle = dailyDate ? dailyPuzzle(dailyDate) : allPuzzles.find((item) => item.id === session.puzzleId);
+    if (!puzzle || (!puzzle.daily && !isLevelAccessible(puzzle.level))) return;
 
-    setSavedSession(session);
+    if (slot === 'daily') setSavedDailySession(session);
+    else setSavedSession(session);
     setSelectedPuzzle(puzzle);
-    setSelectedLevel(puzzle.level);
+    if (!puzzle.daily) setSelectedLevel(puzzle.level);
     setBoard(deserializeBoard(session.board));
     setSelectedCell(session.selectedCell);
     setIsNotesMode(session.isNotesMode);
@@ -427,13 +449,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setView('game');
     setPlayerStats((prev) => applyDailyStreak(prev));
     hapticSelect();
-  }, [savedSession, allPuzzles]);
+    },
+    [savedSession, savedDailySession, allPuzzles],
+  );
 
   const startPuzzle = (puzzle: Puzzle, options?: { fresh?: boolean }) => {
-    if (!canPlayLevel(puzzle.level)) return;
+    // The daily challenge is open to everyone, whatever packs they own.
+    if (!puzzle.daily && !canPlayLevel(puzzle.level)) return;
 
-    if (!options?.fresh && savedSession?.puzzleId === puzzle.id) {
-      resumeSession();
+    const slot = sessionSlotOf(puzzle.id);
+    const saved = slot === 'daily' ? savedDailySession : savedSession;
+    if (!options?.fresh && saved?.puzzleId === puzzle.id) {
+      resumeSession(slot);
       return;
     }
 
@@ -451,6 +478,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     applyPuzzleStart(puzzle, newBoard);
   };
+
+  // startDailyChallenge runs after a delay; it must call the startPuzzle of the
+  // latest render, which knows the current session and settings.
+  const startPuzzleRef = useRef(startPuzzle);
+  startPuzzleRef.current = startPuzzle;
 
   const checkVictory = (
     currentBoard: CellState[][],
@@ -538,7 +570,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setVictoryData({ stars, xpEarned: puzzleXp + achievementXp, time: timerSeconds });
     setHistory([]);
-    dropSession();
+    dropSession(sessionSlotOf(selectedPuzzle.id));
     return true;
   };
 
@@ -744,14 +776,33 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const exitToMenu = () => {
-    setView('puzzle-select');
-  };
+  /**
+   * Leaves the board: back to the level's sudokus, or for the daily challenge,
+   * which has no level, back to the level list where its card lives.
+   */
+  const exitToMenu = useCallback(() => {
+    setView(selectedPuzzle?.daily ? 'level-select' : 'puzzle-select');
+  }, [selectedPuzzle]);
+
+  /**
+   * Builds the day's puzzle and starts it. Building can take a moment on a
+   * phone, so it runs after the caller has had a chance to show it is working.
+   */
+  const startDailyChallenge = useCallback(
+    (key: string = dateKey()): Promise<void> =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          startPuzzleRef.current(dailyPuzzle(key));
+          resolve();
+        }, 30);
+      }),
+    [],
+  );
 
   const closeVictoryModal = useCallback(() => {
     setVictoryData(null);
-    setView('puzzle-select');
-  }, []);
+    setView(selectedPuzzle?.daily ? 'level-select' : 'puzzle-select');
+  }, [selectedPuzzle]);
 
   return (
     <GameContext.Provider
@@ -799,6 +850,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         startPuzzle,
         resumeSession,
         savedSession,
+        savedDailySession,
         inputNumber,
         eraseCell,
         fillNotes,
@@ -811,6 +863,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         canUndo: history.length > 0,
         restartPuzzle,
         exitToMenu,
+        startDailyChallenge,
         victoryData,
         closeVictoryModal,
       }}

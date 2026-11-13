@@ -27,9 +27,11 @@ export const VictoryModal: React.FC = () => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  const nextPuzzle = selectedPuzzle
-    ? findNextPuzzle(puzzles, selectedPuzzle, canPlayLevel)
-    : undefined;
+  // The daily challenge stands alone: there is no next sudoku after it.
+  const nextPuzzle =
+    selectedPuzzle && !selectedPuzzle.daily
+      ? findNextPuzzle(puzzles, selectedPuzzle, canPlayLevel)
+      : undefined;
 
   const handleNextPuzzle = () => {
     if (!nextPuzzle) {
@@ -118,7 +120,7 @@ export const VictoryModal: React.FC = () => {
             onClick={closeVictoryModal}
             className="w-full py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white/90 font-bold text-xs active:scale-95 transition border border-white/10"
           >
-            {getTranslation(language, 'backToPuzzles')}
+            {getTranslation(language, selectedPuzzle?.daily ? 'backToLevels' : 'backToPuzzles')}
           </button>
         </div>
       </div>

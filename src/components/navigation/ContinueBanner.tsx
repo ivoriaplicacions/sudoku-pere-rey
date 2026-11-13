@@ -9,6 +9,10 @@ function formatTime(seconds: number): string {
   return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 }
 
+/**
+ * The level game in progress. A daily challenge in progress is offered on its
+ * own card instead: the two are kept apart and neither replaces the other.
+ */
 export const ContinueBanner: React.FC = () => {
   const { language, savedSession, resumeSession } = useGame();
 
@@ -17,7 +21,7 @@ export const ContinueBanner: React.FC = () => {
   return (
     <button
       type="button"
-      onClick={resumeSession}
+      onClick={() => resumeSession('level')}
       className="w-full text-left p-4 rounded-2xl bg-gradient-to-r from-emerald-700/80 to-teal-700/70 border border-emerald-400/60 shadow-lg shadow-emerald-950/40 active:scale-[0.98] transition"
     >
       <div className="flex items-center gap-3">
