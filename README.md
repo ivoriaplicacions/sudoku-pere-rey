@@ -89,7 +89,12 @@ iconos de tienda. También avisa de materiales comerciales todavía pendientes.
 ```bash
 npm run puzzles:generate   # regenera 800 puzzles
 npm run puzzles:verify
+npm run puzzles:grade      # tècnica més difícil que exigeix cada sudoku
 ```
+
+`puzzles:grade` resol el catàleg amb `src/solver/humanSolver.ts`, un solucionador que
+treballa com una persona: aplica sempre la tècnica més fàcil que avança i anota quina
+ha necessitat. Necessita Node 22.18 o posterior.
 
 ## Android
 
