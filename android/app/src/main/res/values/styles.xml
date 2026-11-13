@@ -9,10 +9,19 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!--
+        Same colour as STATUS_BAR_BG in src/native/bootstrap.ts. From Android 15 on the
+        status bar is transparent and shows this window background behind the clock and
+        the icons, which the app draws in white. Without it the bars were white on a
+        near-white strip and could not be read.
+    -->
+    <color name="appWindowBackground">#030712</color>
+
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <item name="android:windowBackground">@color/appWindowBackground</item>
     </style>
 
 
